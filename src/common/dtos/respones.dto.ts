@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsEnum, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
-import { Order } from "../helpers/constants";
+import { Order } from "../helpers/enum";
+
 
 
 interface PageMetaDtoParameters {
@@ -105,20 +106,42 @@ export class PageOptionsDto {
     }
 }
 
-export class DataRes<T> {
-    message: string;
-    success: boolean;
-    data: T;
+// export class DataRes<T> {
+//     message: string;
+//     success: boolean;
+//     data: T;
 
-    public setSuccess(data: T) {
-        this.success = true;
-        this.data = data;
-        this.message = "Successfully"
+//     public setSuccess(data: T) {
+//         this.success = true;
+//         this.data = data;
+//         this.message = "Successfully"
+//     }
+
+//     public setFailed(error: string) {
+//         this.success = false;
+//         this.data = null;
+//         this.message = error;
+//     }
+// }
+
+export class DataRes<T> {
+    success: boolean;
+    message: string;
+    data: T | null;
+
+    static success<T>(data: T, message = 'Successfully'): DataRes<T> {
+        const res = new DataRes<T>();
+        res.success = true;
+        res.data = data;
+        res.message = message;
+        return res;
     }
 
-    public setFailed(error: string) {
-        this.success = false;
-        this.data = null;
-        this.message = error;
+    static failed<T>(message: string): DataRes<T> {
+        const res = new DataRes<T>();
+        res.success = false;
+        res.data = null;
+        res.message = message;
+        return res;
     }
 }

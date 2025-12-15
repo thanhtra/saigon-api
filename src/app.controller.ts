@@ -1,59 +1,53 @@
 import { Controller, Get } from '@nestjs/common';
-import { Connection } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Public } from './common/decorators/public.decorator';
 import { DataRes } from './common/dtos/respones.dto';
+import { UserRoleOptions } from './common/helpers/constants';
+import { UserRole } from './common/helpers/enum';
 import { AdministrativeUnits } from './config/administrativeUnits';
 import { CategoryType, CategoryTypeOptions } from './config/categoryType';
-import { Position } from './config/positionType';
 import { AcreageLevel, PriceLevel } from './config/filterLand';
-import { UserRoles, UserRolesOptions } from './config/userRoles';
-import { StatusProduct } from './config/productStatus';
-import { OrderStatusOptions } from './config/orderStatus';
 import { LandStatusOptions } from './config/landStatus';
-import { ProductStatusOptions } from './config/productStatus';
+import { OrderStatusOptions } from './config/orderStatus';
+import { Position } from './config/positionType';
 
 @Controller('common')
 export class AppController {
-  constructor(private connection: Connection) { }
+  constructor(private readonly dataSource: DataSource) { }
 
   @Public()
   @Get('status')
-  async status() {
-    // Testing the database connection
-    const dbTest = await this.connection.query(`
-          select 1+1, 'this is a healthcheck' as test`);
-
-    return {
-      db: dbTest[0]['test'] === 2 ? 'OK' : 'NOK',
-    };
+  async status(): Promise<{ db: 'OK' | 'NOK' }> {
+    try {
+      // Test the database connection
+      const result = await this.dataSource.query('SELECT 1 + 1 AS test');
+      const dbOk = result?.[0]?.test === 2;
+      return { db: dbOk ? 'OK' : 'NOK' };
+    } catch (error) {
+      return { db: 'NOK' };
+    }
   }
 
-  // @Public()
+  @Public()
   @Get('metadata')
   metadata(): DataRes<any> {
-    var res = new DataRes<any>();
-
     try {
       const data = {
-        userRoles: UserRoles,
+        userRoles: UserRole,
         categoryType: CategoryType,
         categoryTypeOptions: CategoryTypeOptions,
         positionType: Position,
-        userRolesOptions: UserRolesOptions,
+        userRoleOptions: UserRoleOptions,
         administrativeUnits: AdministrativeUnits,
         priceLevel: PriceLevel,
         acreageLevel: AcreageLevel,
-        statusProduct: StatusProduct,
         orderStatusOptions: OrderStatusOptions,
         landStatusOptions: LandStatusOptions,
-        productStatusOptions: ProductStatusOptions
       };
 
-      res.setSuccess(data);
+      return DataRes.success(data);
     } catch (ex) {
-      res.setFailed(ex.message);
+      return DataRes.failed(ex.message);
     }
-
-    return res;
   }
 }

@@ -1,67 +1,86 @@
-import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Inject, Param, Post, Query, UseInterceptors, Request } from '@nestjs/common';
-import { Put, UseGuards } from '@nestjs/common/decorators';
-import { REQUEST } from '@nestjs/core';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+
+import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { Enums } from 'src/common/dtos/enum.dto';
-import { DataRes, PageDto, PageOptionsDto } from "src/common/dtos/respones.dto";
+import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { PERMISSIONS } from 'src/config/permissions';
-import { Public } from '../../common/decorators/public.decorator';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
-import { Permissions } from 'src/common/decorators/permissions.decorator';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(PermissionsGuard)
 export class UsersController {
-  constructor(private usersService: UsersService,
-    @Inject(REQUEST) private request,) { }
+  constructor(private readonly usersService: UsersService) { }
 
+  // ---------- CREATE ----------
   @Post()
-  @Public()
-  async create(
-    @Body() createUserDto: CreateUserDto,
+  @Permissions(PERMISSIONS.users.create)
+  create(
+    @Body() dto: CreateUserDto,
   ): Promise<DataRes<User>> {
-    return await this.usersService.create(createUserDto);
+    return this.usersService.create(dto);
   }
 
+  // ---------- LIST ----------
   @Get()
-  @UseGuards(PermissionsGuard)
   @Permissions(PERMISSIONS.users.read_many)
-  async getUsers(@Query() pageOptionsDto: PageOptionsDto): Promise<DataRes<PageDto<User>>> {
-    return await this.usersService.getUsers(pageOptionsDto);
+  getUsers(
+    @Query() pageOptionsDto: PageOptionsDto,
+  ): Promise<DataRes<PageDto<User>>> {
+    return this.usersService.getUsers(pageOptionsDto);
   }
 
-  @Get(':id/detail')
-  @UseGuards(PermissionsGuard)
+  // ---------- DETAIL ----------
+  @Get(':id')
   @Permissions(PERMISSIONS.users.read_one)
-  async getUser(@Param('id') id: string): Promise<DataRes<User>> {
+  getUser(
+    @Param('id') id: string,
+  ): Promise<DataRes<User>> {
     return this.usersService.getUser(id);
   }
 
-  @Get('/enums')
-  @UseGuards(PermissionsGuard)
+  // ---------- ENUMS ----------
+  @Get('enums')
   @Permissions(PERMISSIONS.users.enums)
   getEnums(): DataRes<Enums[]> {
     return this.usersService.getEnums();
   }
 
-  @Put(':id/update')
-  @UseGuards(PermissionsGuard)
+  // ---------- UPDATE ----------
+  @Put(':id')
   @Permissions(PERMISSIONS.users.update)
-  async update(
+  update(
     @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto
+    @Body() dto: UpdateUserDto,
+    @Req() req,
   ): Promise<DataRes<User>> {
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.update(id, dto, req.user);
   }
 
-  @Delete(':id/delete')
-  @UseGuards(PermissionsGuard)
+  // ---------- DELETE ----------
+  @Delete(':id')
   @Permissions(PERMISSIONS.users.delete)
-  async remove(@Param('id') id: string): Promise<DataRes<User>> {
+  remove(
+    @Param('id') id: string,
+  ): Promise<DataRes<null>> {
     return this.usersService.removeUser(id);
   }
-
 }

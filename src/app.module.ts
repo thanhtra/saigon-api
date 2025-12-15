@@ -14,14 +14,13 @@ import { join } from 'path';
 
 //Module
 import { AuthModule } from './modules/auth/auth.module';
-import { DiscoveriesModule } from './modules/discoveries/discoveries.module';
-import { CategoriesModule } from './modules/categories/categories.module';
-import { LandsModule } from './modules/lands/lands.module';
-import { ImagesModule } from './modules/images/images.module';
-import { ProductsModule } from './modules/products/products.module';
-import { OrdersModule } from './modules/orders/orders.module';
-import { AddressesModule } from './modules/addresses/addresses.module';
-import { CollaboratorsModule } from './modules/collaborator/collaborators.module';
+import { CollaboratorsModule } from './modules/collaborators/collaborators.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
+import { TenantsModule } from './modules/tenants/tenants.module';
+import { RoomsModule } from './modules/rooms/rooms.module';
+import { RentalsModule } from './modules/rentals/rentals.module';
+import { ContractsModule } from './modules/contracts/contracts.module';
+import { CommissionsModule } from './modules/commissions/commissions.module';
 
 @Module({
   imports: [
@@ -39,33 +38,33 @@ import { CollaboratorsModule } from './modules/collaborator/collaborators.module
       serveStaticOptions: {
         redirect: false,
         index: false
-      }
-      // exclude: ['/api*'],
+      },
+      exclude: ['/api*'],
     }),
-    // ThrottlerModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    //   useFactory: (configService: ConfigService) => ({
-    //     ttl: configService.get<number>('throttleTtl'),
-    //     limit: configService.get<number>('throttleLimit'),
-    //   }),
-    // }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        ttl: configService.get<number>('throttleTtl', 60),
+        limit: configService.get<number>('throttleLimit', 50),
+      }),
+    }),
+
     AuthModule,
-    CategoriesModule,
-    DiscoveriesModule,
-    LandsModule,
-    ImagesModule,
-    ProductsModule,
-    OrdersModule,
-    AddressesModule,
+    UploadsModule,
+    TenantsModule,
+    RoomsModule,
+    RentalsModule,
+    ContractsModule,
+    CommissionsModule,
     CollaboratorsModule
   ],
   controllers: [AppController],
   providers: [
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: ThrottlerGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

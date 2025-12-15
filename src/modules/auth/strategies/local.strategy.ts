@@ -1,40 +1,36 @@
 import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth.service';
 import { ContextIdFactory, ModuleRef } from '@nestjs/core';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
   constructor(private moduleRef: ModuleRef) {
     super({
-      // Asks parent to send the "request" as the first param for function validate()
-      passReqToCallback: true,
+      passReqToCallback: true, // Cho phép truyền request vào validate()
+      usernameField: 'phone',  // nếu login dùng phone thay vì username
+      passwordField: 'password',
     });
   }
 
-  async validate(
-    request: Request,
-    username: string,
-    password: string,
-  ): Promise<any> {
-    // Since Passport doesn't support request-scoped injection, we use the Context to locate the AuthService
+  async validate(request: Request, phone: string, password: string): Promise<any> {
+    // Passport không hỗ trợ request-scoped injection, dùng ContextIdFactory
     const contextId = ContextIdFactory.getByRequest(request);
     const authService = await this.moduleRef.resolve(AuthService, contextId);
 
-    const user = await authService.getUserByPhone(username);
-
+    const { data: user } = await authService.getUserByPhone(phone);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Số điện thoại hoặc mật khẩu không đúng');
     }
 
-    // Checking password
-    if (await bcrypt.compare(password, user.password)) {
-      const { password, refresh_token, ...result } = user;
-      return result;
+    const isPasswordValid = await argon2.verify(user.password, password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Số điện thoại hoặc mật khẩu không đúng');
     }
 
-    return null;
+    const { password: _, refresh_token, ...result } = user;
+    return result;
   }
 }

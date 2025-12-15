@@ -1,10 +1,32 @@
 export const ErrorMes = {
+    GET_ALL: "Lỗi lấy nhiều",
+    UPDATE: "Lỗi cập nhật",
+    DELETE: "Lỗi khi xoá",
+    CREATE: "Lỗi tạo",
+
+    TENANT_UPDATE: "Lỗi cập nhật tenant",
+    TENANT_REMOVE: "Lỗi xoá tenant",
+    TENANT_GET_DETAIL: "Lỗi lấy tenant detail",
+    TENANT_CREATE: "Lỗi tạo tenant",
+
+    COMMISSION_CREATE: "Lỗi tạo commission",
+    COMMISSION_GET_DETAIL: "Lỗi lấy detail commission",
+    COMMISSION_UPDATE: "Lỗi cập nhật commission",
+    COMMISSION_REMOVE: "Lỗi xoá commission",
+
+
     //User
     USER_GET_ALL: "Lỗi quá trình lấy nhiều thông tin người dùng",
     USER_GET_DETAIL: "Lỗi quá trình lấy thông tin chi tiết người dùng",
     USER_UPDATE: "Lỗi quá trình cập nhật thông tin người dùng",
     USER_CREATE: "Lỗi quá trình tạo mới người dùng",
     USER_REMOVE: "Lỗi quá trình xóa người dùng",
+
+    RENTAL_GET_DETAIL: "Lỗi lấy detail rental",
+    RENTAL_REMOVE: "Lỗi xoá rental",
+    RENTAL_CREATE: "Lỗi tạo rental",
+    RENTAL_UPDATE: "Lỗi cập nhật rental",
+    RENTAL_GET_ALL: "Lỗi lấy danh sách rental",
 
 
     //Category

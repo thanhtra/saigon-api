@@ -12,7 +12,7 @@ import { User } from './entities/user.entity';
     TypeOrmModule.forFeature([User])
   ],
   controllers: [UsersController],
-  exports: [UsersService],
-  providers: [UsersService, UsersRepository],
+  providers: [UsersRepository, UsersService],
+  exports: [UsersRepository, UsersService],
 })
 export class UsersModule { }

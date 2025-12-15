@@ -2,11 +2,11 @@ import {
     IsBoolean, IsEmail, IsEnum, IsOptional,
     IsString, Matches, MaxLength, MinLength
 } from 'class-validator';
-import { UserRoles } from '../../../config/userRoles';
+import { UserRole } from 'src/common/helpers/enum';
 
 export class CreateUserDto {
     @IsString()
-    full_name: string;
+    name: string;
 
     @IsString()
     @Matches(/(84|0[3|5|7|8|9])+([0-9]{8})\b/, {
@@ -23,17 +23,13 @@ export class CreateUserDto {
     @IsOptional()
     email: string;
 
-    @IsEnum(UserRoles, { each: true })
     @IsOptional()
-    role: string;
+    @IsEnum(UserRole)
+    role?: UserRole;
 
     @IsBoolean()
     @IsOptional()
     active: boolean;
-
-    @IsString()
-    @IsOptional()
-    avatar: string;
 
     @IsString()
     @IsOptional()

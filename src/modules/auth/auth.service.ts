@@ -1,20 +1,14 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  forwardRef
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Inject, forwardRef, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { DataRes } from 'src/common/dtos/respones.dto';
-import { getPermissionsFromRoles } from '../../common/helpers/utils';
-import { UsersService } from '../users/users.service';
+import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
-import { UpdatePassworDto } from './dto/update-password.dto';
+import { DataRes } from 'src/common/dtos/respones.dto';
+import { getPermissionsFromRoles } from 'src/common/helpers/utils';
+import { UsersService } from '../users/users.service';
 import { UsersRepository } from '../users/users.repository';
-import { UserRoles } from 'src/config/userRoles';
+import { UpdatePassworDto } from './dto/update-password.dto';
 import { ChangePassworDto } from './dto/change-password.dto';
-import * as bcrypt from 'bcrypt';
+import { UserRole } from 'src/common/helpers/enum';
 
 export interface TokenPayload {
   sub: string;
@@ -30,171 +24,130 @@ export class AuthService {
     @Inject(forwardRef(() => UsersService)) private usersService: UsersService,
   ) { }
 
+  // ---------------- LOGIN ----------------
   async login(user: any): Promise<DataRes<any>> {
-    var res = new DataRes<any>();
-
     try {
       const payload: TokenPayload = { sub: user.id, username: user.phone };
       const tokens = await this.getTokens(payload);
 
-      const data = {
+      await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+      return DataRes.success({
         ...user,
         tokens,
         permissions: getPermissionsFromRoles(user.role),
-      };
-
-      await this.updateRefreshToken(user.id, tokens.refreshToken);
-
-      res.setSuccess(data);
-    } catch (ex) {
-      res.setFailed(ex.message);
+      });
+    } catch (error) {
+      return DataRes.failed(error?.message || 'Login thất bại');
     }
-
-    return res;
   }
 
+  // ---------------- REFRESH TOKENS ----------------
   async refreshTokens(req: any): Promise<DataRes<any>> {
-    var result = new DataRes<any>();
-
     try {
       const { user } = req;
-      const userId = user['sub'];
-      const refreshToken = user['refreshToken'];
+      const resUser = await this.usersService.getUser(user.sub);
 
-      const res = await this.usersService.getUser(userId);
-      if (!res.success) {
+      if (!resUser.success || !resUser.data?.refresh_token) {
         throw new ForbiddenException('Access Denied');
       }
 
-      const userDetail = res.data;
+      const isValid = await argon2.verify(resUser.data.refresh_token, user.refreshToken);
+      if (!isValid) throw new ForbiddenException('Access Denied');
 
-      if (!userDetail || !userDetail.refresh_token) {
-        throw new ForbiddenException('Access Denied');
+      const accessToken = await this.getAccessToken({
+        sub: resUser.data.id,
+        username: resUser.data.phone,
+      });
+
+      return DataRes.success({ accessToken });
+    } catch (error) {
+      return DataRes.failed(error?.message || 'Không thể tạo access token mới');
+    }
+  }
+
+  // ---------------- LOGOUT ----------------
+  async logout(user: any): Promise<DataRes<null>> {
+    try {
+      await this.updateRefreshToken(user?.id, null);
+      return DataRes.success(null);
+    } catch (error) {
+      return DataRes.failed(error?.message || 'Logout thất bại');
+    }
+  }
+
+  // ---------------- PASSWORD ----------------
+  async updatePassword(dto: UpdatePassworDto): Promise<DataRes<null>> {
+    try {
+      if (dto.new_password !== dto.confirm_password) {
+        return DataRes.failed('Mật khẩu mới và xác nhận mật khẩu không khớp');
       }
 
-      const refreshTokenMatches = await argon2.verify(userDetail.refresh_token, refreshToken);
-      if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
-
-      const tp: TokenPayload = {
-        sub: userDetail.id,
-        username: user.username
-      }
-      const accessToken = await this.getAccessToken(tp);
-
-      if (accessToken) {
-        result.setSuccess({ accessToken });
-      } else {
-        result.setFailed("Can not create new access token!");
+      const user = await this.usersRepository.findOneUserByPhone(dto.phone);
+      if (!user || user.role !== UserRole.User) {
+        return DataRes.failed('Không thể cập nhật mật khẩu');
       }
 
-    } catch (ex) {
-      result.setFailed(ex.message);
-    };
+      await this.usersRepository.update(user.id, { password: await argon2.hash(dto.new_password) });
+      await this.updateRefreshToken(user.id, null);
 
-    return result;
+      return DataRes.success(null);
+    } catch (error) {
+      return DataRes.failed(error?.message || 'Cập nhật mật khẩu thất bại');
+    }
+  }
+
+  async changePassword(dto: ChangePassworDto, user: any): Promise<DataRes<null>> {
+    try {
+      if (dto.new_password !== dto.confirm_password) {
+        return DataRes.failed('Mật khẩu mới và xác nhận mật khẩu không khớp');
+      }
+
+      const userDetail = await this.usersRepository.findOneUser(user?.id);
+      if (!userDetail || userDetail.role !== UserRole.User) {
+        return DataRes.failed('Không thể đổi mật khẩu');
+      }
+
+      const isValid = await argon2.verify(userDetail.password, dto.old_password);
+      if (!isValid) return DataRes.failed('Mật khẩu cũ không đúng');
+
+      await this.usersRepository.update(user.id, { password: await argon2.hash(dto.new_password) });
+      await this.updateRefreshToken(user.id, null);
+
+      return DataRes.success(null);
+    } catch (error) {
+      return DataRes.failed(error?.message || 'Đổi mật khẩu thất bại');
+    }
+  }
+
+  // ---------------- TOKENS ----------------
+  private async getTokens(payload: TokenPayload) {
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('auth.jwtAccessTokenSecret'),
+      expiresIn: this.configService.get('auth.jwtAccessTokenExpirationTime'),
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('auth.jwtRefreshTokenSecret'),
+      expiresIn: this.configService.get('auth.jwtRefreshExpirationTime'),
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  private async getAccessToken(payload: TokenPayload) {
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get('auth.jwtAccessTokenSecret'),
+      expiresIn: this.configService.get('auth.jwtAccessTokenExpirationTime'),
+    });
+  }
+
+  private async updateRefreshToken(userId: string, refreshToken: string | null) {
+    const hashed = refreshToken ? await argon2.hash(refreshToken) : null;
+    await this.usersRepository.update(userId, { refresh_token: hashed });
   }
 
   async getUserByPhone(phone: string) {
-    return await this.usersService.findOneByPhone(phone);
+    return this.usersService.findOneByPhone(phone);
   }
-
-  private async updateRefreshToken(userId: string, refreshToken: string) {
-    const hashedRefreshToken = refreshToken ? await argon2.hash(refreshToken) : null;
-    await this.usersRepository.updateUser(userId, { refresh_token: hashedRefreshToken });
-  }
-
-  async getTokens(payload: TokenPayload) {
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.sign(payload, {
-        secret: this.configService.get('auth.jwtAccessTokenSecret'),
-        expiresIn: this.configService.get('auth.jwtAccessTokenExpirationTime')
-      }),
-      this.jwtService.sign(payload, {
-        secret: this.configService.get('auth.jwtRefreshTokenSecret'),
-        expiresIn: this.configService.get('auth.jwtRefreshExpirationTime')
-      })
-    ]);
-
-    return {
-      accessToken,
-      refreshToken,
-    };
-  }
-
-  async getAccessToken(payload: TokenPayload) {
-    const accessToken = await this.jwtService.sign(payload, {
-      secret: this.configService.get('auth.jwtAccessTokenSecret'),
-      expiresIn: this.configService.get('auth.jwtAccessTokenExpirationTime')
-    });
-
-    return accessToken || "";
-  }
-
-  async logout(user: any): Promise<DataRes<any>> {
-    var res = new DataRes<any>();
-
-    try {
-      const data = await this.updateRefreshToken(user?.id, null);
-
-      res.setSuccess(null);
-    } catch (ex) {
-      res.setFailed(ex.message);
-    }
-
-    return res;
-  }
-
-  async updatePassword(updatePassworDto: UpdatePassworDto): Promise<DataRes<any>> {
-    var res = new DataRes<any>();
-
-    try {
-      const user = await this.usersRepository.findOneUserByPhone(updatePassworDto.phone);
-      if (user && user.role !== UserRoles.Admin && user.role === UserRoles.User) {
-        const userUpdated = await this.usersRepository.updateUser(user.id, { password: updatePassworDto.password });
-
-        if (userUpdated) {
-          await this.updateRefreshToken(user.id, null);
-          res.setSuccess(null);
-        } else {
-          res.setFailed(null);
-        }
-      } else {
-        res.setFailed(null);
-      }
-    } catch (ex) {
-      res.setFailed(ex.message);
-    }
-
-    return res;
-  }
-
-  async changePassword(changePassworDto: ChangePassworDto, user: any): Promise<DataRes<any>> {
-    var res = new DataRes<any>();
-
-    try {
-      const userDetail = await this.usersRepository.findOneUser(user?.id);
-
-      if (userDetail && userDetail.role !== UserRoles.Admin && userDetail.role === UserRoles.User) {
-        const isValid = await bcrypt.compare(changePassworDto.old_password, userDetail.password)
-        if (isValid) {
-          const userUpdated = await this.usersRepository.updateUser(user.id, { password: changePassworDto.new_password });
-
-          if (userUpdated) {
-            res.setSuccess(null);
-            await this.updateRefreshToken(user.id, null);
-          } else {
-            res.setFailed(null);
-          }
-        }
-      } else {
-        res.setFailed(null);
-      }
-    } catch (ex) {
-      res.setFailed(ex.message);
-    }
-
-    return res;
-  }
-
-
 }

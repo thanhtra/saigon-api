@@ -1,149 +1,119 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
+import { Injectable } from '@nestjs/common';
+import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { Enums } from 'src/common/dtos/enum.dto';
-import { DataRes, PageDto, PageOptionsDto } from "src/common/dtos/respones.dto";
-import { ErrorMes } from "../../common/helpers/errorMessage";
+import { UserRole } from 'src/common/helpers/enum';
+import { ErrorMes } from 'src/common/helpers/errorMessage';
+import { FindOptionsOrder } from 'typeorm';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { FilterUsersDto } from './dto/filter-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersRepository } from './users.repository';
-import { UserRoles } from 'src/config/userRoles';
 
 @Injectable()
 export class UsersService {
   constructor(
-    private usersRepository: UsersRepository,
-    @Inject(REQUEST) private request,) { }
+    private readonly usersRepository: UsersRepository,
+  ) { }
 
+  // ---------------- PRIVATE ----------------
+  private filterUpdateDtoByRole(
+    dto: UpdateUserDto,
+    currentUser: User,
+  ): UpdateUserDto {
+    if (currentUser.role === UserRole.Admin) {
+      return dto;
+    }
 
+    const { active, role, phone, ...safeDto } = dto;
+    return safeDto;
+  }
+
+  private toSafeUser(user: User): User {
+    const { password, refresh_token, ...safeUser } = user;
+    return safeUser as User;
+  }
+
+  // ---------------- UPDATE ----------------
+  async update(
+    id: string,
+    dto: UpdateUserDto,
+    currentUser: User,
+  ): Promise<DataRes<User>> {
+    const safeDto = this.filterUpdateDtoByRole(dto, currentUser);
+
+    const updated = await this.usersRepository.update(id, safeDto);
+    if (!updated) {
+      return DataRes.failed(ErrorMes.USER_UPDATE);
+    }
+
+    return DataRes.success(this.toSafeUser(updated));
+  }
+
+  // ---------------- CREATE ----------------
+  async create(dto: CreateUserDto): Promise<DataRes<User>> {
+    const user = await this.usersRepository.create(dto);
+    return DataRes.success(this.toSafeUser(user));
+  }
+
+  // ---------------- GET ONE ----------------
   async getUser(id: string): Promise<DataRes<User>> {
-    var res = new DataRes<User>();
-
-    try {
-      const user = await this.usersRepository.findOneUser(id);
-
-      if (!user) {
-        res.setFailed(ErrorMes.USER_GET_DETAIL);
-      }
-
-      res.setSuccess(user);
-    } catch (ex) {
-      res.setFailed(ex.message);
+    const user = await this.usersRepository.findOneUser(id);
+    if (!user) {
+      return DataRes.failed(ErrorMes.USER_GET_DETAIL);
     }
 
-    return res;
+    return DataRes.success(this.toSafeUser(user));
   }
 
+  // ---------------- ENUMS ----------------
   getEnums(): DataRes<Enums[]> {
-    var res = new DataRes<Enums[]>;
+    const enums = Object.entries(CreateUserDto.getEnums()).map(
+      ([value, label]) => ({ value, label }),
+    );
 
-    try {
-      let arr: Array<Enums> = [];
-      Object.entries(CreateUserDto.getEnums()).forEach(item => {
-        arr.push({
-          label: item[1],
-          value: item[0]
-        })
-      });
-
-      if (!arr.length) {
-        res.setFailed(ErrorMes.ENUMS_GET_ALL);
-      }
-      res.setSuccess(arr);
-    } catch (ex) {
-      res.setFailed(ex.message);
-    }
-
-    return res;
+    return enums.length
+      ? DataRes.success(enums)
+      : DataRes.failed(ErrorMes.ENUMS_GET_ALL);
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<DataRes<User>> {
-    var res = new DataRes<User>();
-
-    try {
-      const user = this.request?.user;
-      if (user && user.role !== UserRoles.Admin) {
-        delete updateUserDto?.active;
-        delete updateUserDto?.role;
-        delete updateUserDto?.phone;
-      }
-      const userUpdated = await this.usersRepository.updateUser(id, updateUserDto);
-
-      if (userUpdated) {
-        res.setSuccess(userUpdated);
-      } else {
-        res.setFailed(ErrorMes.USER_UPDATE);
-      }
-    } catch (ex) {
-      res.setFailed(ex.message);
-    }
-
-    return res;
+  // ---------------- LIST ----------------
+  async getUsers(
+    pageOptionsDto: PageOptionsDto,
+  ): Promise<DataRes<PageDto<User>>> {
+    const users = await this.usersRepository.getUsers(pageOptionsDto);
+    return DataRes.success(users);
   }
 
-  findOneByPhone(phone: string) {
-    return this.usersRepository.findOneUserByPhone(phone);
+  // ---------------- DELETE ----------------
+  async removeUser(id: string): Promise<DataRes<null>> {
+    const removed = await this.usersRepository.removeUser(id);
+    return removed
+      ? DataRes.success(null)
+      : DataRes.failed(ErrorMes.USER_REMOVE);
   }
 
-  async getUsers(pageOptionsDto: PageOptionsDto): Promise<DataRes<PageDto<User>>> {
-    var res = new DataRes<PageDto<User>>;
-
-    try {
-      const users = await this.usersRepository.getUsers(pageOptionsDto);
-
-      if (!users) {
-        res.setFailed(ErrorMes.USER_GET_ALL);
-        return res;
-      }
-
-      res.setSuccess(users);
-    } catch (ex) {
-      res.setFailed(ex.message);
-    }
-
-    return res;
-  }
-
-  async create(createUserDto: CreateUserDto): Promise<DataRes<User>> {
-    var res = new DataRes<User>();
-
-    try {
-      const userCreated = await this.usersRepository.createUser(createUserDto);
-
-      if (userCreated) {
-        res.setSuccess(userCreated);
-      } else {
-        res.setFailed(ErrorMes.USER_CREATE);
-      }
-    } catch (ex) {
-      res.setFailed(ex.message);
-    }
-
-    return res;
-  }
-
-  async removeUser(id: string): Promise<DataRes<User>> {
-    var res = new DataRes<User>();
-
-    try {
-      const { affected } = await this.usersRepository.removeUser(id);
-
-      if (affected === 1) {
-        res.setSuccess(null);
-      } else {
-        res.setFailed(ErrorMes.USER_REMOVE);
-      }
-    } catch (ex) {
-      res.setFailed(ex.message);
-    }
-
-    return res;
-  }
-
-  findByFilter(filters: FilterUsersDto, orderBy?: {}): Promise<User[]> {
+  // ---------------- FILTER ----------------
+  async findByFilter(
+    filters: FilterUsersDto,
+    orderBy?: FindOptionsOrder<User>,
+  ): Promise<User[]> {
     return this.usersRepository.findByFilter(filters, orderBy);
   }
 
-
+  // ---------------- FIND BY PHONE ----------------
+  async findOneByPhone(phone: string): Promise<DataRes<User>> {
+    try {
+      const user = await this.usersRepository.findOneUserByPhone(phone);
+      if (!user) {
+        return DataRes.failed(ErrorMes.USER_GET_DETAIL || 'Người dùng không tồn tại');
+      }
+      // Loại bỏ thông tin nhạy cảm trước khi trả về
+      const { password, refresh_token, ...safeUser } = user;
+      return DataRes.success(safeUser as User);
+    } catch (error) {
+      return DataRes.failed(error?.message || 'Lấy thông tin người dùng thất bại');
+    }
+  }
 }

@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { UserRoles } from '../../config/userRoles';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { UserRole } from '../helpers/enum';
 // import { isOperationAllowed } from '../utils/roles-permission.util';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class RolesGuard implements CanActivate {
     }
 
     //những role mà user cần có để vào được api
-    const routeRoles = this.reflector.get<UserRoles[]>(
+    const routeRoles = this.reflector.get<UserRole[]>(
       'roles',
       context.getHandler(),
     );

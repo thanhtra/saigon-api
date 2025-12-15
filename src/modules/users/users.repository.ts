@@ -1,97 +1,107 @@
-import { User } from './entities/user.entity';
-import { EntityRepository, Repository, Connection } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { FilterUsersDto } from './dto/filter-users.dto';
-import { PageDto, PageOptionsDto, PageMetaDto } from "src/common/dtos/respones.dto";
-import { getSkip } from 'src/common/helpers/utils';
-import { UserRoles } from 'src/config/userRoles';
+import {
+  FindOptionsOrder,
+  Repository,
+} from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
+import {
+  PageDto,
+  PageMetaDto,
+  PageOptionsDto,
+} from 'src/common/dtos/respones.dto';
+import { UserRole } from 'src/common/helpers/enum';
+import { getSkip } from 'src/common/helpers/utils';
+
+import { CreateUserDto } from './dto/create-user.dto';
+import { FilterUsersDto } from './dto/filter-users.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
-@EntityRepository(User)
 export class UsersRepository {
-  private repo: Repository<User>;
+  constructor(
+    @InjectRepository(User)
+    private readonly repo: Repository<User>,
+  ) { }
 
-  constructor(private connection: Connection) {
-    this.repo = this.connection.getRepository(User);
-  }
-
-  createUser = async (createUserDto: CreateUserDto) => {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
-    const data = this.repo.create({
-      ...createUserDto,
-      role: UserRoles.User,
-      password: hashedPassword,
+  // ---------------- CREATE ----------------
+  async create(dto: CreateUserDto): Promise<User> {
+    const user = this.repo.create({
+      ...dto,
+      password: await this.hashPassword(dto.password),
+      role: dto.role ?? UserRole.User,
     });
 
-    return this.repo.save(data);
-  };
-
-  findOneUser = async (id: string) => {
-    return this.repo.findOneOrFail({ where: { id } });
-  };
-
-  getUsers = async (pageOptionsDto: PageOptionsDto): Promise<PageDto<User>> => {
-    const queryBuilder = this.repo.createQueryBuilder("user");
-
-    queryBuilder
-      .orderBy("user.createdAt", pageOptionsDto.order)
-      .skip(getSkip(pageOptionsDto.page, pageOptionsDto.size))
-      .take(pageOptionsDto.size);
-
-    if (pageOptionsDto?.keySearch && pageOptionsDto?.multipleSearchEnums === '') {
-      queryBuilder.andWhere('user.full_name like :data OR user.phone like :data', { data: `%${pageOptionsDto.keySearch}%` })
-    }
-
-    const itemCount = await queryBuilder.getCount();
-    const { entities } = await queryBuilder.getRawAndEntities();
-
-    const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
-
-    return new PageDto(entities, pageMetaDto);
-  };
-
-  findByFilter(filters: FilterUsersDto, orderBy?: {}): Promise<User[]> {
-    return this.repo.find({
-      where: filters,
-      order: orderBy ? orderBy : {}, // {} applies the default sorting order
-    });
+    return this.repo.save(user);
   }
 
-  findOneUserByPhone = async (phone: string) => {
-    return this.repo.findOne({ where: { phone } });
-  };
-
-  updateUser = async (id: string, updateUserDto: UpdateUserDto) => {
-    const user = await this.findOneUser(id);
+  // ---------------- UPDATE ----------------
+  async update(id: string, dto: UpdateUserDto): Promise<User | null> {
+    const user = await this.repo.findOne({ where: { id } });
     if (!user) return null;
 
-    if (updateUserDto.password) {
-      /*
-       * @todo: Fix this issue: Getting an error "this.repo.configService.get is not a function" when calling the below function... Not sure why!
-       */
-      const saltRounds = 10;
-
-      const hashedPassword = await bcrypt.hash(
-        updateUserDto.password,
-        saltRounds,
-      );
-
-      updateUserDto.password = hashedPassword;
+    if (dto.password) {
+      dto.password = await this.hashPassword(dto.password);
     }
 
-    delete user.password;
-    delete user.refresh_token;
+    return this.repo.save(this.repo.merge(user, dto));
+  }
 
-    return this.repo.save({ ...user, ...updateUserDto });
-  };
+  // ---------------- FIND ONE ----------------
+  async findOneUser(id: string): Promise<User | null> {
+    return this.repo.findOne({ where: { id } });
+  }
 
-  removeUser = async (id: string) => {
-    await this.repo.findOneOrFail({ where: { id } });
-    return this.repo.delete(id);
-  };
+  async findOneUserByPhone(phone: string): Promise<User | null> {
+    return this.repo.findOne({ where: { phone } });
+  }
+
+  // ---------------- LIST + PAGINATION ----------------
+  async getUsers(
+    pageOptionsDto: PageOptionsDto,
+  ): Promise<PageDto<User>> {
+    const qb = this.repo.createQueryBuilder('user');
+
+    qb.orderBy('user.createdAt', pageOptionsDto.order)
+      .skip(getSkip(pageOptionsDto.page, pageOptionsDto.size))
+      .take(Math.min(pageOptionsDto.size, 50)); // 🔥 limit size
+
+    if (pageOptionsDto.keySearch && !pageOptionsDto.multipleSearchEnums) {
+      qb.andWhere(
+        '(user.name LIKE :q OR user.phone LIKE :q)',
+        { q: `%${pageOptionsDto.keySearch}%` },
+      );
+    }
+
+    const [entities, itemCount] = await qb.getManyAndCount();
+
+    return new PageDto(
+      entities,
+      new PageMetaDto({ itemCount, pageOptionsDto }),
+    );
+  }
+
+  // ---------------- DELETE ----------------
+  async removeUser(id: string): Promise<boolean> {
+    const { affected } = await this.repo.delete(id);
+    return affected === 1;
+  }
+
+  // ---------------- FILTER ----------------
+  async findByFilter(
+    filters: FilterUsersDto,
+    orderBy?: FindOptionsOrder<User>,
+  ): Promise<User[]> {
+    return this.repo.find({
+      where: filters,
+      ...(orderBy && { order: orderBy }),
+    });
+  }
+
+  // ---------------- HELPER ----------------
+  private hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
+  }
 }

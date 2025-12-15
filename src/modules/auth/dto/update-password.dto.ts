@@ -1,7 +1,4 @@
-
-import {
-    IsString, Matches, MaxLength, MinLength
-} from 'class-validator';
+import { IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
 
 export class UpdatePassworDto {
     @IsString()
@@ -10,8 +7,13 @@ export class UpdatePassworDto {
     })
     phone: string;
 
+    @IsNotEmpty({ message: 'Mật khẩu mới không được để trống' })
+    @IsString()
+    @MinLength(6, { message: 'Mật khẩu tối thiểu 6 ký tự' })
+    new_password: string;
+
+    @IsNotEmpty({ message: 'Xác nhận mật khẩu không được để trống' })
     @IsString()
     @MinLength(6)
-    @MaxLength(32)
-    password: string;
+    confirm_password: string;
 }

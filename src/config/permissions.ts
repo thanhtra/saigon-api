@@ -1,298 +1,418 @@
 import * as _ from 'lodash';
-import { UserRoles } from './userRoles';
+import { UserRole } from 'src/common/helpers/enum';
+
 
 export const PERMISSIONS = {
+  users: {
+    read_many: {
+      key: 'users:read_many',
+      roles: [UserRole.Admin]
+    },
+    read_one: {
+      key: 'users:read_one',
+      roles: [UserRole.Admin]
+    },
+    enums: {
+      key: 'users:enums',
+      roles: [UserRole.Admin]
+    },
+    create: {
+      key: 'users:create',
+      roles: [UserRole.Admin]
+    },
+    update: {
+      key: 'users:update',
+      roles: [UserRole.Admin]
+    },
+    delete: {
+      key: 'users:delete',
+      roles: [UserRole.Admin]
+    },
+    logout: {
+      key: 'users:logout',
+      roles: [UserRole.Admin]
+    }
+  },
+  collaborators: {
+    read_many: {
+      key: 'collaborators:read_many',
+      roles: [UserRole.Admin]
+    },
+    read_one: {
+      key: 'collaborators:read_one',
+      roles: [UserRole.Admin]
+    },
+    enums: {
+      key: 'collaborators:enums',
+      roles: [UserRole.Admin]
+    },
+    create: {
+      key: 'collaborators:create',
+      roles: [UserRole.Admin]
+    },
+    update: {
+      key: 'collaborators:update',
+      roles: [UserRole.Admin]
+    },
+    delete: {
+      key: 'collaborators:delete',
+      roles: [UserRole.Admin]
+    },
+    logout: {
+      key: 'collaborators:logout',
+      roles: [UserRole.Admin]
+    }
+  },
+  amenities: {
+    read: {
+      key: 'amenities:read',
+      roles: [UserRole.Admin]
+    },
+    create: {
+      key: 'amenities:create',
+      roles: [UserRole.Admin]
+    },
+    update: {
+      key: 'amenities:update',
+      roles: [UserRole.Admin]
+    },
+    delete: {
+      key: 'amenities:delete',
+      roles: [UserRole.Admin]
+    },
+    enums: {
+      key: 'amenities:enums',
+      roles: [UserRole.Admin]
+    },
+  },
+  rentals: {
+    read_many: {
+      key: 'rentals:read_many',
+      roles: [UserRole.Admin]
+    },
+    read_one: {
+      key: 'rentals:read_one',
+      roles: [UserRole.Admin]
+    },
+    read: {
+      key: 'rentals:read',
+      roles: [UserRole.Admin]
+    },
+    read_admin: {
+      key: 'rentals:read_admin',
+      roles: [UserRole.Admin]
+    },
+    create: {
+      key: 'rentals:create',
+      roles: [UserRole.Admin]
+    },
+    update: {
+      key: 'rentals:update',
+      roles: [UserRole.Admin]
+    },
+    delete: {
+      key: 'rentals:delete',
+      roles: [UserRole.Admin]
+    },
+    enums: {
+      key: 'rentals:enums',
+      roles: [UserRole.Admin]
+    },
+  },
+  rooms: {
+    read_one: {
+      key: 'rooms:read_one',
+      roles: [UserRole.Admin]
+    },
+    read_many: {
+      key: 'rooms:read_many',
+      roles: [UserRole.Admin]
+    },
+    read: {
+      key: 'rooms:read',
+      roles: [UserRole.Admin]
+    },
+    create: {
+      key: 'rooms:create',
+      roles: [UserRole.Admin]
+    },
+    update: {
+      key: 'rooms:update',
+      roles: [UserRole.Admin]
+    },
+    delete: {
+      key: 'rooms:delete',
+      roles: [UserRole.Admin]
+    },
+    enums: {
+      key: 'rooms:enums',
+      roles: [UserRole.Admin]
+    },
+  },
+  commissions: {
+    read_one: {
+      key: 'commissions:read_one',
+      roles: [UserRole.Admin]
+    },
+    read_many: {
+      key: 'commissions:read_many',
+      roles: [UserRole.Admin]
+    },
+    read: {
+      key: 'commissions:read',
+      roles: [UserRole.Admin]
+    },
+    create: {
+      key: 'commissions:create',
+      roles: [UserRole.Admin]
+    },
+    update: {
+      key: 'commissions:update',
+      roles: [UserRole.Admin]
+    },
+    delete: {
+      key: 'commissions:delete',
+      roles: [UserRole.Admin]
+    },
+    enums: {
+      key: 'commissions:enums',
+      roles: [UserRole.Admin]
+    },
+  },
+  tenants: {
+    read: {
+      key: 'tenants:read',
+      roles: [UserRole.Admin]
+    },
+    read_many: {
+      key: 'tenants:read_many',
+      roles: [UserRole.Admin]
+    },
+    read_one: {
+      key: 'tenants:read_one',
+      roles: [UserRole.Admin]
+    },
+    create: {
+      key: 'tenants:create',
+      roles: [UserRole.Admin]
+    },
+    update: {
+      key: 'tenants:update',
+      roles: [UserRole.Admin]
+    },
+    delete: {
+      key: 'tenants:delete',
+      roles: [UserRole.Admin]
+    },
+    enums: {
+      key: 'tenants:enums',
+      roles: [UserRole.Admin]
+    },
+  },
+  contracts: {
+    read: {
+      key: 'contracts:read',
+      roles: [UserRole.Admin]
+    },
+    read_many: {
+      key: 'contracts:read_many',
+      roles: [UserRole.Admin]
+    },
+    read_one: {
+      key: 'contracts:read_one',
+      roles: [UserRole.Admin]
+    },
+    create: {
+      key: 'contracts:create',
+      roles: [UserRole.Admin]
+    },
+    update: {
+      key: 'contracts:update',
+      roles: [UserRole.Admin]
+    },
+    delete: {
+      key: 'contracts:delete',
+      roles: [UserRole.Admin]
+    },
+    enums: {
+      key: 'contracts:enums',
+      roles: [UserRole.Admin]
+    },
+  },
+  uploads: {
+    update: {
+      key: 'uploads:update',
+      roles: [UserRole.Admin]
+    },
+    read: {
+      key: 'uploads:read',
+      roles: [UserRole.Admin]
+    },
+    uploads: {
+      key: 'uploads:uploads',
+      roles: [UserRole.Admin]
+    },
+    create: {
+      key: 'uploads:create',
+      roles: [UserRole.Admin]
+    },
+    delete: {
+      key: 'uploads:delete',
+      roles: [UserRole.Admin]
+    },
+  },
   categories: {
     read: {
       key: 'categories:read',
-      roles: [
-        UserRoles.Admin
-      ],
+      roles: [UserRole.Admin]
     },
     create: {
       key: 'categories:create',
-      roles: [
-        UserRoles.Admin
-      ],
+      roles: [UserRole.Admin]
     },
     update: {
       key: 'categories:update',
-      roles: [
-        UserRoles.Admin
-      ],
+      roles: [UserRole.Admin]
     },
     delete: {
       key: 'categories:delete',
-      roles: [
-        UserRoles.Admin
-      ],
+      roles: [UserRole.Admin]
     },
     enums: {
       key: 'categories:enums',
-      roles: [
-        UserRoles.Admin
-      ],
+      roles: [UserRole.Admin]
     },
   },
   discoveries: {
     read: {
       key: 'discoveries:read',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User,
-      ],
+      roles: [UserRole.Admin]
     },
     create: {
       key: 'discoveries:create',
-      roles: [UserRoles.Admin],
+      roles: [UserRole.Admin]
     },
     update: {
       key: 'discoveries:update',
-      roles: [
-        UserRoles.Admin,
-      ],
+      roles: [UserRole.Admin]
     },
     delete: {
       key: 'discoveries:delete',
-      roles: [UserRoles.Admin],
+      roles: [UserRole.Admin]
     },
     enums: {
       key: 'discoveries:enums',
-      roles: [
-        UserRoles.Admin,
-      ],
+      roles: [UserRole.Admin]
     },
   },
   lands: {
     read: {
       key: 'lands:read',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User,
-      ],
+      roles: [UserRole.Admin]
     },
     read_admin: {
       key: 'lands:read_admin',
-      roles: [
-        UserRoles.Admin
-      ],
+      roles: [UserRole.Admin]
     },
     create: {
       key: 'lands:create',
-      roles: [
-        UserRoles.Admin,
-      ],
+      roles: [UserRole.Admin]
     },
     update: {
       key: 'lands:update',
-      roles: [
-        UserRoles.Admin,
-      ],
+      roles: [UserRole.Admin]
     },
     delete: {
       key: 'lands:delete',
-      roles: [UserRoles.Admin],
+      roles: [UserRole.Admin]
     },
     enums: {
       key: 'lands:enums',
-      roles: [UserRoles.Admin],
+      roles: [UserRole.Admin]
     },
     customer_create: {
       key: 'lands:customer_create',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User
-      ],
+      roles: [UserRole.Admin]
     },
     remove_my_post: {
       key: 'lands:remove_my_post',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User
-      ],
+      roles: [UserRole.Admin]
     },
   },
   orders: {
     read: {
       key: 'orders:read',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User,
-      ],
+      roles: [UserRole.Admin]
     },
     create: {
       key: 'orders:create',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User
-      ],
+      roles: [UserRole.Admin]
     },
     update: {
       key: 'orders:update',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User,
-      ],
+      roles: [UserRole.Admin]
     },
     delete: {
       key: 'orders:delete',
-      roles: [UserRoles.Admin],
+      roles: [UserRole.Admin]
     },
     enums: {
       key: 'orders:enums',
-      roles: [UserRoles.Admin],
+      roles: [UserRole.Admin]
     },
   },
   products: {
     read: {
       key: 'products:read',
-      roles: [
-        UserRoles.Admin
-      ],
+      roles: [UserRole.Admin]
     },
     create: {
       key: 'products:create',
-      roles: [
-        UserRoles.Admin,
-      ],
+      roles: [UserRole.Admin]
     },
     update: {
       key: 'products:update',
-      roles: [
-        UserRoles.Admin,
-      ],
+      roles: [UserRole.Admin]
     },
     delete: {
       key: 'products:delete',
-      roles: [UserRoles.Admin],
+      roles: [UserRole.Admin]
     },
     enums: {
       key: 'products:enums',
-      roles: [UserRoles.Admin],
+      roles: [UserRole.Admin]
     },
     get_my_post: {
       key: 'products:get_my_post',
-      roles: [UserRoles.Admin, UserRoles.User],
+      roles: [UserRole.Admin]
     },
     customer_create: {
       key: 'products:customer_create',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User
-      ],
+      roles: [UserRole.Admin]
     },
     remove_my_post: {
       key: 'products:remove_my_post',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User
-      ],
-    },
-  },
-  users: {
-    read_many: {
-      key: 'users:read_many',
-      roles: [UserRoles.Admin],
-    },
-    read_one: {
-      key: 'users:read_one',
-      roles: [UserRoles.Admin, UserRoles.User],
-    },
-    enums: {
-      key: 'users:enums',
-      roles: [UserRoles.Admin],
-    },
-    create: {
-      key: 'users:create',
-      roles: [UserRoles.Admin],
-    },
-    update: {
-      key: 'users:update',
-      roles: [UserRoles.Admin, UserRoles.User],
-    },
-    delete: {
-      key: 'users:delete',
-      roles: [UserRoles.Admin],
-    },
-    logout: {
-      key: 'users:logout',
-      roles: [UserRoles.Admin, UserRoles.User],
-    }
-  },
-  images: {
-    uploads: {
-      key: 'users:uploads',
-      roles: [UserRoles.Admin, UserRoles.User],
-    },
-    create: {
-      key: 'users:create',
-      roles: [UserRoles.Admin],
-    },
-    delete: {
-      key: 'users:delete',
-      roles: [UserRoles.Admin, UserRoles.User],
+      roles: [UserRole.Admin]
     },
   },
   addresses: {
     read: {
       key: 'addresses:read',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User,
-      ],
+      roles: [UserRole.Admin]
     },
     create: {
       key: 'addresses:create',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User,
-      ],
+      roles: [UserRole.Admin]
     },
     update: {
       key: 'addresses:update',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User,
-      ],
+      roles: [UserRole.Admin]
     },
     delete: {
       key: 'addresses:delete',
-      roles: [
-        UserRoles.Admin,
-        UserRoles.User,
-      ],
+      roles: [UserRole.Admin]
     },
   },
-  collaborators: {
-    read_many: {
-      key: 'collaborators:read_many',
-      roles: [UserRoles.Admin],
-    },
-    read_one: {
-      key: 'collaborators:read_one',
-      roles: [UserRoles.Admin],
-    },
-    enums: {
-      key: 'collaborators:enums',
-      roles: [UserRoles.Admin],
-    },
-    create: {
-      key: 'collaborators:create',
-      roles: [UserRoles.Admin],
-    },
-    update: {
-      key: 'collaborators:update',
-      roles: [UserRoles.Admin],
-    },
-    delete: {
-      key: 'collaborators:delete',
-      roles: [UserRoles.Admin],
-    },
-    logout: {
-      key: 'collaborators:logout',
-      roles: [UserRoles.Admin],
-    }
-  }
 };
 
 export const PERMISSIONS_FLAT_LIST = () => {

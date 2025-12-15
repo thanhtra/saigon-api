@@ -1,47 +1,39 @@
 import { Exclude } from 'class-transformer';
-import {
-    Column, Entity, Index
-} from 'typeorm';
-import { BaseEntity } from '../../../common/entities/baseEntity.entity';
-import { UserRoles } from '../../../config/userRoles';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { BaseEntity } from 'src/common/entities/baseEntity.entity';
+import { Commission } from 'src/modules/commissions/entities/commission.entity';
+import { UserRole } from 'src/common/helpers/enum';
 
-@Entity('user', {
-    orderBy: {
-        createdAt: 'DESC',
-    },
-})
+@Entity('users')
 export class User extends BaseEntity {
     @Column()
-    full_name: string;
+    name: string;
 
     @Column({ unique: true })
-    @Index()
     phone: string;
 
+    @Column({ nullable: true })
+    email?: string;
+
     @Column()
-    @Exclude()
+    @Exclude() // Không trả về khi serialize
     password: string;
 
     @Column({ nullable: true })
-    @Exclude()
-    refresh_token: string;
-
-    @Column({ unique: true, nullable: true })
-    email: string;
+    @Exclude() // Không trả về khi serialize
+    refresh_token?: string;
 
     @Column({
         type: 'enum',
-        enum: UserRoles,
-        default: UserRoles.User,
+        enum: UserRole,
+        default: UserRole.Sale,
     })
-    role: string;
+    role: UserRole;
 
     @Column({ default: true })
     active: boolean;
 
-    @Column({ nullable: true })
-    avatar: string;
-
-    @Column({ nullable: true })
-    address_default: string;
+    // Quan hệ với Commission: 1 user sale có nhiều commission
+    @OneToMany(() => Commission, commission => commission.sale)
+    commissions: Commission[];
 }

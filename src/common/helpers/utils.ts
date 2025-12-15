@@ -1,10 +1,9 @@
-import { User } from '../../modules/users/entities/user.entity';
-import { UserRoles } from '../../config/userRoles';
-import { randomBytes, scrypt, createCipheriv, createDecipheriv } from 'crypto';
-import { promisify } from 'util';
+import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
 import { forOwn } from 'lodash';
 import * as moment from 'moment';
+import { promisify } from 'util';
 import { PERMISSIONS } from '../../config/permissions';
+import { UserRole } from './enum';
 
 
 
@@ -27,14 +26,14 @@ export function randomIntBetween(min, max) {
  * Returns true if the user is admin
  */
 export function userIsAdmin(user) {
-  return user.roles.includes(UserRoles.Admin);
+  return user.roles.includes(UserRole.Admin);
 }
 
 /**
  * Returns true if the user is a Sales Engineer Manager
  */
 export function userIsSeManager(user) {
-  return user.roles.includes(UserRoles.Admin);
+  return user.roles.includes(UserRole.Admin);
 }
 
 
@@ -309,4 +308,13 @@ export function getPermissionsFromRoles(roles) {
 
 export function generateOrderCode() {
   return Date.now().toString().slice(7);
+}
+
+export function generatePassword(length: number): string {
+  var generator = require('generate-password');
+
+  return generator.generate({
+    length,
+    numbers: true,
+  });
 }
