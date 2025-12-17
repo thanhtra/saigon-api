@@ -1,47 +1,35 @@
 import { Rental } from 'src/modules/rentals/entities/rental.entity';
 import {
     Column, Entity,
-    OneToMany
+    JoinColumn,
+    OneToMany,
+    OneToOne
 } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/baseEntity.entity';
-import { FieldCooperation } from 'src/common/helpers/enum';
+import { CollaboratorType, FieldCooperation } from 'src/common/helpers/enum';
+import { User } from 'src/modules/users/entities/user.entity';
 
 
-// chủ trọ, cộng tác bds
+// Chủ trọ hoặc môi giới
 @Entity('collaborator')
 
 export class Collaborator extends BaseEntity {
-    @Column()
-    name: string;
-
-    @Column({ unique: true })
-    phone: string;
-
-    @Column({ nullable: true })
-    zalo: string;
-
-    @Column({ nullable: true })
-    email: string;
-
-    @Column({ nullable: true })
-    link_facebook: string;
-
-    @Column({ type: 'text', nullable: true })
-    address?: string;
-
-    @Column({ type: 'text', nullable: true })
-    note?: string;
+    @OneToOne(() => User, { eager: true })
+    @JoinColumn()
+    user: User;
 
     @Column({
         type: 'enum',
-        enum: FieldCooperation,
-        nullable: true,
+        enum: CollaboratorType,
     })
-    field_cooperation?: FieldCooperation;
+    type: CollaboratorType;
+
+    @Column({ type: 'enum', enum: FieldCooperation })
+    field_cooperation: FieldCooperation;
 
     @Column({ default: true })
     active: boolean;
 
-    @OneToMany(() => Rental, rental => rental.collaborator)
+    @OneToMany(() => Rental, r => r.posted_by)
     rentals: Rental[];
 }

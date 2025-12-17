@@ -31,16 +31,5 @@ export class CreateRentalDto {
     @IsString()
     description?: string;
 
-
-    static getEnums() {
-        return {
-            name: 'Tên',
-            rental_type: 'Loại cho thuê',
-            price: 'Giá',
-            address: 'Địa chỉ',
-            total_rooms: 'Tổng số phòng',
-            active: 'Trạng thái',
-        };
-    }
 }
 

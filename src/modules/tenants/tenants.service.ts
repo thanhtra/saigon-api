@@ -16,6 +16,26 @@ export class TenantsService {
 
   // ---------- CREATE ----------
   async create(dto: CreateTenantDto): Promise<DataRes<Tenant>> {
+    // tenants.service.ts
+    // async create(dto: CreateTenantDto) {
+    //       const user = await this.usersService.create({
+    //         name: dto.name,
+    //         phone: dto.phone,
+    //         email: dto.email,
+    //         cccd: dto.cccd,
+    //         password: dto.password,
+    //         role: UserRole.Tenant,
+    //       });
+
+    //       const tenant = this.tenantRepo.create({
+    //         user,
+    //         note: dto.note,
+    //       });
+
+    //       return this.tenantRepo.save(tenant);
+    //     }
+
+
     const tenant = await this.tenantsRepository.createTenant(dto);
     return tenant
       ? DataRes.success(tenant)
@@ -57,14 +77,4 @@ export class TenantsService {
       : DataRes.failed(ErrorMes.TENANT_REMOVE);
   }
 
-  // ---------- ENUMS ----------
-  getEnums(): DataRes<Enums[]> {
-    const enums = Object.entries(CreateTenantDto.getEnums()).map(
-      ([value, label]) => ({ value, label }),
-    );
-
-    return enums.length
-      ? DataRes.success(enums)
-      : DataRes.failed(ErrorMes.ENUMS_GET_ALL);
-  }
 }

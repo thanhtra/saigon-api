@@ -38,12 +38,4 @@ export class CreateCollaboratorDto {
     @IsOptional()
     @IsBoolean()
     active?: boolean;
-
-    static getEnums() {
-        return {
-            name: 'Tên chủ trọ',
-            phone: 'Số điện thoại',
-            field_cooperation: 'Lĩnh vực hợp tác',
-        };
-    }
 }

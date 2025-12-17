@@ -1,39 +1,54 @@
 import { Exclude } from 'class-transformer';
-import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
-import { Commission } from 'src/modules/commissions/entities/commission.entity';
 import { UserRole } from 'src/common/helpers/enum';
+import { Column, Entity, Index } from 'typeorm';
 
+
+// Xác thực, phân quyền
 @Entity('users')
 export class User extends BaseEntity {
+    @Column({
+        type: 'enum',
+        enum: UserRole,
+        default: UserRole.Tenant,
+    })
+    role: UserRole;
+
     @Column()
     name: string;
 
-    @Column({ unique: true })
+    @Index({ unique: true })
+    @Column()
     phone: string;
 
     @Column({ nullable: true })
     email?: string;
 
+    @Index({ unique: true })
+    @Column({ nullable: true })
+    cccd?: string;
+
     @Column()
-    @Exclude() // Không trả về khi serialize
+    @Exclude()
     password: string;
 
     @Column({ nullable: true })
-    @Exclude() // Không trả về khi serialize
+    @Exclude()
     refresh_token?: string;
-
-    @Column({
-        type: 'enum',
-        enum: UserRole,
-        default: UserRole.Sale,
-    })
-    role: UserRole;
 
     @Column({ default: true })
     active: boolean;
 
-    // Quan hệ với Commission: 1 user sale có nhiều commission
-    @OneToMany(() => Commission, commission => commission.sale)
-    commissions: Commission[];
+    @Column({ nullable: true })
+    zalo?: string;
+
+    @Column({ nullable: true })
+    link_facebook: string;
+
+    @Column({ type: 'text', nullable: true })
+    address?: string;
+
+    @Column({ type: 'text', nullable: true })
+    note?: string;
+
 }

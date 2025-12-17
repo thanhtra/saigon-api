@@ -59,13 +59,6 @@ export class TenantsController {
     return this.tenantsService.getTenant(id);
   }
 
-  // ---------- ENUMS ----------
-  @Get('enums')
-  @Permissions(PERMISSIONS.tenants.enums)
-  getEnums(): DataRes<Enums[]> {
-    return this.tenantsService.getEnums();
-  }
-
   // ---------- UPDATE ----------
   @Put(':id')
   @Permissions(PERMISSIONS.tenants.update)

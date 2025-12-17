@@ -28,7 +28,17 @@ export enum RoomStatus {
 export enum UserRole {
     Admin = 'admin_saigon',
     Sale = 'sale_saigon',
-    User = 'user'
+    Owner = 'owner',    // chủ nhà
+    Broker = 'broker',  // môi giới
+    Tenant = 'tenant'
+}
+
+export enum BookingStatus {
+    PENDING = 'pending',     // đã đặt lịch
+    CONFIRMED = 'confirmed', // xác nhận với chủ trọ
+    COMPLETED = 'completed', // đã đi xem
+    CANCELLED = 'cancelled', // khách huỷ
+    NO_SHOW = 'no_show',     // khách không đến
 }
 
 export enum CommissionStatus {
@@ -41,10 +51,26 @@ export enum FieldCooperation {
     Rental = 'rental', // Cho thuê (phòng trọ, nhà thuê, CHDV)
 }
 
+export enum CollaboratorType {
+    OWNER = 'owner',    // Chủ nhà
+    BROKER = 'broker',        // Môi giới
+}
+
+export enum CustomerType {
+    OWNER = 'owner',   // Chủ nhà
+    BROKER = 'broker',       // Môi giới
+    TENANT = 'tenant',       // Khách thuê / khách hàng
+}
+
 export enum ContractStatus {
     ACTIVE = 'active',
     ENDED = 'ended',
     CANCELLED = 'cancelled',
+}
+
+export enum CommissionType {
+    FIXED = 'fixed',        // Số tiền cố định
+    PERCENT = 'percent',    // % tiền thuê
 }
 
 
@@ -62,4 +88,18 @@ export enum ProductStatusOptions {
     pending = 'Cần cập nhật',
     confirmed = 'Đã xác nhận',
     cancelled = 'Đã hủy'
+}
+
+export enum RentalAmenity {
+    FULL_FURNISHED = 'full_furnished',
+    MEZZANINE = 'mezzanine',
+    KITCHEN_SHELF = 'kitchen_shelf',
+    AIR_CONDITIONER = 'air_conditioner',
+    WASHING_MACHINE = 'washing_machine',
+    REFRIGERATOR = 'refrigerator',
+    ELEVATOR = 'elevator',
+    NO_LIVE_WITH_OWNER = 'no_live_with_owner',
+    FREE_TIME = 'free_time',
+    SECURITY_24_7 = 'security_24_7',
+    BASEMENT_PARKING = 'basement_parking',
 }

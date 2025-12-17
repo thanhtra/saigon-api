@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Request, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { DataRes } from 'src/common/dtos/respones.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { AuthService } from './auth.service';
@@ -9,6 +9,11 @@ import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { PERMISSIONS } from 'src/config/permissions';
 import { UpdatePassworDto } from './dto/update-password.dto';
 import { ChangePassworDto } from './dto/change-password.dto';
+import { Response } from 'express';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { createCookieConfig } from 'src/config/cookie.config';
+import { ConfigService } from '@nestjs/config';
+
 
 interface AuthRequest extends Request {
   user?: any;
@@ -16,46 +21,109 @@ interface AuthRequest extends Request {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  private readonly cookieConfig;
+
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {
+    this.cookieConfig = createCookieConfig(this.configService);
+  }
+
+
+  // ---------------- GET CURRENT USER ----------------
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  me(@Request() req: AuthRequest) {
+    return {
+      success: true,
+      data: req.user,
+    };
+  }
 
   // ---------------- LOGIN ----------------
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req: AuthRequest): Promise<DataRes<any>> {
-    return await this.authService.login(req.user);
+  async login(
+    @Request() req: AuthRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<DataRes<any>> {
+    const result = await this.authService.login(req.user);
+
+    if (!result.success) {
+      throw new UnauthorizedException(result.message);
+    }
+
+    const { user, tokens } = result.data;
+    const { accessToken, refreshToken } = tokens;
+
+    res.cookie('accessToken', accessToken, this.cookieConfig.accessToken);
+    res.cookie('refreshToken', refreshToken, this.cookieConfig.refreshToken);
+
+    return DataRes.success(user);
   }
+
 
   // ---------------- REFRESH TOKEN ----------------
   @Public()
   @UseGuards(RefreshTokenGuard)
   @Get('refresh-token')
-  async refreshTokens(@Request() req: AuthRequest): Promise<DataRes<any>> {
-    return await this.authService.refreshTokens(req);
+  async refresh(
+    @Request() req,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.refreshTokens(
+      req.user.sub,
+      req.refreshToken,
+    );
+
+    if (!result.success) {
+      throw new UnauthorizedException();
+    }
+
+    const { accessToken, refreshToken } = result.data;
+
+    res.cookie('accessToken', accessToken, this.cookieConfig.accessToken);
+    res.cookie('refreshToken', refreshToken, this.cookieConfig.refreshToken);
+
+    return { success: true };
   }
 
-  // ---------------- LOGOUT ----------------
+
   @UseGuards(PermissionsGuard)
   @Permissions(PERMISSIONS.users.logout)
   @Post('logout')
-  async logout(@Request() req: AuthRequest): Promise<DataRes<any>> {
-    return await this.authService.logout(req.user);
+  async logout(
+    @Request() req: AuthRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<DataRes<null>> {
+    await this.authService.logout(req.user);
+
+    // 🔥 CLEAR COOKIE
+    res.clearCookie('accessToken', this.cookieConfig.accessToken);
+    res.clearCookie('refreshToken', this.cookieConfig.refreshToken);
+
+    return DataRes.success(null, 'Logout thành công');
   }
 
-  // ---------------- UPDATE PASSWORD (FORGOT/RESET) ----------------
+
+  // ---------------- UPDATE PASSWORD (FORGOT) ----------------
   @Public()
   @Put('update-password')
-  async updatePassword(@Body() updatePasswordDto: UpdatePassworDto): Promise<DataRes<any>> {
+  async updatePassword(
+    @Body() updatePasswordDto: UpdatePassworDto,
+  ): Promise<DataRes<any>> {
     return await this.authService.updatePassword(updatePasswordDto);
   }
 
-  // ---------------- CHANGE PASSWORD (USER LOGGED IN) ----------------
+  // ---------------- CHANGE PASSWORD (LOGGED IN) ----------------
   @UseGuards(PermissionsGuard)
   @Permissions(PERMISSIONS.users.logout)
   @Put('change-password')
   async changePassword(
     @Request() req: AuthRequest,
-    @Body() changePassworDto: ChangePassworDto
+    @Body() changePassworDto: ChangePassworDto,
   ): Promise<DataRes<any>> {
     return await this.authService.changePassword(changePassworDto, req.user);
   }

@@ -56,7 +56,7 @@ export class RentalsService {
         address_detail: rental.address_detail,
         price: rental.price,
         total_rooms: rental.total_rooms,
-        amenities: rental.amenities || [],
+        // amenities: rental.amenities || [],
         uploads: rental.uploads || [],
       };
       return dto;

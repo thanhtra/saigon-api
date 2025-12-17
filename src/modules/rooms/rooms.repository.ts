@@ -60,10 +60,10 @@ export class RoomsRepository {
     }
 
     // ---------------- FILTER ----------------
-    async findByFilter(filters: Partial<Room>, orderBy?: FindOptionsOrder<Room>): Promise<Room[]> {
-        return this.repo.find({
-            where: filters,
-            ...(orderBy && { order: orderBy }),
-        });
-    }
+    // async findByFilter(filters: Partial<Room>, orderBy?: FindOptionsOrder<Room>): Promise<Room[]> {
+    //     return this.repo.find({
+    //         where: filters,
+    //         ...(orderBy && { order: orderBy }),
+    //     });
+    // }
 }

@@ -53,13 +53,6 @@ export class CollaboratorsController {
     return this.collaboratorsService.getOne(id);
   }
 
-  // ---------- ENUMS ----------
-  @Get('enums')
-  @Permissions(PERMISSIONS.collaborators.enums)
-  getEnums(): DataRes<Enums[]> {
-    return this.collaboratorsService.getEnums();
-  }
-
   // ---------- UPDATE ----------
   @Put(':id')
   @Permissions(PERMISSIONS.collaborators.update)

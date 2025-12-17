@@ -12,10 +12,6 @@ export const PERMISSIONS = {
       key: 'users:read_one',
       roles: [UserRole.Admin]
     },
-    enums: {
-      key: 'users:enums',
-      roles: [UserRole.Admin]
-    },
     create: {
       key: 'users:create',
       roles: [UserRole.Admin]
@@ -42,10 +38,6 @@ export const PERMISSIONS = {
       key: 'collaborators:read_one',
       roles: [UserRole.Admin]
     },
-    enums: {
-      key: 'collaborators:enums',
-      roles: [UserRole.Admin]
-    },
     create: {
       key: 'collaborators:create',
       roles: [UserRole.Admin]
@@ -63,25 +55,21 @@ export const PERMISSIONS = {
       roles: [UserRole.Admin]
     }
   },
-  amenities: {
+  bookings: {
     read: {
-      key: 'amenities:read',
+      key: 'bookings:read',
       roles: [UserRole.Admin]
     },
     create: {
-      key: 'amenities:create',
+      key: 'bookings:create',
       roles: [UserRole.Admin]
     },
     update: {
-      key: 'amenities:update',
+      key: 'bookings:update',
       roles: [UserRole.Admin]
     },
     delete: {
-      key: 'amenities:delete',
-      roles: [UserRole.Admin]
-    },
-    enums: {
-      key: 'amenities:enums',
+      key: 'bookings:delete',
       roles: [UserRole.Admin]
     },
   },
@@ -114,10 +102,6 @@ export const PERMISSIONS = {
       key: 'rentals:delete',
       roles: [UserRole.Admin]
     },
-    enums: {
-      key: 'rentals:enums',
-      roles: [UserRole.Admin]
-    },
   },
   rooms: {
     read_one: {
@@ -142,10 +126,6 @@ export const PERMISSIONS = {
     },
     delete: {
       key: 'rooms:delete',
-      roles: [UserRole.Admin]
-    },
-    enums: {
-      key: 'rooms:enums',
       roles: [UserRole.Admin]
     },
   },
@@ -174,10 +154,6 @@ export const PERMISSIONS = {
       key: 'commissions:delete',
       roles: [UserRole.Admin]
     },
-    enums: {
-      key: 'commissions:enums',
-      roles: [UserRole.Admin]
-    },
   },
   tenants: {
     read: {
@@ -204,10 +180,6 @@ export const PERMISSIONS = {
       key: 'tenants:delete',
       roles: [UserRole.Admin]
     },
-    enums: {
-      key: 'tenants:enums',
-      roles: [UserRole.Admin]
-    },
   },
   contracts: {
     read: {
@@ -232,10 +204,6 @@ export const PERMISSIONS = {
     },
     delete: {
       key: 'contracts:delete',
-      roles: [UserRole.Admin]
-    },
-    enums: {
-      key: 'contracts:enums',
       roles: [UserRole.Admin]
     },
   },
@@ -278,10 +246,6 @@ export const PERMISSIONS = {
       key: 'categories:delete',
       roles: [UserRole.Admin]
     },
-    enums: {
-      key: 'categories:enums',
-      roles: [UserRole.Admin]
-    },
   },
   discoveries: {
     read: {
@@ -298,10 +262,6 @@ export const PERMISSIONS = {
     },
     delete: {
       key: 'discoveries:delete',
-      roles: [UserRole.Admin]
-    },
-    enums: {
-      key: 'discoveries:enums',
       roles: [UserRole.Admin]
     },
   },
@@ -324,10 +284,6 @@ export const PERMISSIONS = {
     },
     delete: {
       key: 'lands:delete',
-      roles: [UserRole.Admin]
-    },
-    enums: {
-      key: 'lands:enums',
       roles: [UserRole.Admin]
     },
     customer_create: {
@@ -356,10 +312,6 @@ export const PERMISSIONS = {
       key: 'orders:delete',
       roles: [UserRole.Admin]
     },
-    enums: {
-      key: 'orders:enums',
-      roles: [UserRole.Admin]
-    },
   },
   products: {
     read: {
@@ -376,10 +328,6 @@ export const PERMISSIONS = {
     },
     delete: {
       key: 'products:delete',
-      roles: [UserRole.Admin]
-    },
-    enums: {
-      key: 'products:enums',
       roles: [UserRole.Admin]
     },
     get_my_post: {

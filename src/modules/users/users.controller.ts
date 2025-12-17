@@ -19,16 +19,27 @@ import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { PERMISSIONS } from 'src/config/permissions';
 
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, CustomerCreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(PermissionsGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
+
+
+  // ---------- CREATE IN CUSTOMER SITE ----------
+  @Post('register')
+  @Public()
+  customerCreate(
+    @Body() dto: CustomerCreateUserDto,
+  ): Promise<DataRes<User>> {
+    return this.usersService.customerCreate(dto);
+  }
 
   // ---------- CREATE ----------
   @Post()
@@ -55,13 +66,6 @@ export class UsersController {
     @Param('id') id: string,
   ): Promise<DataRes<User>> {
     return this.usersService.getUser(id);
-  }
-
-  // ---------- ENUMS ----------
-  @Get('enums')
-  @Permissions(PERMISSIONS.users.enums)
-  getEnums(): DataRes<Enums[]> {
-    return this.usersService.getEnums();
   }
 
   // ---------- UPDATE ----------

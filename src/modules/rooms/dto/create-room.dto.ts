@@ -32,13 +32,4 @@ export class CreateRoomDto {
     @IsString()
     rental_id: string;
 
-    static getEnums() {
-        return {
-            room_code: 'Mã phòng',
-            price: 'Giá thuê',
-            area: 'Diện tích',
-            max_people: 'Số người tối đa',
-            status: 'Trạng thái phòng',
-        };
-    }
 }

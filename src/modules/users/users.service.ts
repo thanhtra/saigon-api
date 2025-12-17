@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { Enums } from 'src/common/dtos/enum.dto';
-import { UserRole } from 'src/common/helpers/enum';
+import { CustomerType, UserRole } from 'src/common/helpers/enum';
 import { ErrorMes } from 'src/common/helpers/errorMessage';
 import { FindOptionsOrder } from 'typeorm';
 
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, CustomerCreateUserDto } from './dto/create-user.dto';
 import { FilterUsersDto } from './dto/filter-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -51,8 +51,55 @@ export class UsersService {
     return DataRes.success(this.toSafeUser(updated));
   }
 
+  // ---------------- CUSTOMER CREATE ----------------
+
+  async customerCreate(dto: CustomerCreateUserDto): Promise<DataRes<User>> {
+    const existed = await this.usersRepository.findOneUserByPhone(dto.phone);
+    if (existed) {
+      return DataRes.failed("Số điện thoại đã tồn tại");
+    }
+
+    let role;
+    switch (dto.customer_type) {
+      case CustomerType.OWNER:
+        role = UserRole.Owner;
+        break;
+      case CustomerType.BROKER:
+        role = UserRole.Broker;
+        break;
+      case CustomerType.TENANT:
+        role = UserRole.Tenant;
+        break;
+      default:
+        role = UserRole.Tenant;
+    }
+
+    const user = await this.usersRepository.create({
+      name: dto.name,
+      password: dto.password,
+      phone: dto.phone,
+      role: role,
+      active: true
+    });
+
+    return DataRes.success(this.toSafeUser(user));
+  }
+
   // ---------------- CREATE ----------------
   async create(dto: CreateUserDto): Promise<DataRes<User>> {
+    if (dto?.role && dto.role === UserRole.Admin) {
+      return DataRes.failed("Lỗi tạo người dùng");
+    }
+
+    const existed = await this.usersRepository.findOneUserByPhone(dto.phone);
+    if (existed) {
+      return DataRes.failed("Số điện thoại đã tồn tại");
+    }
+
+    if (dto.role === UserRole.Admin) {
+      return DataRes.failed("Lỗi hệ thống");
+    }
+
     const user = await this.usersRepository.create(dto);
     return DataRes.success(this.toSafeUser(user));
   }
@@ -67,16 +114,6 @@ export class UsersService {
     return DataRes.success(this.toSafeUser(user));
   }
 
-  // ---------------- ENUMS ----------------
-  getEnums(): DataRes<Enums[]> {
-    const enums = Object.entries(CreateUserDto.getEnums()).map(
-      ([value, label]) => ({ value, label }),
-    );
-
-    return enums.length
-      ? DataRes.success(enums)
-      : DataRes.failed(ErrorMes.ENUMS_GET_ALL);
-  }
 
   // ---------------- LIST ----------------
   async getUsers(
@@ -109,9 +146,8 @@ export class UsersService {
       if (!user) {
         return DataRes.failed(ErrorMes.USER_GET_DETAIL || 'Người dùng không tồn tại');
       }
-      // Loại bỏ thông tin nhạy cảm trước khi trả về
-      const { password, refresh_token, ...safeUser } = user;
-      return DataRes.success(safeUser as User);
+
+      return DataRes.success(user);
     } catch (error) {
       return DataRes.failed(error?.message || 'Lấy thông tin người dùng thất bại');
     }

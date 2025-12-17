@@ -1,33 +1,76 @@
-// dto/create-tenant.dto.ts
 import {
+    IsEnum,
+    IsNotEmpty,
     IsOptional,
+    IsPhoneNumber,
     IsString,
-    Matches,
+    MinLength,
 } from 'class-validator';
+import { UserRole } from 'src/common/helpers/enum';
 
 export class CreateTenantDto {
+
+    // 🔐 Thông tin user
     @IsString()
+    @IsNotEmpty()
     name: string;
 
-    @IsString()
-    @Matches(/(84|0[3|5|7|8|9])+([0-9]{8})\b/, {
-        message: 'Số điện thoại không hợp lệ',
-    })
+    @IsPhoneNumber('VN')
     phone: string;
 
-    @IsString()
     @IsOptional()
+    @IsString()
+    email?: string;
+
+    @IsOptional()
+    @IsString()
     cccd?: string;
 
     @IsString()
-    @IsOptional()
-    note?: string;
+    @MinLength(6)
+    password: string;
 
-    static getEnums() {
-        return {
-            name: 'Tên khách',
-            phone: 'Số điện thoại',
-            cccd: 'CCCD',
-        };
-    }
+    // 📌 Mặc định là tenant
+    @IsEnum(UserRole)
+    @IsOptional()
+    role?: UserRole = UserRole.Tenant;
+
+    // 📝 Ghi chú nghiệp vụ
+    @IsOptional()
+    @IsString()
+    note?: string;
+}
+
+export class CreateTenantFromBookingDto {
+
+    // 🔗 Booking liên quan
+    @IsString()
+    @IsNotEmpty()
+    booking_id: string;
+
+    // 👤 Thông tin khách (lấy từ booking nhưng cho phép sửa)
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
+    @IsPhoneNumber('VN')
+    phone: string;
+
+    @IsOptional()
+    @IsString()
+    email?: string;
+
+    @IsOptional()
+    @IsString()
+    cccd?: string;
+
+    // 🔐 Tạo tài khoản cho tenant
+    @IsOptional()
+    @IsString()
+    password?: string;
+
+    // 📝 Ghi chú nội bộ
+    @IsOptional()
+    @IsString()
+    note?: string;
 }

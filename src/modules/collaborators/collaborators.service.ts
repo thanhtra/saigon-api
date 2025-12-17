@@ -50,12 +50,4 @@ export class CollaboratorsService {
       ? DataRes.success(null)
       : DataRes.failed(ErrorMes.COLLABORATOR_REMOVE);
   }
-
-  // ---------- ENUMS ----------
-  getEnums(): DataRes<Enums[]> {
-    const enums = Object.entries(FieldCooperation).map(([value, label]) => ({ value, label }));
-    return enums.length
-      ? DataRes.success(enums)
-      : DataRes.failed(ErrorMes.ENUMS_GET_ALL);
-  }
 }

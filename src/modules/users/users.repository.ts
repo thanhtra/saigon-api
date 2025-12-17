@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as argon2 from 'argon2';
 import {
   FindOptionsOrder,
   Repository,
 } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 
 import {
   PageDto,
   PageMetaDto,
   PageOptionsDto,
 } from 'src/common/dtos/respones.dto';
-import { UserRole } from 'src/common/helpers/enum';
 import { getSkip } from 'src/common/helpers/utils';
 
 import { CreateUserDto } from './dto/create-user.dto';
@@ -26,30 +25,31 @@ export class UsersRepository {
     private readonly repo: Repository<User>,
   ) { }
 
-  // ---------------- CREATE ----------------
+  // ---------- CREATE ----------
   async create(dto: CreateUserDto): Promise<User> {
     const user = this.repo.create({
       ...dto,
       password: await this.hashPassword(dto.password),
-      role: dto.role ?? UserRole.User,
     });
 
     return this.repo.save(user);
   }
 
-  // ---------------- UPDATE ----------------
+  // ---------- UPDATE ----------
   async update(id: string, dto: UpdateUserDto): Promise<User | null> {
     const user = await this.repo.findOne({ where: { id } });
     if (!user) return null;
 
     if (dto.password) {
       dto.password = await this.hashPassword(dto.password);
+    } else {
+      delete dto.password;
     }
 
-    return this.repo.save(this.repo.merge(user, dto));
+    return this.repo.save({ ...user, ...dto });
   }
 
-  // ---------------- FIND ONE ----------------
+  // ---------- FIND ----------
   async findOneUser(id: string): Promise<User | null> {
     return this.repo.findOne({ where: { id } });
   }
@@ -58,19 +58,22 @@ export class UsersRepository {
     return this.repo.findOne({ where: { phone } });
   }
 
-  // ---------------- LIST + PAGINATION ----------------
+  // ---------- LIST ----------
   async getUsers(
     pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<User>> {
     const qb = this.repo.createQueryBuilder('user');
 
-    qb.orderBy('user.createdAt', pageOptionsDto.order)
-      .skip(getSkip(pageOptionsDto.page, pageOptionsDto.size))
-      .take(Math.min(pageOptionsDto.size, 50)); // 🔥 limit size
+    const skip = getSkip(pageOptionsDto.page, pageOptionsDto.size);
+    const take = Math.min(pageOptionsDto.size, 50);
 
-    if (pageOptionsDto.keySearch && !pageOptionsDto.multipleSearchEnums) {
+    qb.orderBy('user.createdAt', pageOptionsDto.order)
+      .skip(skip)
+      .take(take);
+
+    if (pageOptionsDto.keySearch) {
       qb.andWhere(
-        '(user.name LIKE :q OR user.phone LIKE :q)',
+        '(user.name ILIKE :q OR user.phone ILIKE :q)',
         { q: `%${pageOptionsDto.keySearch}%` },
       );
     }
@@ -83,13 +86,13 @@ export class UsersRepository {
     );
   }
 
-  // ---------------- DELETE ----------------
+  // ---------- DELETE ----------
   async removeUser(id: string): Promise<boolean> {
     const { affected } = await this.repo.delete(id);
     return affected === 1;
   }
 
-  // ---------------- FILTER ----------------
+  // ---------- FILTER ----------
   async findByFilter(
     filters: FilterUsersDto,
     orderBy?: FindOptionsOrder<User>,
@@ -100,8 +103,8 @@ export class UsersRepository {
     });
   }
 
-  // ---------------- HELPER ----------------
+  // ---------- HELPER ----------
   private hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
+    return argon2.hash(password);
   }
 }

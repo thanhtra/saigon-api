@@ -1,40 +1,60 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { HttpException, Injectable, HttpStatus, Inject } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  HttpStatus,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ContextIdFactory, ModuleRef } from '@nestjs/core';
 import { AuthService } from '../auth.service';
+import { Request } from 'express';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
-    private configService: ConfigService,
-    private moduleRef: ModuleRef,
+    private readonly configService: ConfigService,
+    private readonly moduleRef: ModuleRef,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      // ✅ ĐỌC ACCESS TOKEN TỪ COOKIE
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => {
+          return req?.cookies?.accessToken;
+        },
+      ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('auth.jwtAccessTokenSecret'),
-
-      // Asks parent to send the "request" as the first param for function validate()
+      secretOrKey: configService.get<string>(
+        'auth.jwtAccessTokenSecret',
+      ),
       passReqToCallback: true,
     });
   }
 
-  async validate(request: Request, payload: any) {
+  async validate(req: Request, payload: any) {
     try {
-      // Since Passport doesn't support request-scoped injection, we use the Context to locate the AuthService
-      const contextId = ContextIdFactory.getByRequest(request);
-      const authService = await this.moduleRef.resolve(AuthService, contextId);
+      // ⚠️ Request-scoped resolve
+      const contextId = ContextIdFactory.getByRequest(req);
+      const authService = await this.moduleRef.resolve(
+        AuthService,
+        contextId,
+      );
 
-      // Loading from the DB the user ID specified in the JWT. The user will be attached to req.user by Passport.
-      const user = await authService.getUserByPhone(payload.username);
+      // payload.username được set khi sign token
+      const user = await authService.getUserByPhone(
+        payload.username,
+      );
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // 👉 gắn vào req.user
       return user;
-
     } catch (error) {
       throw new HttpException(
-        'Invalid user in JWT token',
-        HttpStatus.FORBIDDEN,
+        'Invalid access token',
+        HttpStatus.UNAUTHORIZED,
       );
     }
   }
