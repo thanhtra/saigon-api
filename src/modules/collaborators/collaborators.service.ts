@@ -6,16 +6,44 @@ import { UpdateCollaboratorDto } from './dto/update-collaborator.dto';
 import { QueryCollaboratorDto } from './dto/query-collaborator.dto';
 import { DataRes, PageDto } from 'src/common/dtos/respones.dto';
 import { Enums } from 'src/common/dtos/enum.dto';
-import { FieldCooperation } from 'src/common/helpers/enum';
+import { CollaboratorType, FieldCooperation, UserRole } from 'src/common/helpers/enum';
 import { ErrorMes } from 'src/common/helpers/errorMessage';
+import { UsersRepository } from '../users/users.repository';
 
 @Injectable()
 export class CollaboratorsService {
-  constructor(private readonly repo: CollaboratorsRepository) { }
+  constructor(private readonly repo: CollaboratorsRepository,
+    private readonly userRepo: UsersRepository
+
+  ) { }
 
   // ---------- CREATE ----------
-  async create(dto: CreateCollaboratorDto): Promise<DataRes<Collaborator>> {
-    const entity = await this.repo.createCollaborator(dto);
+
+  async create(
+    dto: CreateCollaboratorDto,
+  ): Promise<DataRes<Collaborator>> {
+    const user = await this.userRepo.findOneUser(dto.user_id);
+    if (!user) {
+      return DataRes.failed(ErrorMes.USER_GET_DETAIL);
+    }
+
+    const existed = await this.repo.findByUserId(dto.user_id);
+    if (existed) {
+      return DataRes.failed(ErrorMes.COLLABORATOR_EXISTED);
+    }
+
+    const collType: CollaboratorType =
+      user.role === UserRole.Owner
+        ? CollaboratorType.Owner
+        : CollaboratorType.Broker;
+
+    const entity = await this.repo.saveCollaborator({
+      user_id: dto.user_id,
+      type: collType,
+      field_cooperation: dto.field_cooperation,
+      active: dto.active ?? true,
+    });
+
     return entity
       ? DataRes.success(entity)
       : DataRes.failed(ErrorMes.COLLABORATOR_CREATE);

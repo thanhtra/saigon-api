@@ -6,6 +6,5 @@ export class RentalCustomerDto {
     rental_type: RentalType;
     address_detail: string;
     price?: number;
-    total_rooms: number;
     uploads: Upload[];
 }

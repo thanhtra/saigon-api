@@ -1,13 +1,12 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
-import { RentalsService } from './rentals.service';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Permissions } from 'src/common/decorators/permissions.decorator';
+import { DataRes, PageOptionsDto } from 'src/common/dtos/respones.dto';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
+import { PERMISSIONS } from 'src/config/permissions';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { UpdateRentalDto } from './dto/update-rental.dto';
-import { PageOptionsDto, DataRes } from 'src/common/dtos/respones.dto';
 import { Rental } from './entities/rental.entity';
-import { PermissionsGuard } from 'src/common/guards/permissions.guard';
-import { Permissions } from 'src/common/decorators/permissions.decorator';
-import { PERMISSIONS } from 'src/config/permissions';
-import { RentalCustomerDto } from './dto/rental-customer.dto';
+import { RentalsService } from './rentals.service';
 
 @Controller('rentals')
 @UseGuards(PermissionsGuard)
@@ -15,11 +14,20 @@ export class RentalsController {
   constructor(private rentalsService: RentalsService) { }
 
   // ---------- ADMIN ----------
+
   @Post()
   @Permissions(PERMISSIONS.rentals.create)
-  create(@Body() dto: CreateRentalDto): Promise<DataRes<Rental>> {
-    return this.rentalsService.create(dto);
+  async create(
+    @Body() dto: CreateRentalDto,
+    @Req() req,
+  ) {
+    const rental = await this.rentalsService.create(
+      dto,
+      req.user,
+    );
+    return DataRes.success(rental);
   }
+
 
   @Get()
   @Permissions(PERMISSIONS.rentals.read_many)
@@ -41,13 +49,13 @@ export class RentalsController {
 
   @Delete(':id')
   @Permissions(PERMISSIONS.rentals.delete)
-  remove(@Param('id') id: string): Promise<DataRes<null>> {
+  remove(@Param('id') id: string): Promise<DataRes<boolean>> {
     return this.rentalsService.remove(id);
   }
 
   // ---------- CUSTOMER ----------
-  @Get(':id')
-  getOneCustomer(@Param('id') id: string): Promise<DataRes<RentalCustomerDto>> {
-    return this.rentalsService.getOneCustomer(id);
-  }
+  // @Get(':id')
+  // getOneCustomer(@Param('id') id: string): Promise<DataRes<RentalCustomerDto>> {
+  //   return this.rentalsService.getOneCustomer(id);
+  // }
 }

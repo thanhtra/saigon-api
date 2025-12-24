@@ -32,7 +32,7 @@ export class BookingsService {
       customer_phone: dto.customer_phone,
       customer_note: dto.customer_note,
       viewing_at: new Date(dto.viewing_at),
-      status: BookingStatus.PENDING,
+      status: BookingStatus.Pending,
     });
 
     return DataRes.success(booking);

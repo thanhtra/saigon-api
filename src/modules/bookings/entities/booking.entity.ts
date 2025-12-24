@@ -41,7 +41,7 @@ export class Booking extends BaseEntity {
     @Column({
         type: 'enum',
         enum: BookingStatus,
-        default: BookingStatus.PENDING,
+        default: BookingStatus.Pending,
     })
     status: BookingStatus;
 }

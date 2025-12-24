@@ -1,6 +1,5 @@
 import {
     IsEnum,
-    IsInt,
     IsNumber,
     IsOptional,
     IsString,
@@ -13,7 +12,7 @@ export class CreateRoomDto {
     room_code: string;
 
     @IsNumber()
-    @Min(0)
+    @Min(100)
     price: number;
 
     @IsOptional()

@@ -31,26 +31,52 @@ export class TenantsRepository {
   async getTenants(
     pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<Tenant>> {
-    const qb = this.repo.createQueryBuilder('tenant');
+    const qb = this.repo
+      .createQueryBuilder('tenant')
+      .leftJoinAndSelect('tenant.user', 'user')
+      .leftJoin('tenant.contracts', 'contracts')
+      .loadRelationCountAndMap(
+        'tenant.contractCount',
+        'tenant.contracts',
+      );
 
-    qb.orderBy('tenant.createdAt', pageOptionsDto.order)
-      .skip(getSkip(pageOptionsDto.page, pageOptionsDto.size))
-      .take(pageOptionsDto.size);
-
+    /* ========== SEARCH ========== */
     if (pageOptionsDto.keySearch) {
       qb.andWhere(
-        '(tenant.name ILIKE :q OR tenant.phone ILIKE :q)',
+        `(user.name ILIKE :q OR user.phone ILIKE :q)`,
         { q: `%${pageOptionsDto.keySearch}%` },
       );
     }
+
+    /* ========== SORT & PAGINATION ========== */
+    qb.orderBy('tenant.createdAt', pageOptionsDto.order)
+      .skip((pageOptionsDto.page - 1) * pageOptionsDto.size)
+      .take(pageOptionsDto.size);
+
+    /* ========== SELECT CHỈ FIELD CẦN ========== */
+    qb.select([
+      'tenant.id',
+      'tenant.note',
+      'tenant.createdAt',
+
+      'user.id',
+      'user.name',
+      'user.phone',
+      'user.link_facebook',
+      'user.active',
+    ]);
 
     const [entities, itemCount] = await qb.getManyAndCount();
 
     return new PageDto(
       entities,
-      new PageMetaDto({ itemCount, pageOptionsDto }),
+      new PageMetaDto({
+        itemCount,
+        pageOptionsDto,
+      }),
     );
   }
+
 
   // ---------- UPDATE ----------
   async updateTenant(

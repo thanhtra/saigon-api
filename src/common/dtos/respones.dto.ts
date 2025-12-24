@@ -53,28 +53,40 @@ export class PageDto<T> {
     }
 }
 
+import { Transform } from 'class-transformer';
+import {
+    IsBoolean
+} from 'class-validator';
+
 export class PageOptionsDto {
     @ApiPropertyOptional()
     @IsString()
     @IsOptional()
-    keySearch: string = '';
+    keySearch?: string;
 
-    @ApiPropertyOptional()
-    @IsString()
+    @ApiPropertyOptional({
+        description: 'Comma separated enum values',
+        example: 'landlord,broker',
+    })
+    @Transform(({ value }) =>
+        typeof value === 'string' ? value.split(',') : value,
+    )
     @IsOptional()
-    multipleSearchEnums: string = '';
+    multipleSearchEnums?: string[];
 
-    @ApiPropertyOptional()
-    @IsString()
+    @ApiPropertyOptional({ example: true })
+    @Transform(({ value }) => value === 'true' || value === true)
+    @IsBoolean()
     @IsOptional()
-    active: string;
+    active?: boolean;
 
-    @ApiPropertyOptional()
-    @IsString()
+    @ApiPropertyOptional({ default: true })
+    @Transform(({ value }) => value !== 'false')
+    @IsBoolean()
     @IsOptional()
-    isPagin: string = 'true';
+    isPagin: boolean = true;
 
-    @ApiPropertyOptional({ enum: Order, default: Order.ASC })
+    @ApiPropertyOptional({ enum: Order, default: Order.DESC })
     @IsEnum(Order)
     @IsOptional()
     order: Order = Order.DESC;
@@ -82,12 +94,13 @@ export class PageOptionsDto {
     @ApiPropertyOptional({
         minimum: 1,
         default: 1,
+        description: 'Page index starts from 1',
     })
     @Type(() => Number)
     @IsInt()
-    @Min(0)
+    @Min(1)
     @IsOptional()
-    page: number = 0;
+    page: number = 1;
 
     @ApiPropertyOptional({
         minimum: 1,
@@ -102,27 +115,9 @@ export class PageOptionsDto {
     size: number = 10;
 
     get skip(): number {
-        return (this.page) * this.size;
+        return (this.page - 1) * this.size;
     }
 }
-
-// export class DataRes<T> {
-//     message: string;
-//     success: boolean;
-//     data: T;
-
-//     public setSuccess(data: T) {
-//         this.success = true;
-//         this.data = data;
-//         this.message = "Successfully"
-//     }
-
-//     public setFailed(error: string) {
-//         this.success = false;
-//         this.data = null;
-//         this.message = error;
-//     }
-// }
 
 export class DataRes<T> {
     success: boolean;

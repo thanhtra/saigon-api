@@ -1,14 +1,15 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PassportStrategy } from '@nestjs/passport';
 import {
   HttpException,
-  Injectable,
   HttpStatus,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ContextIdFactory, ModuleRef } from '@nestjs/core';
-import { AuthService } from '../auth.service';
+import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -46,7 +47,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
       );
 
       if (!user) {
-        throw new Error('User not found');
+        throw new UnauthorizedException();
       }
 
       // 👉 gắn vào req.user

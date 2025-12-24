@@ -17,6 +17,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { FilterUsersDto } from './dto/filter-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
+import { Collaborator } from '../collaborators/entities/collaborator.entity';
+import { UserRole } from 'src/common/helpers/enum';
 
 @Injectable()
 export class UsersRepository {
@@ -85,6 +88,40 @@ export class UsersRepository {
       new PageMetaDto({ itemCount, pageOptionsDto }),
     );
   }
+
+  // ---------- AVAILABLE COLLABORATORS ----------
+  async getAvailableCollaborators(
+    query: GetAvailableCollaboratorsDto,
+  ): Promise<User[]> {
+
+    const { keyword, limit = 20 } = query;
+
+    const qb = this.repo
+      .createQueryBuilder('u')
+      .leftJoin(
+        Collaborator,
+        'c',
+        'c.user_id = u.id',
+      )
+      .where('c.id IS NULL')
+      .andWhere('u.active = true')
+      .andWhere('u.role IN (:...roles)', {
+        roles: [UserRole.Owner, UserRole.Broker],
+      });
+
+    if (keyword) {
+      qb.andWhere(
+        '(u.name ILIKE :kw OR u.phone ILIKE :kw)',
+        { kw: `%${keyword}%` },
+      );
+    }
+
+    return qb
+      .orderBy('u.createdAt', 'DESC')
+      .limit(limit)
+      .getMany();
+  }
+
 
   // ---------- DELETE ----------
   async removeUser(id: string): Promise<boolean> {

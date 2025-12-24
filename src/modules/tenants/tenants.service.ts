@@ -16,26 +16,6 @@ export class TenantsService {
 
   // ---------- CREATE ----------
   async create(dto: CreateTenantDto): Promise<DataRes<Tenant>> {
-    // tenants.service.ts
-    // async create(dto: CreateTenantDto) {
-    //       const user = await this.usersService.create({
-    //         name: dto.name,
-    //         phone: dto.phone,
-    //         email: dto.email,
-    //         cccd: dto.cccd,
-    //         password: dto.password,
-    //         role: UserRole.Tenant,
-    //       });
-
-    //       const tenant = this.tenantRepo.create({
-    //         user,
-    //         note: dto.note,
-    //       });
-
-    //       return this.tenantRepo.save(tenant);
-    //     }
-
-
     const tenant = await this.tenantsRepository.createTenant(dto);
     return tenant
       ? DataRes.success(tenant)
@@ -57,6 +37,7 @@ export class TenantsService {
     const tenants = await this.tenantsRepository.getTenants(pageOptionsDto);
     return DataRes.success(tenants);
   }
+
 
   // ---------- UPDATE ----------
   async update(

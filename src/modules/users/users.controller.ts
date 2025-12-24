@@ -24,6 +24,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { Public } from 'src/common/decorators/public.decorator';
+import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -51,6 +52,16 @@ export class UsersController {
   }
 
   // ---------- LIST ----------
+
+  @Get('available-collaborator')
+  @Permissions(PERMISSIONS.users.read_many)
+  getAvailableCollaborators(
+    @Query() query: GetAvailableCollaboratorsDto,
+  ): Promise<DataRes<User[]>> {
+    return this.usersService.getAvailableCollaborators(query);
+  }
+
+
   @Get()
   @Permissions(PERMISSIONS.users.read_many)
   getUsers(
@@ -87,4 +98,7 @@ export class UsersController {
   ): Promise<DataRes<null>> {
     return this.usersService.removeUser(id);
   }
+
+
+
 }

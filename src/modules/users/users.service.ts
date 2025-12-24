@@ -10,6 +10,7 @@ import { FilterUsersDto } from './dto/filter-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersRepository } from './users.repository';
+import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
 
 @Injectable()
 export class UsersService {
@@ -61,13 +62,13 @@ export class UsersService {
 
     let role;
     switch (dto.customer_type) {
-      case CustomerType.OWNER:
+      case CustomerType.Owner:
         role = UserRole.Owner;
         break;
-      case CustomerType.BROKER:
+      case CustomerType.Broker:
         role = UserRole.Broker;
         break;
-      case CustomerType.TENANT:
+      case CustomerType.Tenant:
         role = UserRole.Tenant;
         break;
       default:
@@ -88,16 +89,12 @@ export class UsersService {
   // ---------------- CREATE ----------------
   async create(dto: CreateUserDto): Promise<DataRes<User>> {
     if (dto?.role && dto.role === UserRole.Admin) {
-      return DataRes.failed("Lỗi tạo người dùng");
+      return DataRes.failed("Lỗi hệ thống");
     }
 
     const existed = await this.usersRepository.findOneUserByPhone(dto.phone);
     if (existed) {
       return DataRes.failed("Số điện thoại đã tồn tại");
-    }
-
-    if (dto.role === UserRole.Admin) {
-      return DataRes.failed("Lỗi hệ thống");
     }
 
     const user = await this.usersRepository.create(dto);
@@ -122,6 +119,20 @@ export class UsersService {
     const users = await this.usersRepository.getUsers(pageOptionsDto);
     return DataRes.success(users);
   }
+
+
+  async getAvailableCollaborators(
+    query: GetAvailableCollaboratorsDto,
+  ): Promise<DataRes<User[]>> {
+
+    const users = await this.usersRepository.getAvailableCollaborators(query);
+
+    return DataRes.success(
+      users.map(u => this.toSafeUser(u)),
+    );
+  }
+
+
 
   // ---------------- DELETE ----------------
   async removeUser(id: string): Promise<DataRes<null>> {
