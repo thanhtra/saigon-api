@@ -5,6 +5,10 @@ import { promisify } from 'util';
 import { PERMISSIONS } from '../../config/permissions';
 import { UserRole } from './enum';
 
+import * as fs from 'fs';
+import * as path from 'path';
+
+const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 
 export function ellipsis(text: string, length: number) {
@@ -283,7 +287,7 @@ export function slugify(str: string) {
 }
 
 export function getSkip(page: number, size: number) {
-  return page * size;
+  return (page - 1) * size;
 }
 
 export function getPermissionsFromRoles(roles) {
@@ -317,4 +321,34 @@ export function generatePassword(length: number): string {
     length,
     numbers: true,
   });
+}
+
+// utils/slug.ts
+export const slugifyVN = (str: string): string =>
+  str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // bỏ dấu
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+// const slug = slugifyVN(`${title}-${address_detail}`);
+
+
+export function ensureDir(dirPath: string) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
+
+export function generateRoomCode(length = 5): string {
+  const bytes = randomBytes(length);
+  let code = '';
+
+  for (let i = 0; i < length; i++) {
+    code += CHARS[bytes[i] % CHARS.length];
+  }
+
+  return code;
 }

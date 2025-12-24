@@ -3,103 +3,94 @@ export enum Order {
     DESC = "DESC",
 }
 
+
 export enum RentalType {
-    BoardingHouse = 'boarding_house', // dãy trọ
-    WholeHouse = 'whole_house',       // nhà nguyên căn
-    ServicedApartment = 'serviced_apartment', // CHDV
-    Apartment = 'apartment',          // chung cư
+    BoardingHouse = 'boarding_house',   // Dãy trọ (nhiều phòng)
+    WholeHouse = 'whole_house',         // Nhà nguyên căn (1 unit)
+    Apartment = 'apartment',            // Chung cư (1 unit)
+    BusinessPremises = 'business_premises', // Mặt bằng kinh doanh (1 unit)
 }
 
 export enum RentalStatus {
-    NEW = 'NEW',           // Nhà mới được tạo, chưa xác nhận
-    CONFIRMED = 'CONFIRMED', // Nhà đã được admin xác nhận
-    UPDATE = 'UPDATE',     // Nhà đã được chỉnh sửa sau khi tạo
-    CANCELLED = 'CANCELLED' // Nhà đã bị huỷ hoặc xoá
+    New = 'new',               // Nhà mới được tạo, chưa xác nhận
+    Confirmed = 'confirmed',   // Nhà đã được admin xác nhận
+    Update = 'update',         // Nhà đã được chỉnh sửa sau khi tạo
+    Cancelled = 'cancelled',   // Nhà đã bị huỷ hoặc xoá
 }
 
-
 export enum RoomStatus {
-    Available = 'available',   // Trống
-    Rented = 'rented',         // Đã thuê
-    Deposited = 'deposited',   // Đã cọc
-    Maintenance = 'maintenance' // Bảo trì
+    Available = 'available',       // Trống
+    Rented = 'rented',             // Đã thuê
+    Deposited = 'deposited',       // Đã cọc
+    Maintenance = 'maintenance',   // Bảo trì
 }
 
 export enum UserRole {
     Admin = 'admin_saigon',
     Sale = 'sale_saigon',
-    Owner = 'owner',    // chủ nhà
-    Broker = 'broker',  // môi giới
-    Tenant = 'tenant'
+    Owner = 'owner',       // Chủ nhà
+    Broker = 'broker',     // Môi giới
+    Tenant = 'tenant',     // Khách hàng
 }
 
+export enum CollaboratorType {
+    Owner = UserRole.Owner,       // Chủ nhà
+    Broker = UserRole.Broker,     // Môi giới
+}
+
+export enum CustomerType {
+    Owner = UserRole.Owner,     // Chủ nhà
+    Broker = UserRole.Broker,   // Môi giới
+    Tenant = UserRole.Tenant,   // Khách thuê / khách hàng
+}
+
+
+
 export enum BookingStatus {
-    PENDING = 'pending',     // đã đặt lịch
-    CONFIRMED = 'confirmed', // xác nhận với chủ trọ
-    COMPLETED = 'completed', // đã đi xem
-    CANCELLED = 'cancelled', // khách huỷ
-    NO_SHOW = 'no_show',     // khách không đến
+    Pending = 'pending',       // Đã đặt lịch
+    Confirmed = 'confirmed',   // Xác nhận với chủ trọ
+    Completed = 'completed',   // Đã đi xem
+    Cancelled = 'cancelled',   // Khách huỷ
+    NoShow = 'no_show',        // Khách không đến
 }
 
 export enum CommissionStatus {
     Pending = 'pending',
     Paid = 'paid',
+    Cancelled = 'cancelled'
 }
+
 
 export enum FieldCooperation {
-    Land = 'land',     // Bất động sản (mua bán)
-    Rental = 'rental', // Cho thuê (phòng trọ, nhà thuê, CHDV)
-}
-
-export enum CollaboratorType {
-    OWNER = 'owner',    // Chủ nhà
-    BROKER = 'broker',        // Môi giới
-}
-
-export enum CustomerType {
-    OWNER = 'owner',   // Chủ nhà
-    BROKER = 'broker',       // Môi giới
-    TENANT = 'tenant',       // Khách thuê / khách hàng
+    Land = 'land',       // Bất động sản (mua bán)
+    Rental = 'rental',   // Cho thuê
 }
 
 export enum ContractStatus {
-    ACTIVE = 'active',
-    ENDED = 'ended',
-    CANCELLED = 'cancelled',
+    Active = 'active',
+    Ended = 'ended',
+    Cancelled = 'cancelled',
 }
-
-export enum CommissionType {
-    FIXED = 'fixed',        // Số tiền cố định
-    PERCENT = 'percent',    // % tiền thuê
-}
-
 
 export enum ProductStatus {
-    NEW = 'new',
-    UPDATE = 'update',
-    PENDING = 'pending',
-    CONFIRMED = 'confirmed',
-    CANCELLED = 'cancelled'
+    New = 'new',
+    Update = 'update',
+    Pending = 'pending',
+    Confirmed = 'confirmed',
+    Cancelled = 'cancelled',
 }
 
-export enum ProductStatusOptions {
-    new = 'Tin mới',
-    update = 'Có chỉnh sửa',
-    pending = 'Cần cập nhật',
-    confirmed = 'Đã xác nhận',
-    cancelled = 'Đã hủy'
-}
 
 export enum RentalAmenity {
-    FULL_FURNISHED = 'full_furnished',
-    MEZZANINE = 'mezzanine',
-    KITCHEN_SHELF = 'kitchen_shelf',
-    AIR_CONDITIONER = 'air_conditioner',
-    WASHING_MACHINE = 'washing_machine',
-    REFRIGERATOR = 'refrigerator',
-    ELEVATOR = 'elevator',
-    NO_LIVE_WITH_OWNER = 'no_live_with_owner',
-    FREE_TIME = 'free_time',
-    SECURITY_24_7 = 'security_24_7',
-    BASEMENT_PARKING = 'basement_parking',
+    FullFurnished = 'full_furnished',
+    Mezzanine = 'mezzanine',
+    KitchenShelf = 'kitchen_shelf',
+    AirConditioner = 'air_conditioner',
+    WashingMachine = 'washing_machine',
+    Refrigerator = 'refrigerator',
+    Elevator = 'elevator',
+    NoLiveWithOwner = 'no_live_with_owner',
+    FreeTime = 'free_time',
+    Security247 = 'security_24_7',
+    BasementParking = 'basement_parking',
 }

@@ -14,6 +14,8 @@ export const ErrorMes = {
     COMMISSION_UPDATE: "Lỗi cập nhật commission",
     COMMISSION_REMOVE: "Lỗi xoá commission",
 
+    COLLABORATOR_EXISTED: "Tồn tại chủ nhà, môi giới",
+
 
     //User
     USER_GET_ALL: "Lỗi quá trình lấy nhiều thông tin người dùng",
