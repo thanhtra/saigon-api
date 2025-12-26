@@ -8,14 +8,16 @@ import {
   Post,
   Put,
   Query,
-  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 
 import { Permissions } from 'src/common/decorators/permissions.decorator';
-import { Enums } from 'src/common/dtos/enum.dto';
-import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
+import {
+  DataRes,
+  PageDto,
+  PageOptionsDto,
+} from 'src/common/dtos/respones.dto';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { PERMISSIONS } from 'src/config/permissions';
 
@@ -32,49 +34,56 @@ export class TenantsController {
     private readonly tenantsService: TenantsService,
   ) { }
 
-  // ---------- CREATE ----------
+  /* ================= CREATE ================= */
+
   @Post()
   @Permissions(PERMISSIONS.tenants.create)
-  create(
+  async create(
     @Body() dto: CreateTenantDto,
   ): Promise<DataRes<Tenant>> {
-    return this.tenantsService.create(dto);
+    return await this.tenantsService.create(dto);
   }
 
-  // ---------- LIST ----------
+  /* ================= LIST ================= */
+
   @Get()
   @Permissions(PERMISSIONS.tenants.read_many)
-  getTenants(
+  async getTenants(
     @Query() pageOptionsDto: PageOptionsDto,
   ): Promise<DataRes<PageDto<Tenant>>> {
-    return this.tenantsService.getTenants(pageOptionsDto);
+    return await this.tenantsService.getTenants(
+      pageOptionsDto,
+    );
   }
 
-  // ---------- DETAIL ----------
+  /* ================= DETAIL ================= */
+
   @Get(':id')
   @Permissions(PERMISSIONS.tenants.read_one)
-  getTenant(
+  async getTenant(
     @Param('id') id: string,
   ): Promise<DataRes<Tenant>> {
-    return this.tenantsService.getTenant(id);
+    return await this.tenantsService.getTenant(id);
   }
 
-  // ---------- UPDATE ----------
+  /* ================= UPDATE ================= */
+
   @Put(':id')
   @Permissions(PERMISSIONS.tenants.update)
-  update(
+  async update(
     @Param('id') id: string,
     @Body() dto: UpdateTenantDto,
   ): Promise<DataRes<Tenant>> {
-    return this.tenantsService.update(id, dto);
+    return await this.tenantsService.update(id, dto);
   }
 
-  // ---------- DELETE ----------
+  /* ================= DELETE ================= */
+
   @Delete(':id')
   @Permissions(PERMISSIONS.tenants.delete)
-  remove(
+  async remove(
     @Param('id') id: string,
   ): Promise<DataRes<null>> {
-    return this.tenantsService.remove(id);
+    return await this.tenantsService.remove(id);
   }
 }

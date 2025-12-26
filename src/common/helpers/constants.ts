@@ -50,6 +50,3 @@ export const isUnitRental = (
 ): type is UnitRentalType => {
     return UNIT_RENTAL_TYPES.includes(type as UnitRentalType);
 };
-
-
-

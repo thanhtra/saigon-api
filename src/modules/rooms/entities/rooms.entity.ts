@@ -1,14 +1,17 @@
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
-import { RoomStatus } from 'src/common/helpers/enum';
+import { RentalAmenity, RoomStatus } from 'src/common/helpers/enum';
 import { Collaborator } from 'src/modules/collaborators/entities/collaborator.entity';
 import { Contract } from 'src/modules/contracts/entities/contract.entity';
 import { Rental } from 'src/modules/rentals/entities/rental.entity';
+import { Upload } from 'src/modules/uploads/entities/upload.entity';
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
 
 
 @Entity('rooms')
 @Index(['room_code'], { unique: true })
 export class Room extends BaseEntity {
+    @Column()
+    title: string;
 
     @Column()
     rental_id: string;
@@ -57,4 +60,25 @@ export class Room extends BaseEntity {
 
     @OneToMany(() => Contract, c => c.room)
     contracts: Contract[];
+
+    @Column({
+        nullable: true,
+        default: 0
+    })
+    cover_index?: number;
+
+    @OneToMany(() => Upload, u => u.room)
+    uploads: Upload[];
+
+    @Column({
+        type: 'simple-array',
+        nullable: true,
+    })
+    amenities?: RentalAmenity[];
+
+    @Column()
+    description: string;
+
+    @Column({ default: true })
+    active: boolean;
 }

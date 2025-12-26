@@ -1,12 +1,11 @@
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
 import {
-    RentalAmenity,
     RentalStatus,
-    RentalType,
+    RentalType
 } from 'src/common/helpers/enum';
 import { Collaborator } from 'src/modules/collaborators/entities/collaborator.entity';
 import { Room } from 'src/modules/rooms/entities/rooms.entity';
-import { Upload } from 'src/modules/uploads/entities/upload.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
 @Entity('rentals')
@@ -19,11 +18,17 @@ export class Rental extends BaseEntity {
     @Column()
     collaborator_id: string;
 
-    @Column()
+    @ManyToOne(() => User, user => user.created_rentals, {
+        nullable: false,
+        eager: false,
+        onDelete: 'RESTRICT',
+    })
+    @JoinColumn({ name: 'created_by' })
+    created_by_user: User;
+
+    @Column({ nullable: false })
     created_by: string;
 
-    @Column()
-    title: string;
 
     @Column({ type: 'enum', enum: RentalType })
     rental_type: RentalType;
@@ -58,28 +63,6 @@ export class Rental extends BaseEntity {
     @Column({ nullable: true })
     description?: string;
 
-    @Column({
-        type: 'simple-array',
-        nullable: true,
-    })
-    amenities?: RentalAmenity[];
-
-    @Column({
-        type: 'enum',
-        enum: RentalStatus,
-        default: RentalStatus.New,
-    })
-    status: RentalStatus;
-
-    @Column({
-        nullable: true,
-        default: 0
-    })
-    cover_index?: number;
-
     @OneToMany(() => Room, room => room.rental)
     rooms: Room[];
-
-    @OneToMany(() => Upload, u => u.rental)
-    uploads: Upload[];
 }

@@ -78,6 +78,24 @@ export class RentalsService {
     }
   }
 
+  async getByCollaborator(
+    collaboratorId: string,
+    active?: boolean,
+  ): Promise<DataRes<Rental[]>> {
+    try {
+      const rentals = await this.rentalsRepository.findByCollaborator(
+        collaboratorId,
+        active,
+      );
+      return DataRes.success(rentals);
+    } catch (error) {
+      return DataRes.failed(
+        error?.message || 'Lấy danh sách nhà theo chủ nhà thất bại',
+      );
+    }
+  }
+
+
   async getOneAdmin(
     id: string,
   ): Promise<DataRes<Rental>> {

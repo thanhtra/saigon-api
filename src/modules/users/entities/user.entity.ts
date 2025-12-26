@@ -1,7 +1,8 @@
 import { Exclude } from 'class-transformer';
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
 import { UserRole } from 'src/common/helpers/enum';
-import { Column, Entity, Index } from 'typeorm';
+import { Rental } from 'src/modules/rentals/entities/rental.entity';
+import { Column, Entity, Index, OneToMany } from 'typeorm';
 
 
 @Entity('users')
@@ -56,4 +57,9 @@ export class User extends BaseEntity {
 
     @Column({ type: 'text', nullable: true })
     note?: string;
+
+
+    @OneToMany(() => Rental, rental => rental.created_by_user)
+    created_rentals?: Rental[];
+
 }

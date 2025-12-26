@@ -14,91 +14,91 @@ import {
 } from '@nestjs/common';
 
 import { Permissions } from 'src/common/decorators/permissions.decorator';
-import { Enums } from 'src/common/dtos/enum.dto';
+import { Public } from 'src/common/decorators/public.decorator';
 import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { PERMISSIONS } from 'src/config/permissions';
 
 import { CreateUserDto, CustomerCreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
-import { Public } from 'src/common/decorators/public.decorator';
-import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(PermissionsGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(
+    private readonly usersService: UsersService,
+  ) { }
 
+  /* ================= CUSTOMER ================= */
 
-  // ---------- CREATE IN CUSTOMER SITE ----------
+  // ---------- REGISTER ----------
   @Post('register')
   @Public()
-  customerCreate(
+  async customerCreate(
     @Body() dto: CustomerCreateUserDto,
   ): Promise<DataRes<User>> {
-    return this.usersService.customerCreate(dto);
+    return await this.usersService.customerCreate(dto);
   }
+
+  /* ================= ADMIN ================= */
 
   // ---------- CREATE ----------
   @Post()
   @Permissions(PERMISSIONS.users.create)
-  create(
+  async create(
     @Body() dto: CreateUserDto,
   ): Promise<DataRes<User>> {
-    return this.usersService.create(dto);
+    return await this.usersService.create(dto);
   }
 
-  // ---------- LIST ----------
-
+  // ---------- LIST AVAILABLE COLLABORATORS ----------
   @Get('available-collaborator')
   @Permissions(PERMISSIONS.users.read_many)
-  getAvailableCollaborators(
+  async getAvailableCollaborators(
     @Query() query: GetAvailableCollaboratorsDto,
   ): Promise<DataRes<User[]>> {
-    return this.usersService.getAvailableCollaborators(query);
+    return await this.usersService.getAvailableCollaborators(query);
   }
 
-
+  // ---------- LIST USERS ----------
   @Get()
   @Permissions(PERMISSIONS.users.read_many)
-  getUsers(
+  async getUsers(
     @Query() pageOptionsDto: PageOptionsDto,
   ): Promise<DataRes<PageDto<User>>> {
-    return this.usersService.getUsers(pageOptionsDto);
+    return await this.usersService.getUsers(pageOptionsDto);
   }
 
   // ---------- DETAIL ----------
   @Get(':id')
   @Permissions(PERMISSIONS.users.read_one)
-  getUser(
+  async getUser(
     @Param('id') id: string,
   ): Promise<DataRes<User>> {
-    return this.usersService.getUser(id);
+    return await this.usersService.getUser(id);
   }
 
   // ---------- UPDATE ----------
   @Put(':id')
   @Permissions(PERMISSIONS.users.update)
-  update(
+  async update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
     @Req() req,
   ): Promise<DataRes<User>> {
-    return this.usersService.update(id, dto, req.user);
+    return await this.usersService.update(id, dto, req.user);
   }
 
   // ---------- DELETE ----------
   @Delete(':id')
   @Permissions(PERMISSIONS.users.delete)
-  remove(
+  async remove(
     @Param('id') id: string,
   ): Promise<DataRes<null>> {
-    return this.usersService.removeUser(id);
+    return await this.usersService.removeUser(id);
   }
-
-
-
 }

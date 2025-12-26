@@ -1,15 +1,31 @@
 // uploads.controller.ts
-import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, Post, Put, Query, UploadedFiles, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+  ValidationPipe,
+} from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import { extname } from 'path';
+import { v4 as uuidv4 } from 'uuid';
+
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { ensureDir } from 'src/common/helpers/utils';
 import { PERMISSIONS } from 'src/config/permissions';
-import { v4 as uuidv4 } from 'uuid';
+
 import { CreateUploadDto, FileType } from './dto/create-upload.dto';
 import { UpdateUploadDto } from './dto/update-upload.dto';
 import { UploadMultipleDto } from './dto/upload-multiple.dto';
@@ -20,24 +36,27 @@ const uploadRoot = path.join(process.cwd(), 'uploads', 'images');
 
 @Controller('uploads')
 @UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(PermissionsGuard)
 export class UploadsController {
-  constructor(private readonly uploadsService: UploadsService) { }
+  constructor(
+    private readonly uploadsService: UploadsService,
+  ) { }
 
-
+  /* ================= MULTIPLE UPLOAD ================= */
 
   @Post('multiple')
   @UseInterceptors(
     FilesInterceptor('files', 20, {
       storage: diskStorage({
-        destination: (req, file, cb) => {
-          ensureDir(uploadRoot); // ✅ đảm bảo tồn tại
-          cb(null, uploadRoot);  // ✅ path tuyệt đối
+        destination: (_, __, cb) => {
+          ensureDir(uploadRoot);
+          cb(null, uploadRoot);
         },
-        filename: (req, file, cb) => {
-          cb(null, uuidv4() + extname(file.originalname));
+        filename: (_, file, cb) => {
+          cb(null, `${uuidv4()}${extname(file.originalname)}`);
         },
       }),
-      fileFilter: (req, file, cb) => {
+      fileFilter: (_, file, cb) => {
         if (!file.mimetype.startsWith('image')) {
           return cb(new Error('Chỉ chấp nhận hình ảnh'), false);
         }
@@ -50,74 +69,95 @@ export class UploadsController {
     @Body(
       new ValidationPipe({
         whitelist: true,
-        forbidNonWhitelisted: false,
         transform: true,
       }),
     )
     body: UploadMultipleDto,
   ): Promise<DataRes<Upload[]>> {
-    const uploads = await Promise.all(
-      files.map(async file => {
-        const dto: CreateUploadDto = {
-          file_url: file.path,
-          file_type: FileType.Image,
-          rental_id: body.rental_id,
-          room_id: body.room_id,
-          contract_id: body.contract_id,
-        };
+    const uploads: Upload[] = [];
 
-        const res = await this.uploadsService.create(dto);
-        return res.data!;
-      }),
-    );
+    for (const file of files) {
+      const dto: CreateUploadDto = {
+        file_url: file.path,
+        file_type: FileType.Image,
+        rental_id: body.rental_id,
+        room_id: body.room_id,
+        contract_id: body.contract_id,
+      };
+
+      const result = await this.uploadsService.create(dto);
+      if (result.success && result.data) {
+        uploads.push(result.data);
+      }
+    }
 
     return DataRes.success(uploads);
   }
 
+  /* ================= CREATE ================= */
 
   @Post()
-  @UseGuards(PermissionsGuard)
   @Permissions(PERMISSIONS.uploads.create)
-  create(@Body() dto: CreateUploadDto): Promise<DataRes<Upload>> {
-    return this.uploadsService.create(dto);
+  async create(
+    @Body() dto: CreateUploadDto,
+  ): Promise<DataRes<Upload>> {
+    return await this.uploadsService.create(dto);
   }
+
+  /* ================= UPDATE ================= */
 
   @Put(':id')
-  @UseGuards(PermissionsGuard)
   @Permissions(PERMISSIONS.uploads.update)
-  update(@Param('id') id: string, @Body() dto: UpdateUploadDto): Promise<DataRes<Upload>> {
-    return this.uploadsService.update(id, dto);
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateUploadDto,
+  ): Promise<DataRes<Upload>> {
+    return await this.uploadsService.update(id, dto);
   }
+
+  /* ================= DELETE ================= */
 
   @Delete(':id')
-  @UseGuards(PermissionsGuard)
   @Permissions(PERMISSIONS.uploads.delete)
-  remove(@Param('id') id: string): Promise<DataRes<{ id: string }>> {
-    return this.uploadsService.remove(id);
+  async remove(
+    @Param('id') id: string,
+  ): Promise<DataRes<{ id: string }>> {
+    return await this.uploadsService.remove(id);
   }
+
+  /* ================= LIST ================= */
 
   @Get()
-  @UseGuards(PermissionsGuard)
   @Permissions(PERMISSIONS.uploads.read)
-  getAll(@Query() pageOptions: PageOptionsDto): Promise<DataRes<PageDto<Upload>>> {
-    return this.uploadsService.getAll(pageOptions);
+  async getAll(
+    @Query() pageOptions: PageOptionsDto,
+  ): Promise<DataRes<PageDto<Upload>>> {
+    return await this.uploadsService.getAll(pageOptions);
   }
 
+  /* ================= GET BY PARENT ================= */
+
   @Get('parent')
-  @UseGuards(PermissionsGuard)
   @Permissions(PERMISSIONS.uploads.read)
-  getByParent(
+  async getByParent(
     @Query('rentalId') rentalId?: string,
     @Query('roomId') roomId?: string,
     @Query('contractId') contractId?: string,
   ): Promise<DataRes<Upload[]>> {
-    return this.uploadsService.getByParent(rentalId, roomId, contractId);
+    return await this.uploadsService.getByParent(
+      rentalId,
+      roomId,
+      contractId,
+    );
   }
 
+  /* ================= DETAIL ================= */
+
   @Get(':id')
-  @UseGuards(PermissionsGuard)
   @Permissions(PERMISSIONS.uploads.read)
-  getOne(@Param('id') id: string): Promise<DataRes<Upload>> {
-    return this.uploadsService.getOne(id);
+  async getOne(
+    @Param('id') id: string,
+  ): Promise<DataRes<Upload>> {
+    return await this.uploadsService.getOne(id);
   }
 }

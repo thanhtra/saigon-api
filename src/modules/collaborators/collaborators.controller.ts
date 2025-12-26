@@ -13,8 +13,10 @@ import {
 } from '@nestjs/common';
 
 import { Permissions } from 'src/common/decorators/permissions.decorator';
-import { Enums } from 'src/common/dtos/enum.dto';
-import { DataRes, PageDto } from 'src/common/dtos/respones.dto';
+import {
+  DataRes,
+  PageDto,
+} from 'src/common/dtos/respones.dto';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { PERMISSIONS } from 'src/config/permissions';
 
@@ -28,45 +30,58 @@ import { Collaborator } from './entities/collaborator.entity';
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(PermissionsGuard)
 export class CollaboratorsController {
-  constructor(private readonly collaboratorsService: CollaboratorsService) { }
+  constructor(
+    private readonly collaboratorsService: CollaboratorsService,
+  ) { }
 
-  // ---------- CREATE ----------
+  /* ================= CREATE ================= */
+
   @Post()
   @Permissions(PERMISSIONS.collaborators.create)
-  create(@Body() dto: CreateCollaboratorDto): Promise<DataRes<Collaborator>> {
-    return this.collaboratorsService.create(dto);
+  async create(
+    @Body() dto: CreateCollaboratorDto,
+  ): Promise<DataRes<Collaborator>> {
+    return await this.collaboratorsService.create(dto);
   }
 
-  // ---------- LIST / PAGINATION WITH FILTER ----------
+  /* ================= LIST ================= */
+
   @Get()
   @Permissions(PERMISSIONS.collaborators.read_many)
-  getCollaborators(
-    @Query() query: QueryCollaboratorDto
+  async getCollaborators(
+    @Query() query: QueryCollaboratorDto,
   ): Promise<DataRes<PageDto<Collaborator>>> {
-    return this.collaboratorsService.getPaginated(query);
+    return await this.collaboratorsService.getPaginated(query);
   }
 
-  // ---------- DETAIL ----------
+  /* ================= DETAIL ================= */
+
   @Get(':id')
   @Permissions(PERMISSIONS.collaborators.read_one)
-  getCollaborator(@Param('id') id: string): Promise<DataRes<Collaborator>> {
-    return this.collaboratorsService.getOne(id);
+  async getCollaborator(
+    @Param('id') id: string,
+  ): Promise<DataRes<Collaborator>> {
+    return await this.collaboratorsService.getOne(id);
   }
 
-  // ---------- UPDATE ----------
+  /* ================= UPDATE ================= */
+
   @Put(':id')
   @Permissions(PERMISSIONS.collaborators.update)
-  update(
+  async update(
     @Param('id') id: string,
-    @Body() dto: UpdateCollaboratorDto
+    @Body() dto: UpdateCollaboratorDto,
   ): Promise<DataRes<Collaborator>> {
-    return this.collaboratorsService.update(id, dto);
+    return await this.collaboratorsService.update(id, dto);
   }
 
-  // ---------- DELETE ----------
+  /* ================= DELETE ================= */
+
   @Delete(':id')
   @Permissions(PERMISSIONS.collaborators.delete)
-  remove(@Param('id') id: string): Promise<DataRes<null>> {
-    return this.collaboratorsService.remove(id);
+  async remove(
+    @Param('id') id: string,
+  ): Promise<DataRes<null>> {
+    return await this.collaboratorsService.remove(id);
   }
 }

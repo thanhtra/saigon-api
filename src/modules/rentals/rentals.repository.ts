@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
     PageDto,
     PageMetaDto,
@@ -12,7 +12,6 @@ import { Room } from '../rooms/entities/rooms.entity';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { UpdateRentalDto } from './dto/update-rental.dto';
 import { Rental } from './entities/rental.entity';
-import { UserRole } from 'src/common/helpers/enum';
 
 @Injectable()
 export class RentalsRepository {
@@ -27,7 +26,6 @@ export class RentalsRepository {
         this.rentalRepo = this.connection.getRepository(Rental);
         this.uploadRepo = this.connection.getRepository(Upload);
         this.roomRepo = this.connection.getRepository(Room);
-
     }
 
     /* ================= CREATE ================= */
@@ -42,8 +40,6 @@ export class RentalsRepository {
 
         try {
             const rental = queryRunner.manager.create(Rental, {
-                title: dto.title,
-                rental_type: dto.rental_type,
                 province: dto.province,
                 district: dto.district,
                 ward: dto.ward,
@@ -52,14 +48,12 @@ export class RentalsRepository {
                 address_detail: dto.address_detail,
                 address_detail_display: dto.address_detail_display,
                 commission_value: dto.commission_value,
-                amenities: dto.amenities,
+                rental_type: dto.rental_type,
                 description: dto.description,
                 active: dto.active,
-                cover_index: dto.cover_index ?? 0,
                 collaborator_id: dto.collaborator_id,
                 created_by: user.id,
             });
-
             await queryRunner.manager.save(rental);
 
             if (isUnitRental(dto.rental_type)) {
@@ -69,23 +63,29 @@ export class RentalsRepository {
 
                 const room = queryRunner.manager.create(Room, {
                     rental_id: rental.id,
-                    room_code: generateRoomCode(),
-                    price: dto.price,
-                    slug: slugifyVN(`${dto.title}-${new Date().getTime()}`),
                     collaborator_id: dto.collaborator_id,
                     created_by: user.id,
+                    title: dto.title,
+                    room_code: generateRoomCode(),
+                    slug: slugifyVN(`${dto.title}-${new Date().getTime()}`),
+                    price: dto.price,
+                    cover_index: dto.cover_index ?? 0,
+                    amenities: dto.amenities,
+                    description: dto.description_detail,
+                    floor: dto.floor,
+                    area: dto.area,
+                    room_number: dto.room_number
                 });
 
                 await queryRunner.manager.save(room);
-            }
 
-
-            if (dto.upload_ids?.length) {
-                await queryRunner.manager.update(
-                    Upload,
-                    { id: In(dto.upload_ids) },
-                    { rental },
-                );
+                if (dto.upload_ids?.length) {
+                    await queryRunner.manager.update(
+                        Upload,
+                        { id: In(dto.upload_ids) },
+                        { room },
+                    );
+                }
             }
 
             await queryRunner.commitTransaction();
@@ -113,19 +113,19 @@ export class RentalsRepository {
         if (!rental) return null;
 
         // cập nhật upload nếu có
-        if (dto.upload_ids) {
-            await this.uploadRepo.update(
-                { rental: { id } },
-                { rental: null },
-            );
+        // if (dto.upload_ids) {
+        //     await this.uploadRepo.update(
+        //         { rental: { id } },
+        //         { rental: null },
+        //     );
 
-            if (dto.upload_ids.length) {
-                await this.uploadRepo.update(
-                    { id: In(dto.upload_ids) },
-                    { rental },
-                );
-            }
-        }
+        //     if (dto.upload_ids.length) {
+        //         await this.uploadRepo.update(
+        //             { id: In(dto.upload_ids) },
+        //             { rental },
+        //         );
+        //     }
+        // }
 
         return this.rentalRepo.save(rental);
     }
@@ -157,9 +157,22 @@ export class RentalsRepository {
     ): Promise<PageDto<Rental>> {
         const qb = this.rentalRepo
             .createQueryBuilder('rental')
-            .leftJoinAndSelect('rental.collaborator', 'collaborator')
-            .leftJoinAndSelect('collaborator.user', 'user')
-            .leftJoinAndSelect('rental.uploads', 'uploads')
+
+            // join collaborator
+            .leftJoin('rental.collaborator', 'collaborator')
+
+            // join user của collaborator
+            .leftJoin('collaborator.user', 'collaborator_user')
+
+            // select những field cần
+            .addSelect([
+                'collaborator.id',
+                'collaborator.type',
+                'collaborator_user.id',
+                'collaborator_user.name',
+                'collaborator_user.phone',
+            ])
+
             .orderBy('rental.createdAt', pageOptions.order)
             .skip(getSkip(pageOptions.page, pageOptions.size))
             .take(Math.min(pageOptions.size, 50));
@@ -181,4 +194,32 @@ export class RentalsRepository {
             }),
         );
     }
+
+    async findByCollaborator(
+        collaboratorId: string,
+        active?: boolean,
+    ): Promise<Rental[]> {
+        const qb = this.rentalRepo
+            .createQueryBuilder('rental')
+            .leftJoin('rental.collaborator', 'collaborator')
+            .leftJoin('collaborator.user', 'collaborator_user')
+            .addSelect([
+                'collaborator.id',
+                'collaborator_user.id',
+                'collaborator_user.name',
+                'collaborator_user.phone',
+            ])
+            .where('rental.collaborator_id = :collaboratorId', {
+                collaboratorId,
+            })
+            .orderBy('rental.createdAt', 'DESC');
+
+        if (active !== undefined) {
+            qb.andWhere('rental.active = :active', { active });
+        }
+
+        return qb.getMany();
+    }
+
+
 }

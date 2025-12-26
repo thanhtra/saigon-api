@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Request, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Req, Request, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { DataRes } from 'src/common/dtos/respones.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { AuthService } from './auth.service';
@@ -34,11 +34,10 @@ export class AuthController {
   // ---------------- GET CURRENT USER ----------------
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(@Request() req: AuthRequest) {
-    return {
-      success: true,
-      data: req.user,
-    };
+  async me(
+    @Req() req: AuthRequest,
+  ): Promise<DataRes<any>> {
+    return DataRes.success(req.user);
   }
 
   // ---------------- LOGIN ----------------

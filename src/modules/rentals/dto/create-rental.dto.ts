@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -16,13 +17,19 @@ import {
     RentalType,
 } from 'src/common/helpers/enum';
 
-export class CreateRentalDto {
-    @IsString()
-    @IsNotEmpty()
-    title: string;
 
-    @IsEnum(RentalType)
-    rental_type: RentalType;
+const REQUIRE_DETAIL_TYPES = [
+    RentalType.WholeHouse,
+    RentalType.Apartment,
+    RentalType.BusinessPremises,
+];
+
+const RequireDetail = ValidateIf(
+    o => REQUIRE_DETAIL_TYPES.includes(o.rental_type),
+);
+
+
+export class CreateRentalDto {
 
     @IsString()
     @IsNotEmpty()
@@ -36,13 +43,13 @@ export class CreateRentalDto {
     @IsNotEmpty()
     ward: string;
 
-    @IsOptional()
     @IsString()
-    street?: string;
+    @IsNotEmpty()
+    street: string;
 
-    @IsOptional()
     @IsString()
-    house_number?: string;
+    @IsNotEmpty()
+    house_number: string;
 
     @IsString()
     @IsNotEmpty()
@@ -56,44 +63,65 @@ export class CreateRentalDto {
     @IsNotEmpty()
     commission_value: string;
 
-    @IsUUID()
-    collaborator_id: string;
-
-    @ValidateIf(o =>
-        [
-            RentalType.WholeHouse,
-            RentalType.Apartment,
-            RentalType.BusinessPremises,
-        ].includes(o.rental_type),
-    )
-    @IsNumber()
-    @Min(0)
-    price?: number;
-
-    /* ================= AMENITIES ================= */
-
-    @IsOptional()
-    @IsArray()
-    @IsEnum(RentalAmenity, { each: true })
-    amenities?: RentalAmenity[];
-
-    /* ================= META ================= */
-
-    @IsBoolean()
-    active: boolean;
-
     @IsOptional()
     @IsString()
     description?: string;
 
-    /* ================= UPLOAD ================= */
+    @IsUUID()
+    collaborator_id: string;
+
+    @IsEnum(RentalType)
+    rental_type: RentalType;
+
+    @Type(() => Boolean)
+    @IsBoolean()
+    active: boolean;
+
+    @RequireDetail
+    @IsString()
+    @IsNotEmpty()
+    title: string;
+
+    @RequireDetail
+    @Type(() => Number)
+    @IsNumber()
+    @Min(0)
+    @IsNotEmpty()
+    price: number;
 
     @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    area?: number;
+
+    @RequireDetail
+    @IsArray()
+    @IsEnum(RentalAmenity, { each: true })
+    amenities?: RentalAmenity[];
+
+    @RequireDetail
+    @IsString()
+    @IsNotEmpty()
+    description_detail: string;
+
+    @RequireDetail
     @IsArray()
     @IsUUID('4', { each: true })
-    upload_ids?: string[];
+    upload_ids: string[];
+
+    @RequireDetail
+    @Type(() => Number)
+    @IsNumber()
+    @IsNotEmpty()
+    cover_index: number;
+
+    @ValidateIf(o => o.rental_type === RentalType.Apartment)
+    @Type(() => Number)
+    @IsNumber()
+    @IsNotEmpty()
+    floor: number;
 
     @IsOptional()
-    @IsNumber()
-    cover_index?: number;
+    @IsString()
+    room_number?: string;
 }

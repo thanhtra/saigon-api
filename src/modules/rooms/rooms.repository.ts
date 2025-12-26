@@ -1,23 +1,74 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsOrder } from 'typeorm';
+import { Repository, FindOptionsOrder, DataSource, In } from 'typeorm';
 import { Room } from './entities/rooms.entity';
 import { PageDto, PageMetaDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
-import { getSkip } from 'src/common/helpers/utils';
+import { generateRoomCode, getSkip, slugifyVN } from 'src/common/helpers/utils';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { RoomStatus } from 'src/common/helpers/enum';
+import { Upload } from '../uploads/entities/upload.entity';
 
 @Injectable()
 export class RoomsRepository {
     constructor(
         @InjectRepository(Room)
         private readonly repo: Repository<Room>,
+        private readonly dataSource: DataSource
     ) { }
 
-    // ---------------- CREATE ----------------
-    async create(dto: CreateRoomDto): Promise<Room> {
-        const room = this.repo.create(dto);
-        return this.repo.save(room);
+
+    async create(
+        dto: CreateRoomDto,
+        user: any,
+    ): Promise<Room> {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const room = queryRunner.manager.create(Room, {
+                rental_id: dto.rental_id,
+                collaborator_id: dto.collaborator_id,
+                created_by: user.id,
+
+                title: dto.title,
+                room_code: generateRoomCode(),
+                slug: slugifyVN(`${dto.title}-${Date.now()}`),
+
+                price: dto.price,
+                status: dto.status ?? RoomStatus.Available,
+
+                floor: dto.floor,
+                room_number: dto.room_number,
+                area: dto.area,
+                max_people: dto.max_people,
+
+                amenities: dto.amenities,
+                description: dto.description,
+                cover_index: dto.cover_index ?? 0,
+            });
+
+            await queryRunner.manager.save(room);
+
+            /* ===== HANDLE UPLOAD ===== */
+            if (dto.upload_ids?.length) {
+                await queryRunner.manager.update(
+                    Upload,
+                    { id: In(dto.upload_ids) },
+                    { room },
+                );
+            }
+
+            await queryRunner.commitTransaction();
+            return room;
+
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        } finally {
+            await queryRunner.release();
+        }
     }
 
     // ---------------- UPDATE ----------------

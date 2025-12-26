@@ -94,5 +94,9 @@ export const ErrorMes = {
     COLLABORATOR_CREATE: "Lỗi quá trình tạo mới cộng tác viên",
     COLLABORATOR_REMOVE: "Lỗi quá trình xóa cộng tác viên",
     COLLABORATOR_GET_CONTACT: "Lỗi quá trình lấy thông tin",
+    COLLABORATOR_GET_LIST: "Lỗi lấy danh sách cộng tác viên",
+
+
+    TENANT_GET_LIST: "Lỗi lấy danh sách khách hàng"
 
 }

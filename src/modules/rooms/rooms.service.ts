@@ -2,52 +2,113 @@ import { Injectable } from '@nestjs/common';
 import { RoomsRepository } from './rooms.repository';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
-import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
+import {
+  PageOptionsDto,
+  DataRes,
+  PageDto,
+} from 'src/common/dtos/respones.dto';
 import { Room } from './entities/rooms.entity';
 
 @Injectable()
 export class RoomsService {
-  constructor(private roomsRepository: RoomsRepository) { }
+  constructor(
+    private readonly roomsRepository: RoomsRepository,
+  ) { }
 
-  private async handle<T>(callback: () => Promise<T>, errorMessage: string): Promise<DataRes<T>> {
+  /* ================= ADMIN ================= */
+
+  async create(
+    dto: CreateRoomDto,
+    user: any,
+  ): Promise<DataRes<Room>> {
     try {
-      const data = await callback();
-      if (!data) return DataRes.failed(errorMessage);
-      return DataRes.success(data);
+      const room = await this.roomsRepository.create(dto, user);
+      return DataRes.success(room);
     } catch (error) {
-      return DataRes.failed(error?.message || errorMessage);
+      return DataRes.failed(
+        error?.message || 'Tạo phòng thất bại',
+      );
     }
   }
 
-  // Admin
-  create(dto: CreateRoomDto): Promise<DataRes<Room>> {
-    return this.handle(() => this.roomsRepository.create(dto), 'Tạo phòng thất bại');
+  async update(
+    id: string,
+    dto: UpdateRoomDto,
+  ): Promise<DataRes<Room>> {
+    try {
+      const room = await this.roomsRepository.update(id, dto);
+      if (!room) {
+        return DataRes.failed('Phòng không tồn tại');
+      }
+      return DataRes.success(room);
+    } catch (error) {
+      return DataRes.failed(
+        error?.message || 'Cập nhật phòng thất bại',
+      );
+    }
   }
 
-  update(id: string, dto: UpdateRoomDto): Promise<DataRes<Room>> {
-    return this.handle(() => this.roomsRepository.update(id, dto), 'Cập nhật phòng thất bại');
-  }
-
-
-  // ---------------- DELETE ----------------
-  remove(id: string): Promise<DataRes<{ id: string }>> {
-    return this.handle(async () => {
+  async remove(
+    id: string,
+  ): Promise<DataRes<boolean>> {
+    try {
       const success = await this.roomsRepository.remove(id);
-      if (!success) return undefined;
-      return { id };
-    }, 'Xóa phòng thất bại');
+      if (!success) {
+        return DataRes.failed('Phòng không tồn tại');
+      }
+      return DataRes.success(true);
+    } catch (error) {
+      return DataRes.failed(
+        error?.message || 'Xóa phòng thất bại',
+      );
+    }
   }
 
-  getAll(pageOptions: PageOptionsDto): Promise<DataRes<PageDto<Room>>> {
-    return this.handle(() => this.roomsRepository.findAll(pageOptions), 'Lấy danh sách phòng thất bại');
+  async getAll(
+    pageOptions: PageOptionsDto,
+  ): Promise<DataRes<PageDto<Room>>> {
+    try {
+      const data = await this.roomsRepository.findAll(
+        pageOptions,
+      );
+      return DataRes.success(data);
+    } catch (error) {
+      return DataRes.failed(
+        error?.message || 'Lấy danh sách phòng thất bại',
+      );
+    }
   }
 
-  getOne(id: string): Promise<DataRes<Room>> {
-    return this.handle(() => this.roomsRepository.findOne(id), 'Lấy chi tiết phòng thất bại');
+  async getOneAdmin(
+    id: string,
+  ): Promise<DataRes<Room>> {
+    try {
+      const room = await this.roomsRepository.findOne(id);
+      if (!room) {
+        return DataRes.failed('Phòng không tồn tại');
+      }
+      return DataRes.success(room);
+    } catch (error) {
+      return DataRes.failed(
+        error?.message || 'Lấy chi tiết phòng thất bại',
+      );
+    }
   }
 
-  // Customer
-  getByRental(rental_id: string): Promise<DataRes<Room[]>> {
-    return this.handle(() => this.roomsRepository.findByRental(rental_id), 'Lấy phòng theo rental thất bại');
+  /* ================= CUSTOMER / COMMON ================= */
+
+  async getByRental(
+    rental_id: string,
+  ): Promise<DataRes<Room[]>> {
+    try {
+      const rooms = await this.roomsRepository.findByRental(
+        rental_id,
+      );
+      return DataRes.success(rooms);
+    } catch (error) {
+      return DataRes.failed(
+        error?.message || 'Lấy danh sách phòng theo nhà thất bại',
+      );
+    }
   }
 }
