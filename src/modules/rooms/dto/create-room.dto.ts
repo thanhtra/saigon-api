@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -48,19 +48,18 @@ export class CreateRoomDto {
     @IsOptional()
     @IsArray()
     @IsEnum(RentalAmenity, { each: true })
+    @Transform(({ value }) =>
+        typeof value === 'string'
+            ? value.split(',').filter(Boolean)
+            : Array.isArray(value)
+                ? value
+                : [],
+    )
     amenities?: RentalAmenity[];
 
     @IsOptional()
     @IsString()
     description?: string;
-
-    @IsOptional()
-    @IsNumber()
-    cover_index?: number;
-
-    @IsArray()
-    @IsString({ each: true })
-    upload_ids: string[];
 
     @Type(() => Boolean)
     @IsBoolean()

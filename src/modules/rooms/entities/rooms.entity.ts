@@ -9,6 +9,7 @@ import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm
 
 @Entity('rooms')
 @Index(['room_code'], { unique: true })
+@Index('idx_rooms_amenities', { synchronize: false })
 export class Room extends BaseEntity {
     @Column()
     title: string;
@@ -30,7 +31,7 @@ export class Room extends BaseEntity {
     @Column()
     created_by: string;
 
-    @Column()
+    @Column({ unique: true })
     room_code: string;
 
     @Column({ nullable: true })
@@ -61,18 +62,17 @@ export class Room extends BaseEntity {
     @OneToMany(() => Contract, c => c.room)
     contracts: Contract[];
 
-    @Column({
-        nullable: true,
-        default: 0
-    })
+    @Column({ default: 0 })
     cover_index?: number;
 
     @OneToMany(() => Upload, u => u.room)
     uploads: Upload[];
 
     @Column({
-        type: 'simple-array',
+        type: 'text',
+        array: true,
         nullable: true,
+        default: () => 'ARRAY[]::text[]',
     })
     amenities?: RentalAmenity[];
 

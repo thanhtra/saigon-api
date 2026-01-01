@@ -138,7 +138,7 @@ export class UploadsRepository {
 //     const filePath = join(__dirname, '../../../', 'uploads', local) + flag + imageName;
 //     fs.unlinkSync(filePath)
 
-//     const image = await this.repo.findOneOrFail({ where: { file_url: imageName } });
+//     const image = await this.repo.findOneOrFail({ where: { file_path: imageName } });
 //     if (!image) return null;
 
 //     return this.repo.delete(image?.id);

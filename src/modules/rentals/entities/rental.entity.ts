@@ -29,7 +29,6 @@ export class Rental extends BaseEntity {
     @Column({ nullable: false })
     created_by: string;
 
-
     @Column({ type: 'enum', enum: RentalType })
     rental_type: RentalType;
 

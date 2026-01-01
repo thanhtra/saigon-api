@@ -41,10 +41,10 @@ export class TenantsRepository {
       );
 
     /* ========== SEARCH ========== */
-    if (pageOptionsDto.keySearch) {
+    if (pageOptionsDto.key_search) {
       qb.andWhere(
         `(user.name ILIKE :q OR user.phone ILIKE :q)`,
-        { q: `%${pageOptionsDto.keySearch}%` },
+        { q: `%${pageOptionsDto.key_search}%` },
       );
     }
 

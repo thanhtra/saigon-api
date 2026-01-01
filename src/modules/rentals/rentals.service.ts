@@ -21,7 +21,7 @@ export class RentalsService {
   async create(
     dto: CreateRentalDto,
     user: any
-  ): Promise<DataRes<Rental>> {
+  ): Promise<DataRes<any>> {
     try {
       const rental = await this.rentalsRepository.create(dto, user);
       return DataRes.success(rental);

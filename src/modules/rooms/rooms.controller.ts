@@ -16,11 +16,14 @@ import { UpdateRoomDto } from './dto/update-room.dto';
 import {
   PageOptionsDto,
   DataRes,
+  PageDto,
 } from 'src/common/dtos/respones.dto';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { PERMISSIONS } from 'src/config/permissions';
 import { Room } from './entities/rooms.entity';
+import { Public } from 'src/common/decorators/public.decorator';
+import { QueryRoomPublicDto } from './dto/query-room-public.dto';
 
 @Controller('rooms')
 @UseGuards(PermissionsGuard)
@@ -81,4 +84,23 @@ export class RoomsController {
   ): Promise<DataRes<Room[]>> {
     return await this.roomsService.getByRental(rental_id);
   }
+
+
+  @Get('public')
+  @Public()
+  async getPublicRooms(
+    @Query() query: QueryRoomPublicDto,
+  ): Promise<DataRes<PageDto<Room>>> {
+    return await this.roomsService.getPublicRooms(query);
+  }
+
+  @Get('public/:slug')
+  @Public()
+  async getRoomBySlug(
+    @Param('slug') slug: string,
+  ): Promise<DataRes<Room>> {
+    return await this.roomsService.getPublicRoomBySlug(slug);
+  }
+
+
 }

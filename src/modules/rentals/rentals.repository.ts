@@ -32,8 +32,8 @@ export class RentalsRepository {
 
     async create(
         dto: CreateRentalDto,
-        user: any
-    ): Promise<Rental> {
+        user: any,
+    ): Promise<any> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -54,43 +54,36 @@ export class RentalsRepository {
                 collaborator_id: dto.collaborator_id,
                 created_by: user.id,
             });
+
             await queryRunner.manager.save(rental);
+            let room = {};
 
             if (isUnitRental(dto.rental_type)) {
-                if (dto?.price == null) {
-                    throw new BadRequestException('Giá thuê là bắt buộc cho loại hình này');
+                if (dto.price == null) {
+                    throw new BadRequestException('Giá thuê là bắt buộc');
                 }
 
-                const room = queryRunner.manager.create(Room, {
+                room = queryRunner.manager.create(Room, {
                     rental_id: rental.id,
                     collaborator_id: dto.collaborator_id,
                     created_by: user.id,
                     title: dto.title,
                     room_code: generateRoomCode(),
-                    slug: slugifyVN(`${dto.title}-${new Date().getTime()}`),
+                    slug: slugifyVN(`${dto.title}-${Date.now()}`),
                     price: dto.price,
-                    cover_index: dto.cover_index ?? 0,
                     amenities: dto.amenities,
                     description: dto.description_detail,
                     floor: dto.floor,
                     area: dto.area,
-                    room_number: dto.room_number
+                    room_number: dto.room_number,
+                    cover_index: 0,
                 });
 
                 await queryRunner.manager.save(room);
-
-                if (dto.upload_ids?.length) {
-                    await queryRunner.manager.update(
-                        Upload,
-                        { id: In(dto.upload_ids) },
-                        { room },
-                    );
-                }
             }
 
             await queryRunner.commitTransaction();
-            return rental;
-
+            return { ...rental, room };
         } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;
@@ -98,6 +91,7 @@ export class RentalsRepository {
             await queryRunner.release();
         }
     }
+
 
     /* ================= UPDATE ================= */
 
@@ -150,37 +144,38 @@ export class RentalsRepository {
         });
     }
 
-    /* ================= FIND ALL ================= */
-
     async findAll(
         pageOptions: PageOptionsDto,
     ): Promise<PageDto<Rental>> {
         const qb = this.rentalRepo
             .createQueryBuilder('rental')
 
-            // join collaborator
             .leftJoin('rental.collaborator', 'collaborator')
-
-            // join user của collaborator
             .leftJoin('collaborator.user', 'collaborator_user')
+            .leftJoin('rental.created_by_user', 'created_by_user')
 
-            // select những field cần
             .addSelect([
                 'collaborator.id',
                 'collaborator.type',
+
                 'collaborator_user.id',
                 'collaborator_user.name',
                 'collaborator_user.phone',
+
+                'created_by_user.id',
+                'created_by_user.name',
+                'created_by_user.email',
+                'created_by_user.phone',
             ])
 
             .orderBy('rental.createdAt', pageOptions.order)
             .skip(getSkip(pageOptions.page, pageOptions.size))
             .take(Math.min(pageOptions.size, 50));
 
-        if (pageOptions.keySearch) {
+        if (pageOptions.key_search) {
             qb.andWhere(
                 '(rental.title ILIKE :q OR rental.address_detail ILIKE :q)',
-                { q: `%${pageOptions.keySearch}%` },
+                { q: `%${pageOptions.key_search}%` },
             );
         }
 
@@ -194,6 +189,7 @@ export class RentalsRepository {
             }),
         );
     }
+
 
     async findByCollaborator(
         collaboratorId: string,

@@ -36,3 +36,13 @@ CMD [ "npm", "start" ]
 
 # # Start the server using the production build
 # CMD [ "node", "dist/main.js" ]
+
+
+
+
+# services:
+#     postgres:
+#       image: postgres:15
+#       environment:
+#         TZ: UTC
+#         POSTGRES_INITDB_ARGS: "--timezone=UTC"

@@ -50,8 +50,8 @@ export class ContractsRepository {
             .skip(getSkip(pageOptions.page, pageOptions.size))
             .take(Math.min(pageOptions.size, 50));
 
-        if (pageOptions.keySearch) {
-            qb.andWhere('tenant.name LIKE :q OR rental.title LIKE :q', { q: `%${pageOptions.keySearch}%` });
+        if (pageOptions.key_search) {
+            qb.andWhere('tenant.name LIKE :q OR rental.title LIKE :q', { q: `%${pageOptions.key_search}%` });
         }
 
         const [entities, itemCount] = await qb.getManyAndCount();

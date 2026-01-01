@@ -62,17 +62,7 @@ export class PageOptionsDto {
     @ApiPropertyOptional()
     @IsString()
     @IsOptional()
-    keySearch?: string;
-
-    @ApiPropertyOptional({
-        description: 'Comma separated enum values',
-        example: 'landlord,broker',
-    })
-    @Transform(({ value }) =>
-        typeof value === 'string' ? value.split(',') : value,
-    )
-    @IsOptional()
-    multipleSearchEnums?: string[];
+    key_search?: string;
 
     @ApiPropertyOptional({ example: true })
     @Transform(({ value }) => value === 'true' || value === true)
@@ -84,7 +74,7 @@ export class PageOptionsDto {
     @Transform(({ value }) => value !== 'false')
     @IsBoolean()
     @IsOptional()
-    isPagin: boolean = true;
+    is_pagin: boolean = true;
 
     @ApiPropertyOptional({ enum: Order, default: Order.DESC })
     @IsEnum(Order)

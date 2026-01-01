@@ -94,3 +94,9 @@ export enum RentalAmenity {
     Security247 = 'security_24_7',
     BasementParking = 'basement_parking',
 }
+
+export enum UploadDomain {
+    Rooms = 'rooms',
+    RealEstates = 'real-estates',
+    Contracts = 'contracts',
+}

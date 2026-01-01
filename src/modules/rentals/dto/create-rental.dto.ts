@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -97,23 +97,19 @@ export class CreateRentalDto {
     @RequireDetail
     @IsArray()
     @IsEnum(RentalAmenity, { each: true })
+    @Transform(({ value }) =>
+        typeof value === 'string'
+            ? value.split(',').filter(Boolean)
+            : Array.isArray(value)
+                ? value
+                : [],
+    )
     amenities?: RentalAmenity[];
 
     @RequireDetail
     @IsString()
     @IsNotEmpty()
     description_detail: string;
-
-    @RequireDetail
-    @IsArray()
-    @IsUUID('4', { each: true })
-    upload_ids: string[];
-
-    @RequireDetail
-    @Type(() => Number)
-    @IsNumber()
-    @IsNotEmpty()
-    cover_index: number;
 
     @ValidateIf(o => o.rental_type === RentalType.Apartment)
     @Type(() => Number)

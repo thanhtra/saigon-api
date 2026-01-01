@@ -50,3 +50,25 @@ export const isUnitRental = (
 ): type is UnitRentalType => {
     return UNIT_RENTAL_TYPES.includes(type as UnitRentalType);
 };
+
+
+export const PRICE_LEVEL_MAP = {
+    a: { min: 0, max: 2000000 },
+    b: { min: 2000000, max: 3000000 },
+    c: { min: 3000000, max: 5000000 },
+    d: { min: 5000000, max: 7000000 },
+    e: { min: 7000000, max: 10000000 },
+    f: { min: 10000000, max: 15000000 },
+    g: { min: 15000000, max: 25000000 },
+    h: { min: 25000000, max: null },
+};
+
+export const ACREAGE_LEVEL_MAP = {
+    a: { min: 0, max: 20 },
+    b: { min: 20, max: 30 },
+    c: { min: 30, max: 50 },
+    d: { min: 50, max: 70 },
+    e: { min: 70, max: 90 },
+    f: { min: 90, max: 120 },
+    g: { min: 120, max: null },
+};

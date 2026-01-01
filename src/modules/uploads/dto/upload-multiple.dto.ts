@@ -1,14 +1,17 @@
-// dto/upload-multiple.dto.ts
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { UploadDomain } from 'src/common/helpers/enum';
 
 export class UploadMultipleDto {
-    @IsOptional()
-    @IsUUID()
-    rental_id?: string;
+    @IsEnum(UploadDomain)
+    domain: string;
 
     @IsOptional()
     @IsUUID()
     room_id?: string;
+
+    @IsOptional()
+    @IsUUID()
+    real_estate_id?: string;
 
     @IsOptional()
     @IsUUID()

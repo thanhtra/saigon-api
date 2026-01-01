@@ -33,7 +33,7 @@ export class RentalsController {
   async create(
     @Body() dto: CreateRentalDto,
     @Req() req,
-  ): Promise<DataRes<Rental>> {
+  ): Promise<DataRes<any>> {
     return await this.rentalsService.create(dto, req.user);
   }
 

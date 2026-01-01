@@ -6,7 +6,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 @Entity('uploads')
 export class Upload extends BaseEntity {
     @Column()
-    file_url: string;
+    file_path: string;
 
     @Column()
     file_type: string; // image / video

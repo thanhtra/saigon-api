@@ -71,10 +71,10 @@ export class CollaboratorsRepository {
       ])
 
     // 🔍 Search
-    if (query.keySearch) {
+    if (query.key_search) {
       qb.andWhere(
         '(user.name ILIKE :q OR user.phone ILIKE :q OR user.email ILIKE :q)',
-        { q: `%${query.keySearch}%` },
+        { q: `%${query.key_search}%` },
       );
     }
 

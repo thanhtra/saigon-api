@@ -8,6 +8,7 @@ import {
   PageDto,
 } from 'src/common/dtos/respones.dto';
 import { Room } from './entities/rooms.entity';
+import { QueryRoomPublicDto } from './dto/query-room-public.dto';
 
 @Injectable()
 export class RoomsService {
@@ -111,4 +112,37 @@ export class RoomsService {
       );
     }
   }
+
+  /* ================= CUSTOMER ================= */
+
+  async getPublicRooms(
+    query: QueryRoomPublicDto,
+  ): Promise<DataRes<PageDto<Room>>> {
+    try {
+      const page = await this.roomsRepository.findPublicRooms(query);
+      return DataRes.success(page);
+    } catch (error) {
+      return DataRes.failed(
+        error?.message || 'Lấy danh sách phòng thất bại',
+      );
+    }
+  }
+
+  async getPublicRoomBySlug(slug: string): Promise<DataRes<Room>> {
+    try {
+      const room = await this.roomsRepository.findPublicRoomBySlug(slug);
+
+      if (!room) {
+        return DataRes.failed('Room not found');
+      }
+
+      return DataRes.success(room);
+    } catch (error) {
+      return DataRes.failed(
+        error?.message || 'Lấy room detail thất bại',
+      );
+    }
+
+  }
+
 }
