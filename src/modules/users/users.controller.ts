@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -9,25 +8,25 @@ import {
   Put,
   Query,
   Req,
-  UseGuards,
-  UseInterceptors,
+  UseGuards
 } from '@nestjs/common';
 
-import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
-import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { PERMISSIONS } from 'src/config/permissions';
 
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { Auth } from 'src/common/decorators/auth.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { User } from 'src/modules/users/entities/user.entity';
 import { CreateUserDto, CustomerCreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CustomerUpdateUserDto } from './dto/customer-update-user.dto';
 import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
-import { User } from './entities/user.entity';
+import { RegisterAfterBookingDto } from './dto/register-after-booking.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
-@UseInterceptors(ClassSerializerInterceptor)
-@UseGuards(PermissionsGuard)
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
@@ -35,70 +34,93 @@ export class UsersController {
 
   /* ================= CUSTOMER ================= */
 
-  // ---------- REGISTER ----------
   @Post('register')
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle(5, 60)            // 5 lần / 60 giây / IP
   async customerCreate(
     @Body() dto: CustomerCreateUserDto,
-  ): Promise<DataRes<User>> {
+  ): Promise<DataRes<any>> {
     return await this.usersService.customerCreate(dto);
+  }
+
+  @Post('register-after-booking')
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle(5, 60)
+  async registerAfterBooking(
+    @Body() dto: RegisterAfterBookingDto,
+  ): Promise<DataRes<any>> {
+    return await this.usersService.registerAfterBooking(dto);
+  }
+
+
+  /* ================= USER ================= */
+
+
+  @Put('me')
+  @UseGuards(ThrottlerGuard)
+  @Auth(PERMISSIONS.users.all_role)
+  async customerUpdateProfile(
+    @Body() dto: CustomerUpdateUserDto,
+    @CurrentUser() user: User,
+  ): Promise<DataRes<User>> {
+    return await this.usersService.customerUpdateProfile(
+      user,
+      dto,
+    );
   }
 
   /* ================= ADMIN ================= */
 
-  // ---------- CREATE ----------
   @Post()
-  @Permissions(PERMISSIONS.users.create)
+  @Auth(PERMISSIONS.users.create)
   async create(
     @Body() dto: CreateUserDto,
   ): Promise<DataRes<User>> {
     return await this.usersService.create(dto);
   }
 
-  // ---------- LIST AVAILABLE COLLABORATORS ----------
   @Get('available-collaborator')
-  @Permissions(PERMISSIONS.users.read_many)
+  @Auth(PERMISSIONS.users.read_many)
   async getAvailableCollaborators(
     @Query() query: GetAvailableCollaboratorsDto,
   ): Promise<DataRes<User[]>> {
     return await this.usersService.getAvailableCollaborators(query);
   }
 
-  // ---------- LIST USERS ----------
   @Get()
-  @Permissions(PERMISSIONS.users.read_many)
+  @Auth(PERMISSIONS.users.read_many)
   async getUsers(
     @Query() pageOptionsDto: PageOptionsDto,
   ): Promise<DataRes<PageDto<User>>> {
     return await this.usersService.getUsers(pageOptionsDto);
   }
 
-  // ---------- DETAIL ----------
   @Get(':id')
-  @Permissions(PERMISSIONS.users.read_one)
+  @Auth(PERMISSIONS.users.read_one)
   async getUser(
     @Param('id') id: string,
   ): Promise<DataRes<User>> {
     return await this.usersService.getUser(id);
   }
 
-  // ---------- UPDATE ----------
   @Put(':id')
-  @Permissions(PERMISSIONS.users.update)
+  @Auth(PERMISSIONS.users.update)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
-    @Req() req,
+    @CurrentUser() userReq: User,
   ): Promise<DataRes<User>> {
-    return await this.usersService.update(id, dto, req.user);
+    return await this.usersService.update(id, dto, userReq);
   }
 
-  // ---------- DELETE ----------
   @Delete(':id')
-  @Permissions(PERMISSIONS.users.delete)
+  @Auth(PERMISSIONS.users.delete)
   async remove(
     @Param('id') id: string,
   ): Promise<DataRes<null>> {
     return await this.usersService.removeUser(id);
   }
+
 }

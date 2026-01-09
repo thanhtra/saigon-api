@@ -1,16 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { FindOptionsOrder } from 'typeorm';
 
 import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { CustomerType, UserRole } from 'src/common/helpers/enum';
 import { ErrorMes } from 'src/common/helpers/errorMessage';
 
+import { toSafeUser } from 'src/common/helpers/api';
 import { CreateUserDto, CustomerCreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { FilterUsersDto } from './dto/filter-users.dto';
+import { CustomerUpdateUserDto } from './dto/customer-update-user.dto';
 import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
-import { User } from './entities/user.entity';
+import { RegisterAfterBookingDto } from './dto/register-after-booking.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
+import { User } from 'src/modules/users/entities/user.entity';
+
 
 @Injectable()
 export class UsersService {
@@ -18,67 +20,87 @@ export class UsersService {
     private readonly usersRepository: UsersRepository,
   ) { }
 
-  /* ================= PRIVATE HELPERS ================= */
 
-  private filterUpdateDtoByRole(
-    dto: UpdateUserDto,
-    currentUser: User,
-  ): UpdateUserDto {
-    if (currentUser.role === UserRole.Admin) {
-      return dto;
-    }
-
-    const { active, role, phone, ...safeDto } = dto;
-    return safeDto;
-  }
-
-  private toSafeUser(user: User): User {
-    if (!user) return user;
-
-    const { password, refresh_token, ...safeUser } = user;
-    return safeUser as User;
-  }
-
-  private mapCustomerRole(type: CustomerType): UserRole {
-    switch (type) {
-      case CustomerType.Owner:
-        return UserRole.Owner;
-      case CustomerType.Broker:
-        return UserRole.Broker;
-      case CustomerType.Tenant:
-      default:
-        return UserRole.Tenant;
-    }
-  }
-
-  /* ================= CREATE ================= */
+  /* ================= CUSTOMER  ================= */
 
   async customerCreate(
     dto: CustomerCreateUserDto,
-  ): Promise<DataRes<User>> {
+  ): Promise<DataRes<any>> {
     try {
       const existed = await this.usersRepository.findOneUserByPhone(dto.phone);
       if (existed) {
-        return DataRes.failed('Số điện thoại đã tồn tại');
+        return DataRes.failed('PHONE_IS_EXISTED');
       }
 
-      const role = this.mapCustomerRole(dto.customer_type);
-
       const user = await this.usersRepository.create({
-        name: dto.name,
-        phone: dto.phone,
+        name: dto.name.trim(),
+        phone: dto.phone.trim(),
         password: dto.password,
-        role,
+        role: this.mapCustomerRole(dto.customer_type),
         active: true,
       });
 
-      return DataRes.success(this.toSafeUser(user));
+      return DataRes.success(toSafeUser(user));
     } catch (error) {
-      return DataRes.failed(
-        error?.message || 'Tạo tài khoản khách hàng thất bại',
-      );
+      console.log('Error customerCreate', error?.message);
+      return DataRes.failed(ErrorMes.SYSTEM_ERROR);
     }
   }
+
+  async customerUpdateProfile(
+    currentUser: User,
+    dto: CustomerUpdateUserDto,
+  ): Promise<DataRes<User>> {
+    try {
+      const payload = {
+        name: dto.name?.trim(),
+        email: dto.email ?? null,
+        zalo: dto.zalo ?? null,
+        link_facebook: dto.link_facebook ?? null,
+        address: dto.address ?? null,
+      };
+
+      const updated = await this.usersRepository.updateProfile(
+        currentUser.id,
+        payload,
+      );
+
+      if (!updated) {
+        return DataRes.failed('Cập nhật thông tin thất bại');
+      }
+
+      return DataRes.success(toSafeUser(updated));
+    } catch (error) {
+      console.log('Error customerUpdateProfile', error?.message);
+      return DataRes.failed(ErrorMes.SYSTEM_ERROR);
+    }
+  }
+
+  async registerAfterBooking(
+    dto: RegisterAfterBookingDto,
+  ): Promise<DataRes<any>> {
+    try {
+      const existed = await this.usersRepository.findOneUserByPhone(dto.phone);
+      if (existed) {
+        return DataRes.failed('PHONE_IS_EXISTED');
+      }
+
+      const user = await this.usersRepository.create({
+        name: dto.name.trim(),
+        phone: dto.phone.trim(),
+        password: dto.password,
+        role: UserRole.Tenant,
+        active: true,
+      });
+
+      return DataRes.success(toSafeUser(user));
+    } catch (error) {
+      console.log('Error registerAfterBooking', error?.message);
+      return DataRes.failed(ErrorMes.SYSTEM_ERROR);
+    }
+  }
+
+  /* ================= ADMIN ================= */
 
   async create(
     dto: CreateUserDto,
@@ -94,7 +116,7 @@ export class UsersService {
       }
 
       const user = await this.usersRepository.create(dto);
-      return DataRes.success(this.toSafeUser(user));
+      return DataRes.success(toSafeUser(user));
     } catch (error) {
       return DataRes.failed(
         error?.message || 'Tạo người dùng thất bại',
@@ -112,12 +134,12 @@ export class UsersService {
     try {
       const safeDto = this.filterUpdateDtoByRole(dto, currentUser);
 
-      const updated = await this.usersRepository.update(id, safeDto);
+      const updated = await this.usersRepository.updateProfile(id, safeDto);
       if (!updated) {
         return DataRes.failed(ErrorMes.USER_UPDATE);
       }
 
-      return DataRes.success(this.toSafeUser(updated));
+      return DataRes.success(toSafeUser(updated));
     } catch (error) {
       return DataRes.failed(
         error?.message || 'Cập nhật người dùng thất bại',
@@ -134,7 +156,7 @@ export class UsersService {
         return DataRes.failed(ErrorMes.USER_GET_DETAIL);
       }
 
-      return DataRes.success(this.toSafeUser(user));
+      return DataRes.success(toSafeUser(user));
     } catch (error) {
       return DataRes.failed(
         error?.message || 'Lấy thông tin người dùng thất bại',
@@ -164,7 +186,7 @@ export class UsersService {
       const users = await this.usersRepository.getAvailableCollaborators(query);
 
       return DataRes.success(
-        users.map(user => this.toSafeUser(user)),
+        users.map(user => toSafeUser(user)),
       );
     } catch (error) {
       return DataRes.failed(
@@ -188,29 +210,30 @@ export class UsersService {
     }
   }
 
-  /* ================= INTERNAL / OTHER ================= */
+  /* ================= PRIVATE HELPERS ================= */
 
-  async findByFilter(
-    filters: FilterUsersDto,
-    orderBy?: FindOptionsOrder<User>,
-  ): Promise<User[]> {
-    return await this.usersRepository.findByFilter(filters, orderBy);
+  private filterUpdateDtoByRole(
+    dto: UpdateUserDto,
+    currentUser: User,
+  ): UpdateUserDto {
+    if (currentUser.role === UserRole.Admin) {
+      return dto;
+    }
+
+    const { active, role, phone, ...safeDto } = dto;
+    return safeDto;
   }
 
-  async findOneByPhone(
-    phone: string,
-  ): Promise<DataRes<User>> {
-    try {
-      const user = await this.usersRepository.findOneUserByPhone(phone);
-      if (!user) {
-        return DataRes.failed(ErrorMes.USER_GET_DETAIL);
-      }
-
-      return DataRes.success(user);
-    } catch (error) {
-      return DataRes.failed(
-        error?.message || 'Lấy thông tin người dùng thất bại',
-      );
+  private mapCustomerRole(type: CustomerType): UserRole {
+    switch (type) {
+      case CustomerType.Owner:
+        return UserRole.Owner;
+      case CustomerType.Broker:
+        return UserRole.Broker;
+      case CustomerType.Tenant:
+      default:
+        return UserRole.Tenant;
     }
   }
+
 }

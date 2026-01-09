@@ -1,84 +1,40 @@
 import {
+  Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Put,
-  Delete,
-  Param,
-  Body,
   Query,
-  UseGuards,
-  Req,
+  Req
 } from '@nestjs/common';
-import { RoomsService } from './rooms.service';
-import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
+import { Auth } from 'src/common/decorators/auth.decorator';
+import { Public } from 'src/common/decorators/public.decorator';
 import {
-  PageOptionsDto,
   DataRes,
   PageDto,
+  PageOptionsDto,
 } from 'src/common/dtos/respones.dto';
-import { PermissionsGuard } from 'src/common/guards/permissions.guard';
-import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { PERMISSIONS } from 'src/config/permissions';
-import { Room } from './entities/rooms.entity';
-import { Public } from 'src/common/decorators/public.decorator';
+import { CreateRoomDto } from './dto/create-room.dto';
 import { QueryRoomPublicDto } from './dto/query-room-public.dto';
+import { UpdateRoomDto } from './dto/update-room.dto';
+import { Room } from './entities/rooms.entity';
+import { RoomsService } from './rooms.service';
+import { User } from '../users/entities/user.entity';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('rooms')
-@UseGuards(PermissionsGuard)
 export class RoomsController {
   constructor(
     private readonly roomsService: RoomsService,
   ) { }
 
-  /* ================= ADMIN ================= */
-
-  @Post()
-  @Permissions(PERMISSIONS.rooms.create)
-  async create(
-    @Body() dto: CreateRoomDto,
-    @Req() req,
-  ): Promise<DataRes<Room>> {
-    return await this.roomsService.create(dto, req.user);
-  }
-
-  @Get()
-  @Permissions(PERMISSIONS.rooms.read_many)
-  async getAll(
-    @Query() pageOptions: PageOptionsDto,
-  ): Promise<DataRes<any>> {
-    return await this.roomsService.getAll(pageOptions);
-  }
-
-  @Get('admin/:id')
-  @Permissions(PERMISSIONS.rooms.read_one)
-  async getOneAdmin(
-    @Param('id') id: string,
-  ): Promise<DataRes<Room>> {
-    return await this.roomsService.getOneAdmin(id);
-  }
-
-  @Put(':id')
-  @Permissions(PERMISSIONS.rooms.update)
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateRoomDto,
-  ): Promise<DataRes<Room>> {
-    return await this.roomsService.update(id, dto);
-  }
-
-  @Delete(':id')
-  @Permissions(PERMISSIONS.rooms.delete)
-  async remove(
-    @Param('id') id: string,
-  ): Promise<DataRes<boolean>> {
-    return await this.roomsService.remove(id);
-  }
-
   /* ================= CUSTOMER ================= */
 
   @Get('rental/:rental_id')
+  @Public()
   async getByRental(
     @Param('rental_id') rental_id: string,
   ): Promise<DataRes<Room[]>> {
@@ -102,5 +58,48 @@ export class RoomsController {
     return await this.roomsService.getPublicRoomBySlug(slug);
   }
 
+  /* ================= ADMIN ================= */
+
+  @Post()
+  @Auth(PERMISSIONS.rooms.create)
+  async create(
+    @Body() dto: CreateRoomDto,
+    @CurrentUser() userReq: User,
+  ): Promise<DataRes<Room>> {
+    return await this.roomsService.create(dto, userReq);
+  }
+
+  @Get()
+  @Auth(PERMISSIONS.rooms.read_many)
+  async getAll(
+    @Query() pageOptions: PageOptionsDto,
+  ): Promise<DataRes<any>> {
+    return await this.roomsService.getAll(pageOptions);
+  }
+
+  @Get('admin/:id')
+  @Auth(PERMISSIONS.rooms.read_one)
+  async getOneAdmin(
+    @Param('id') id: string,
+  ): Promise<DataRes<Room>> {
+    return await this.roomsService.getOneAdmin(id);
+  }
+
+  @Put(':id')
+  @Auth(PERMISSIONS.rooms.update)
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateRoomDto,
+  ): Promise<DataRes<Room>> {
+    return await this.roomsService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @Auth(PERMISSIONS.rooms.delete)
+  async remove(
+    @Param('id') id: string,
+  ): Promise<DataRes<boolean>> {
+    return await this.roomsService.remove(id);
+  }
 
 }

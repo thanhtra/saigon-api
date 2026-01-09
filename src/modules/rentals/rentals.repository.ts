@@ -28,7 +28,6 @@ export class RentalsRepository {
         this.roomRepo = this.connection.getRepository(Room);
     }
 
-    /* ================= CREATE ================= */
 
     async create(
         dto: CreateRentalDto,
@@ -52,7 +51,7 @@ export class RentalsRepository {
                 description: dto.description,
                 active: dto.active,
                 collaborator_id: dto.collaborator_id,
-                created_by: user.id,
+                createdBy: user.id,
             });
 
             await queryRunner.manager.save(rental);
@@ -92,9 +91,6 @@ export class RentalsRepository {
         }
     }
 
-
-    /* ================= UPDATE ================= */
-
     async update(
         id: string,
         dto: UpdateRentalDto,
@@ -124,14 +120,10 @@ export class RentalsRepository {
         return this.rentalRepo.save(rental);
     }
 
-    /* ================= REMOVE ================= */
-
     async remove(id: string): Promise<boolean> {
         const { affected } = await this.rentalRepo.delete(id);
         return affected === 1;
     }
-
-    /* ================= FIND ONE ================= */
 
     async findOne(id: string): Promise<Rental | null> {
         return this.rentalRepo.findOne({
@@ -144,15 +136,21 @@ export class RentalsRepository {
         });
     }
 
-    async findAll(
+    async getListRentals(
         pageOptions: PageOptionsDto,
     ): Promise<PageDto<Rental>> {
+        const {
+            page,
+            size,
+            order,
+            key_search,
+        } = pageOptions;
+
         const qb = this.rentalRepo
             .createQueryBuilder('rental')
-
             .leftJoin('rental.collaborator', 'collaborator')
             .leftJoin('collaborator.user', 'collaborator_user')
-            .leftJoin('rental.created_by_user', 'created_by_user')
+            .leftJoin('rental.createdBy', 'created_by_user')
 
             .addSelect([
                 'collaborator.id',
@@ -168,14 +166,19 @@ export class RentalsRepository {
                 'created_by_user.phone',
             ])
 
-            .orderBy('rental.createdAt', pageOptions.order)
-            .skip(getSkip(pageOptions.page, pageOptions.size))
-            .take(Math.min(pageOptions.size, 50));
+            .orderBy('rental.createdAt', order)
+            .skip(getSkip(page, size))
+            .take(Math.min(size, 50));
 
-        if (pageOptions.key_search) {
+        if (key_search?.trim()) {
             qb.andWhere(
-                '(rental.title ILIKE :q OR rental.address_detail ILIKE :q)',
-                { q: `%${pageOptions.key_search}%` },
+                `
+                (
+                    rental.title ILIKE :q
+                    OR rental.address_detail ILIKE :q
+                )
+                `,
+                { q: `%${key_search.trim()}%` },
             );
         }
 
@@ -216,6 +219,5 @@ export class RentalsRepository {
 
         return qb.getMany();
     }
-
 
 }

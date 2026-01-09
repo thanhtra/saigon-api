@@ -31,8 +31,8 @@ async function bootstrap() {
    */
   app.enableCors({
     origin: [
-      configService.get('FRONTEND_ADMIN_URL'),
-      configService.get('FRONTEND_CUSTOMER_URL'),
+      configService.get<string>('frontend.adminUrl'),
+      configService.get<string>('frontend.customerUrl'),
     ],
     credentials: true,
   });
@@ -78,7 +78,7 @@ async function bootstrap() {
   /**
    * ---------------- START ----------------
    */
-  const port = configService.get<number>('port') || 3000;
+  const port = configService.get<number>('port');
   await app.listen(port);
 
   console.log(`🚀 API running on port ${port}`);

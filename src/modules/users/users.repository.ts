@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as argon2 from 'argon2';
 import {
-  FindOptionsOrder,
-  Repository,
+  Repository
 } from 'typeorm';
 
 import {
@@ -13,13 +11,13 @@ import {
 } from 'src/common/dtos/respones.dto';
 import { getSkip } from 'src/common/helpers/utils';
 
-import { CreateUserDto } from './dto/create-user.dto';
-import { FilterUsersDto } from './dto/filter-users.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
-import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
-import { Collaborator } from '../collaborators/entities/collaborator.entity';
 import { UserRole } from 'src/common/helpers/enum';
+import { PasswordUtil } from 'src/common/helpers/password';
+import { Collaborator } from '../collaborators/entities/collaborator.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from 'src/modules/users/entities/user.entity';
 
 @Injectable()
 export class UsersRepository {
@@ -32,32 +30,54 @@ export class UsersRepository {
   async create(dto: CreateUserDto): Promise<User> {
     const user = this.repo.create({
       ...dto,
-      password: await this.hashPassword(dto.password),
+      password: await PasswordUtil.hash(dto.password),
     });
 
     return this.repo.save(user);
   }
 
   // ---------- UPDATE ----------
-  async update(id: string, dto: UpdateUserDto): Promise<User | null> {
+  async updateProfile(
+    id: string,
+    dto: UpdateUserDto,
+  ): Promise<User | null> {
     const user = await this.repo.findOne({ where: { id } });
     if (!user) return null;
 
-    if (dto.password) {
-      dto.password = await this.hashPassword(dto.password);
-    } else {
-      delete dto.password;
-    }
+    return this.repo.save({
+      ...user,
+      ...dto,
+    });
+  }
 
-    return this.repo.save({ ...user, ...dto });
+  async updatePassword(
+    userId: string,
+    hashedPassword: string,
+  ): Promise<void> {
+    await this.repo.update(userId, {
+      password: hashedPassword,
+      refresh_token: null,
+      password_version: () => 'password_version + 1',
+    });
+  }
+
+  async updateRefreshToken(
+    userId: string,
+    hashedRefreshToken: string | null,
+  ): Promise<void> {
+    await this.repo.update(userId, {
+      refresh_token: hashedRefreshToken,
+    });
   }
 
   // ---------- FIND ----------
   async findOneUser(id: string): Promise<User | null> {
+    if (!id) return null;
     return this.repo.findOne({ where: { id } });
   }
 
   async findOneUserByPhone(phone: string): Promise<User | null> {
+    if (!phone) return null;
     return this.repo.findOne({ where: { phone } });
   }
 
@@ -129,19 +149,4 @@ export class UsersRepository {
     return affected === 1;
   }
 
-  // ---------- FILTER ----------
-  async findByFilter(
-    filters: FilterUsersDto,
-    orderBy?: FindOptionsOrder<User>,
-  ): Promise<User[]> {
-    return this.repo.find({
-      where: filters,
-      ...(orderBy && { order: orderBy }),
-    });
-  }
-
-  // ---------- HELPER ----------
-  private hashPassword(password: string): Promise<string> {
-    return argon2.hash(password);
-  }
 }

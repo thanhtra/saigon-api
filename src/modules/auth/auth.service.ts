@@ -1,23 +1,22 @@
 import {
-  Injectable,
-  Inject,
-  forwardRef,
   ForbiddenException,
+  Inject,
+  Injectable,
+  forwardRef,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as argon2 from 'argon2';
+import { JwtService } from '@nestjs/jwt';
 
 import { DataRes } from 'src/common/dtos/respones.dto';
-import { getPermissionsFromRoles } from 'src/common/helpers/utils';
-import { UsersService } from '../users/users.service';
+import { PasswordUtil } from 'src/common/helpers/password';
 import { UsersRepository } from '../users/users.repository';
-import { UpdatePassworDto } from './dto/update-password.dto';
+import { UsersService } from '../users/users.service';
 import { ChangePassworDto } from './dto/change-password.dto';
 
 export interface TokenPayload {
   sub: string;
   username: string;
+  pv: number; // passwordVersion
 }
 
 interface LoginUser {
@@ -36,110 +35,100 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) { }
 
-  // ---------------- LOGIN ----------------
-  async login(user: LoginUser): Promise<DataRes<any>> {
-    try {
-      const payload: TokenPayload = {
-        sub: user.id,
-        username: user.phone,
-      };
 
-      const tokens = this.getTokens(payload);
-      await this.updateRefreshToken(user.id, tokens.refreshToken);
+  async login(user: any) {
+    const payload: TokenPayload = {
+      sub: user.id,
+      username: user.phone,
+      pv: user.password_version
+    };
 
-      return DataRes.success({
-        user,
-        tokens,
-        permissions: getPermissionsFromRoles(user.role),
-      });
-    } catch (error) {
-      return DataRes.failed(error?.message || 'Login thất bại');
-    }
+    const tokens = this.getTokens(payload);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return {
+      user,
+      tokens,
+    };
   }
 
-  // ---------------- REFRESH TOKENS ----------------
+
   async refreshTokens(
     userId: string,
     refreshToken: string,
-  ): Promise<DataRes<{ accessToken: string; refreshToken: string }>> {
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+
+    const user = await this.usersRepository.findOneUser(userId);
+    if (!user || !user.refresh_token) {
+      throw new ForbiddenException('Access Denied');
+    }
+
+    const isValid = await PasswordUtil.verify(user.refresh_token, refreshToken);
+    if (!isValid) {
+      throw new ForbiddenException('Access Denied');
+    }
+
+    const payload: TokenPayload = {
+      sub: user.id,
+      username: user.phone,
+      pv: user.password_version
+    };
+
+    const tokens = this.getTokens(payload);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
+  }
+
+  async logout(user: { id: string }): Promise<boolean> {
+    await this.updateRefreshToken(user.id, null);
+    return true;
+  }
+
+  async resetPassword(
+    userId: string
+  ): Promise<DataRes<{ password: string }>> {
     try {
       const user = await this.usersRepository.findOneUser(userId);
-      if (!user || !user.refresh_token) {
-        throw new ForbiddenException('Access Denied');
+      if (!user) {
+        return DataRes.failed('Người dùng không tồn tại');
       }
 
-      const isValid = await argon2.verify(user.refresh_token, refreshToken);
-      if (!isValid) {
-        throw new ForbiddenException('Access Denied');
-      }
+      const newPassword = this.generateRandomPassword(6);
+      const hashedPassword = await PasswordUtil.hash(newPassword);
 
-      const payload: TokenPayload = {
-        sub: user.id,
-        username: user.phone,
-      };
+      await this.usersRepository.updatePassword(
+        userId,
+        hashedPassword,
+      );
 
-      const tokens = this.getTokens(payload);
-      await this.updateRefreshToken(user.id, tokens.refreshToken);
-
-      return DataRes.success(tokens);
+      return DataRes.success({ password: newPassword });
     } catch (error) {
-      return DataRes.failed(error?.message || 'Refresh token thất bại');
-    }
-  }
-
-  // ---------------- LOGOUT ----------------
-  async logout(user: { id: string }): Promise<DataRes<null>> {
-    try {
-      await this.updateRefreshToken(user.id, null);
-      return DataRes.success(null);
-    } catch (error) {
-      return DataRes.failed(error?.message || 'Logout thất bại');
-    }
-  }
-
-  // ---------------- PASSWORD ----------------
-  async updatePassword(dto: UpdatePassworDto): Promise<DataRes<null>> {
-    try {
-      if (dto.new_password !== dto.confirm_password) {
-        return DataRes.failed('Mật khẩu không khớp');
-      }
-
-      const user = await this.usersRepository.findOneUserByPhone(dto.phone);
-      if (!user) return DataRes.failed('User không tồn tại');
-
-      await this.usersRepository.update(user.id, {
-        password: await argon2.hash(dto.new_password),
-        refresh_token: null,
-      });
-
-      return DataRes.success(null);
-    } catch (error) {
-      return DataRes.failed(error?.message || 'Update password thất bại');
+      return DataRes.failed(error?.message || 'Reset mật khẩu thất bại');
     }
   }
 
   async changePassword(
     dto: ChangePassworDto,
-    user: { id: string },
+    user: any,
   ): Promise<DataRes<null>> {
     try {
-      if (dto.new_password !== dto.confirm_password) {
-        return DataRes.failed('Mật khẩu không khớp');
-      }
-
-      const userDetail = await this.usersRepository.findOneUser(user.id);
+      const { id } = user;
+      const userDetail = await this.usersRepository.findOneUser(id);
       if (!userDetail) return DataRes.failed('User không tồn tại');
 
-      const isValid = await argon2.verify(
+      const isValid = await PasswordUtil.verify(
         userDetail.password,
         dto.old_password,
       );
       if (!isValid) return DataRes.failed('Mật khẩu cũ không đúng');
 
-      await this.usersRepository.update(user.id, {
-        password: await argon2.hash(dto.new_password),
-        refresh_token: null,
-      });
+      const hashedPassword = await PasswordUtil.hash(dto.new_password);
+
+      await this.usersRepository.updatePassword(
+        user.id,
+        hashedPassword,
+      );
 
       return DataRes.success(null);
     } catch (error) {
@@ -151,16 +140,20 @@ export class AuthService {
     return this.usersRepository.findOneUserByPhone(phone);
   }
 
+  async getUserById(id: string) {
+    return this.usersRepository.findOneUser(id);
+  }
+
   // ---------------- TOKENS ----------------
   private getTokens(payload: TokenPayload) {
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get('auth.jwtAccessTokenSecret'),
-      expiresIn: this.configService.get('auth.jwtAccessTokenExpirationTime'),
+      secret: this.configService.get<string>('auth.jwtAccessTokenSecret'),
+      expiresIn: this.configService.get<string>('auth.jwtAccessTokenExpirationTime'),
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get('auth.jwtRefreshTokenSecret'),
-      expiresIn: this.configService.get('auth.jwtRefreshExpirationTime'),
+      secret: this.configService.get<string>('auth.jwtRefreshTokenSecret'),
+      expiresIn: this.configService.get<string>('auth.jwtRefreshExpirationTime'),
     });
 
     return { accessToken, refreshToken };
@@ -169,9 +162,26 @@ export class AuthService {
   private async updateRefreshToken(
     userId: string,
     refreshToken: string | null,
-  ) {
-    const hashed = refreshToken ? await argon2.hash(refreshToken) : null;
-    await this.usersRepository.update(userId, { refresh_token: hashed });
+  ): Promise<void> {
+    const hashedToken = refreshToken
+      ? await PasswordUtil.hash(refreshToken)
+      : null;
+
+    await this.usersRepository.updateRefreshToken(
+      userId,
+      hashedToken,
+    );
   }
+
+
+  private generateRandomPassword(length = 6): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  }
+
 
 }

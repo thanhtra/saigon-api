@@ -1,6 +1,5 @@
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
 import {
-    RentalStatus,
     RentalType
 } from 'src/common/helpers/enum';
 import { Collaborator } from 'src/modules/collaborators/entities/collaborator.entity';
@@ -18,37 +17,33 @@ export class Rental extends BaseEntity {
     @Column()
     collaborator_id: string;
 
-    @ManyToOne(() => User, user => user.created_rentals, {
+    @ManyToOne(() => User, user => user.createdRentals, {
         nullable: false,
-        eager: false,
         onDelete: 'RESTRICT',
     })
     @JoinColumn({ name: 'created_by' })
-    created_by_user: User;
-
-    @Column({ nullable: false })
-    created_by: string;
+    createdBy: User;
 
     @Column({ type: 'enum', enum: RentalType })
     rental_type: RentalType;
 
     @Column({ length: 100 })
-    province: string; // Tỉnh / Thành phố
+    province: string;
 
     @Column({ length: 100 })
-    district: string; // Quận / Huyện
+    district: string;
 
     @Column({ length: 100 })
-    ward: string; // Phường / Xã
+    ward: string;
 
     @Column({ length: 150, nullable: true })
-    street?: string; // Đường / Phố
+    street?: string;
 
     @Column({ length: 50, nullable: true })
-    house_number?: string; // Số nhà
+    house_number?: string;
 
     @Column({ type: 'text' })
-    address_detail: string; // địa chỉ hiển thị đầy đủ
+    address_detail: string;
 
     @Column({ type: 'text' })
     address_detail_display: string;

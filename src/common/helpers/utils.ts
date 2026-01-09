@@ -11,6 +11,10 @@ import * as path from 'path';
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 
+
+export const PHONE_REGEX = /^(0)(3|5|7|8|9)[0-9]{8}$/;
+
+
 export function ellipsis(text: string, length: number) {
   if (text.length <= length) {
     return text;
@@ -352,3 +356,5 @@ export function generateRoomCode(length = 5): string {
 
   return code;
 }
+
+

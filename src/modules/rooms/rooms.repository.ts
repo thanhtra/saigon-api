@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsOrder, DataSource, In } from 'typeorm';
-import { Room } from './entities/rooms.entity';
 import { PageDto, PageMetaDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
-import { generateRoomCode, getSkip, slugifyVN } from 'src/common/helpers/utils';
-import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
-import { RoomStatus } from 'src/common/helpers/enum';
-import { Upload } from '../uploads/entities/upload.entity';
-import { QueryRoomPublicDto } from './dto/query-room-public.dto';
 import { ACREAGE_LEVEL_MAP, PRICE_LEVEL_MAP } from 'src/common/helpers/constants';
+import { RoomStatus } from 'src/common/helpers/enum';
+import { generateRoomCode, getSkip, slugifyVN } from 'src/common/helpers/utils';
+import { DataSource, In, Repository } from 'typeorm';
+import { Upload } from '../uploads/entities/upload.entity';
+import { CreateRoomDto } from './dto/create-room.dto';
+import { QueryRoomPublicDto } from './dto/query-room-public.dto';
+import { UpdateRoomDto } from './dto/update-room.dto';
+import { Room } from './entities/rooms.entity';
 
 @Injectable()
 export class RoomsRepository {
@@ -135,15 +135,6 @@ export class RoomsRepository {
     async findByRental(rental_id: string): Promise<Room[]> {
         return this.repo.find({ where: { rental_id } });
     }
-
-    // ---------------- FILTER ----------------
-    // async findByFilter(filters: Partial<Room>, orderBy?: FindOptionsOrder<Room>): Promise<Room[]> {
-    //     return this.repo.find({
-    //         where: filters,
-    //         ...(orderBy && { order: orderBy }),
-    //     });
-    // }
-
 
     // ---------------- PUBLIC ----------------
 

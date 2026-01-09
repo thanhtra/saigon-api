@@ -3,6 +3,7 @@ import {
     IsString, Matches, MaxLength, MinLength
 } from 'class-validator';
 import { CustomerType, UserRole } from 'src/common/helpers/enum';
+import { PHONE_REGEX } from 'src/common/helpers/utils';
 
 
 export class CustomerCreateUserDto {
@@ -10,9 +11,7 @@ export class CustomerCreateUserDto {
     name: string;
 
     @IsString()
-    @Matches(/(84|0[3|5|7|8|9])+([0-9]{8})\b/, {
-        message: 'Number phone is wrong',
-    })
+    @Matches(PHONE_REGEX, { message: 'Số điện thoại không hợp lệ' })
     phone: string;
 
     @IsString()
@@ -29,9 +28,7 @@ export class CreateUserDto {
     name: string;
 
     @IsString()
-    @Matches(/(84|0[3|5|7|8|9])+([0-9]{8})\b/, {
-        message: 'Number phone is wrong',
-    })
+    @Matches(PHONE_REGEX, { message: 'Số điện thoại không hợp lệ' })
     phone: string;
 
     @IsString()

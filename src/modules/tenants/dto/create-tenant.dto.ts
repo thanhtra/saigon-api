@@ -22,10 +22,6 @@ export class CreateTenantDto {
     @IsString()
     email?: string;
 
-    @IsOptional()
-    @IsString()
-    cccd?: string;
-
     @IsString()
     @MinLength(6)
     password: string;
@@ -59,10 +55,6 @@ export class CreateTenantFromBookingDto {
     @IsOptional()
     @IsString()
     email?: string;
-
-    @IsOptional()
-    @IsString()
-    cccd?: string;
 
     // 🔐 Tạo tài khoản cho tenant
     @IsOptional()

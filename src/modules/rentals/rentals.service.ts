@@ -63,11 +63,11 @@ export class RentalsService {
     }
   }
 
-  async getAll(
+  async getListRentals(
     pageOptions: PageOptionsDto,
   ): Promise<DataRes<PageDto<Rental>>> {
     try {
-      const data = await this.rentalsRepository.findAll(
+      const data = await this.rentalsRepository.getListRentals(
         pageOptions,
       );
       return DataRes.success(data);

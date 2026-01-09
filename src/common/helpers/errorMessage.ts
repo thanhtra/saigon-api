@@ -1,4 +1,5 @@
 export const ErrorMes = {
+    SYSTEM_ERROR: "Lỗi hệ thống!",
     GET_ALL: "Lỗi lấy nhiều",
     UPDATE: "Lỗi cập nhật",
     DELETE: "Lỗi khi xoá",

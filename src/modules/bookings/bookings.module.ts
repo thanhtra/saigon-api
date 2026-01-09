@@ -4,9 +4,10 @@ import { BookingsService } from './bookings.service';
 import { BookingsRepository } from './bookings.repository';
 import { BookingsController } from './bookings.controller';
 import { Booking } from './entities/booking.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Booking])],
+  imports: [TypeOrmModule.forFeature([Booking]), UsersModule],
   providers: [BookingsService, BookingsRepository],
   controllers: [BookingsController],
   exports: [BookingsService],

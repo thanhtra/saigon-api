@@ -1,16 +1,23 @@
 import {
+    ExecutionContext,
     Injectable,
     UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
+
 @Injectable()
 export class RefreshTokenGuard extends AuthGuard('jwt-refresh') {
-    handleRequest(err, user, info, context) {
+    handleRequest(
+        err: any,
+        user: any,
+        info: any,
+        context: ExecutionContext,
+    ) {
         const req = context.switchToHttp().getRequest();
 
         if (err || info) {
-            throw err || new UnauthorizedException(info?.message);
+            throw new UnauthorizedException('Invalid refresh token');
         }
 
         const refreshToken = req.cookies?.refreshToken;

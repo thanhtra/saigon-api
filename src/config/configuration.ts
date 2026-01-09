@@ -1,22 +1,59 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
-const projectFrontendUrl =
-  process.env.PROJECT_FRONTEND_URL || 'https://www.daknong.info';
-
 export default () => ({
-  projectName: process.env.PROJECT_NAME || 'Vi Rung API',
-  projectFrontendUrl: projectFrontendUrl,
+  /* ================= PROJECT ================= */
+  projectName: process.env.PROJECT_NAME,
+
   nodeEnv: process.env.NODE_ENV,
-  port: parseInt(process.env.PORT, 10) || 3000,
-  auth: {
-    jwtAccessTokenSecret: process.env.JWT_ACCESS_TOKEN_SECRET || 'JWT_ACCESS_TOKEN_SECRET',
-    jwtAccessTokenExpirationTime: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME || '15m', //15m
+  isProduction: process.env.NODE_ENV === 'production',
 
-    jwtRefreshTokenSecret: process.env.JWT_REFRESH_TOKEN_SECRET || 'JWT_REFRESH_TOKEN_SECRET',
-    jwtRefreshExpirationTime: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME || '1d', //1d
+  port: Number(process.env.PORT),
 
-    passwordSaltRounds: process.env.AUTH_PASSWORDS_SALT_ROUNDS || 10,
+  /* ================= FRONTEND ================= */
+  frontend: {
+    adminUrl: process.env.FRONTEND_ADMIN_URL,
+    customerUrl: process.env.FRONTEND_CUSTOMER_URL,
   },
-  throttleTtl: process.env.THROTTLE_TTL || 60,
-  throttleLimit: process.env.THROTTLE_LIMIT || 100,
+
+  /* ================= DATABASE ================= */
+  database: {
+    host: process.env.DATABASE_HOST,
+    port: Number(process.env.DATABASE_PORT),
+    username: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASS,
+    name: process.env.DATABASE_NAME,
+
+    maxPool: Number(process.env.DATABASE_MAX_POOL),
+    minPool: Number(process.env.DATABASE_MIN_POOL),
+    ssl: process.env.DATABASE_SSL === 'true',
+  },
+
+  /* ================= AUTH ================= */
+  auth: {
+    jwtAccessTokenSecret:
+      process.env.JWT_ACCESS_TOKEN_SECRET,
+
+    jwtAccessTokenExpirationTime:
+      process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
+
+    jwtRefreshTokenSecret:
+      process.env.JWT_REFRESH_TOKEN_SECRET,
+
+    jwtRefreshExpirationTime:
+      process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
+
+    passwordSaltRounds: Number(
+      process.env.AUTH_PASSWORDS_SALT_ROUNDS,
+    ),
+  },
+
+  /* ================= SECURITY ================= */
+  cookie: {
+    secure: process.env.COOKIE_SECURE,
+    sameSite: process.env.COOKIE_SAMESITE,
+  },
+
+  /* ================= THROTTLE ================= */
+  throttle: {
+    ttl: Number(process.env.THROTTLE_TTL),
+    limit: Number(process.env.THROTTLE_LIMIT),
+  },
 });

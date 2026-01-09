@@ -8,10 +8,8 @@ import { Column, Entity, Index, OneToMany } from 'typeorm';
 @Entity('users')
 @Index(['phone'], { unique: true })
 @Index(['email'], { unique: true, where: `"email" IS NOT NULL` })
-@Index(['cccd'], { unique: true, where: `"cccd" IS NOT NULL` })
 export class User extends BaseEntity {
 
-    // 🔐 Phân quyền hệ thống
     @Column({
         type: 'enum',
         enum: UserRole,
@@ -19,7 +17,6 @@ export class User extends BaseEntity {
     })
     role: UserRole;
 
-    // 🧾 Thông tin cơ bản
     @Column()
     name: string;
 
@@ -29,10 +26,6 @@ export class User extends BaseEntity {
     @Column({ nullable: true })
     email?: string;
 
-    @Column({ nullable: true })
-    cccd?: string;
-
-    // 🔒 Auth
     @Column()
     @Exclude()
     password: string;
@@ -41,11 +34,12 @@ export class User extends BaseEntity {
     @Exclude()
     refresh_token?: string;
 
-    // 📌 Trạng thái
+    @Column({ default: 1 })
+    password_version: number;
+
     @Column({ default: true })
     active: boolean;
 
-    // 📞 Liên hệ
     @Column({ nullable: true })
     zalo?: string;
 
@@ -58,8 +52,7 @@ export class User extends BaseEntity {
     @Column({ type: 'text', nullable: true })
     note?: string;
 
-
-    @OneToMany(() => Rental, rental => rental.created_by_user)
-    created_rentals?: Rental[];
+    @OneToMany(() => Rental, rental => rental.createdBy)
+    createdRentals: Rental[];
 
 }

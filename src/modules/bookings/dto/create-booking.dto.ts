@@ -3,17 +3,10 @@ import { BookingStatus } from 'src/common/helpers/enum';
 
 export class CreateBookingDto {
 
-    // 🏠 Phòng cần xem
     @IsString()
     @IsNotEmpty()
     room_id: string;
 
-    // 👤 Sale / người dẫn khách
-    @IsString()
-    @IsNotEmpty()
-    guide_id: string;
-
-    // 👤 Thông tin khách
     @IsString()
     @IsNotEmpty()
     customer_name: string;
@@ -25,16 +18,13 @@ export class CreateBookingDto {
     @IsOptional()
     customer_note?: string;
 
-    // 📅 Ngày giờ xem phòng
+    @IsString()
+    @IsOptional()
+    admin_note?: string;
+
     @IsDateString()
     viewing_at: string;
 
-    // 📝 Lưu ý khi xem phòng
-    @IsString()
-    @IsOptional()
-    note?: string;
-
-    // 📌 Cho phép admin/sale set trước trạng thái
     @IsEnum(BookingStatus)
     @IsOptional()
     status?: BookingStatus;

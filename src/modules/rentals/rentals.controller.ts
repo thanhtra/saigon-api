@@ -7,20 +7,19 @@ import {
   Post,
   Put,
   Query,
-  Req,
-  UseGuards,
+  Req
 } from '@nestjs/common';
-import { Permissions } from 'src/common/decorators/permissions.decorator';
+import { Auth } from 'src/common/decorators/auth.decorator';
 import { DataRes, PageOptionsDto } from 'src/common/dtos/respones.dto';
-import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { PERMISSIONS } from 'src/config/permissions';
 import { CreateRentalDto } from './dto/create-rental.dto';
 import { UpdateRentalDto } from './dto/update-rental.dto';
 import { Rental } from './entities/rental.entity';
 import { RentalsService } from './rentals.service';
+import { User } from '../users/entities/user.entity';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('rentals')
-@UseGuards(PermissionsGuard)
 export class RentalsController {
   constructor(
     private readonly rentalsService: RentalsService,
@@ -29,24 +28,24 @@ export class RentalsController {
   /* ================= ADMIN ================= */
 
   @Post()
-  @Permissions(PERMISSIONS.rentals.create)
+  @Auth(PERMISSIONS.rentals.create)
   async create(
     @Body() dto: CreateRentalDto,
-    @Req() req,
+    @CurrentUser() user: User,
   ): Promise<DataRes<any>> {
-    return await this.rentalsService.create(dto, req.user);
+    return await this.rentalsService.create(dto, user);
   }
 
   @Get()
-  @Permissions(PERMISSIONS.rentals.read_many)
-  async getAll(
+  @Auth(PERMISSIONS.rentals.read_many)
+  async getListRentals(
     @Query() pageOptions: PageOptionsDto,
   ): Promise<DataRes<any>> {
-    return await this.rentalsService.getAll(pageOptions);
+    return await this.rentalsService.getListRentals(pageOptions);
   }
 
   @Get('by-collaborator')
-  @Permissions(PERMISSIONS.rentals.read_many)
+  @Auth(PERMISSIONS.rentals.read_many)
   async getByCollaborator(
     @Query('collaborator_id') collaboratorId: string,
     @Query('active') active?: boolean,
@@ -58,7 +57,7 @@ export class RentalsController {
   }
 
   @Get('admin/:id')
-  @Permissions(PERMISSIONS.rentals.read_one)
+  @Auth(PERMISSIONS.rentals.read_one)
   async getOneAdmin(
     @Param('id') id: string,
   ): Promise<DataRes<Rental>> {
@@ -66,7 +65,7 @@ export class RentalsController {
   }
 
   @Put(':id')
-  @Permissions(PERMISSIONS.rentals.update)
+  @Auth(PERMISSIONS.rentals.update)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateRentalDto,
@@ -75,13 +74,11 @@ export class RentalsController {
   }
 
   @Delete(':id')
-  @Permissions(PERMISSIONS.rentals.delete)
+  @Auth(PERMISSIONS.rentals.delete)
   async remove(
     @Param('id') id: string,
   ): Promise<DataRes<boolean>> {
     return await this.rentalsService.remove(id);
   }
 
-  /* ================= CUSTOMER ================= */
-  // async getOneCustomer(...) {}
 }

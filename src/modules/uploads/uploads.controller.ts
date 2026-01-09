@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -9,14 +8,12 @@ import {
   Put,
   Query,
   UploadedFiles,
-  UseGuards,
   UseInterceptors
 } from '@nestjs/common';
-import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
-import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { PERMISSIONS } from 'src/config/permissions';
 
+import { Auth } from 'src/common/decorators/auth.decorator';
 import { UploadImagesInterceptor } from 'src/common/exceptions/upload-images.interceptor';
 import { resolveUploadPath } from 'src/common/helpers/upload';
 import { CreateUploadDto, FileType } from './dto/create-upload.dto';
@@ -28,14 +25,11 @@ import { UploadsService } from './uploads.service';
 
 
 @Controller('uploads')
-@UseInterceptors(ClassSerializerInterceptor)
-@UseGuards(PermissionsGuard)
 export class UploadsController {
   constructor(
     private readonly uploadsService: UploadsService,
   ) { }
 
-  /* ================= MULTIPLE UPLOAD ================= */
 
   @Post('multiple')
   @UseInterceptors(UploadImagesInterceptor)
@@ -67,21 +61,16 @@ export class UploadsController {
     return DataRes.success(uploads);
   }
 
-
-  /* ================= CREATE ================= */
-
   @Post()
-  @Permissions(PERMISSIONS.uploads.create)
+  @Auth(PERMISSIONS.uploads.create)
   async create(
     @Body() dto: CreateUploadDto,
   ): Promise<DataRes<Upload>> {
     return await this.uploadsService.create(dto);
   }
 
-  /* ================= UPDATE ================= */
-
   @Put(':id')
-  @Permissions(PERMISSIONS.uploads.update)
+  @Auth(PERMISSIONS.uploads.update)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateUploadDto,
@@ -89,30 +78,24 @@ export class UploadsController {
     return await this.uploadsService.update(id, dto);
   }
 
-  /* ================= DELETE ================= */
-
   @Delete(':id')
-  @Permissions(PERMISSIONS.uploads.delete)
+  @Auth(PERMISSIONS.uploads.delete)
   async remove(
     @Param('id') id: string,
   ): Promise<DataRes<{ id: string }>> {
     return await this.uploadsService.remove(id);
   }
 
-  /* ================= LIST ================= */
-
   @Get()
-  @Permissions(PERMISSIONS.uploads.read)
+  @Auth(PERMISSIONS.uploads.read)
   async getAll(
     @Query() pageOptions: PageOptionsDto,
   ): Promise<DataRes<PageDto<Upload>>> {
     return await this.uploadsService.getAll(pageOptions);
   }
 
-  /* ================= GET BY PARENT ================= */
-
   @Get('parent')
-  @Permissions(PERMISSIONS.uploads.read)
+  @Auth(PERMISSIONS.uploads.read)
   async getByParent(
     @Query('rentalId') rentalId?: string,
     @Query('roomId') roomId?: string,
@@ -125,10 +108,9 @@ export class UploadsController {
     );
   }
 
-  /* ================= DETAIL ================= */
 
   @Get(':id')
-  @Permissions(PERMISSIONS.uploads.read)
+  @Auth(PERMISSIONS.uploads.read)
   async getOne(
     @Param('id') id: string,
   ): Promise<DataRes<Upload>> {

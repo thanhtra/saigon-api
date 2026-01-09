@@ -9,9 +9,4 @@ export class ChangePassworDto {
     @IsString()
     @MinLength(6, { message: 'Mật khẩu mới tối thiểu 6 ký tự' })
     new_password: string;
-
-    @IsNotEmpty({ message: 'Xác nhận mật khẩu không được để trống' })
-    @IsString()
-    @MinLength(6)
-    confirm_password: string;
 }
