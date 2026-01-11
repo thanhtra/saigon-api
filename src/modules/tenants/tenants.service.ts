@@ -17,24 +17,24 @@ export class TenantsService {
     private readonly tenantsRepository: TenantsRepository,
   ) { }
 
-  /* ================= CREATE ================= */
-
   async create(
     dto: CreateTenantDto,
   ): Promise<DataRes<Tenant>> {
     try {
       const tenant =
-        await this.tenantsRepository.createTenant(dto);
+        await this.tenantsRepository.createTenant({
+          user_id: dto.user_id,
+          note: dto.note,
+          active: dto.active ?? true
+        });
 
       return DataRes.success(tenant);
     } catch (error) {
       return DataRes.failed(
-        error?.message || ErrorMes.TENANT_CREATE,
+        ErrorMes.TENANT_CREATE,
       );
     }
   }
-
-  /* ================= DETAIL ================= */
 
   async getTenant(
     id: string,
@@ -52,12 +52,10 @@ export class TenantsService {
       return DataRes.success(tenant);
     } catch (error) {
       return DataRes.failed(
-        error?.message || ErrorMes.TENANT_GET_DETAIL,
+        ErrorMes.TENANT_GET_DETAIL,
       );
     }
   }
-
-  /* ================= LIST ================= */
 
   async getTenants(
     pageOptionsDto: PageOptionsDto,
@@ -71,12 +69,10 @@ export class TenantsService {
       return DataRes.success(tenants);
     } catch (error) {
       return DataRes.failed(
-        error?.message || ErrorMes.TENANT_GET_LIST,
+        ErrorMes.TENANT_GET_LIST,
       );
     }
   }
-
-  /* ================= UPDATE ================= */
 
   async update(
     id: string,
@@ -98,12 +94,10 @@ export class TenantsService {
       return DataRes.success(tenant);
     } catch (error) {
       return DataRes.failed(
-        error?.message || ErrorMes.TENANT_UPDATE,
+        ErrorMes.TENANT_UPDATE,
       );
     }
   }
-
-  /* ================= DELETE ================= */
 
   async remove(
     id: string,
@@ -121,7 +115,7 @@ export class TenantsService {
       return DataRes.success(null);
     } catch (error) {
       return DataRes.failed(
-        error?.message || ErrorMes.TENANT_REMOVE,
+        ErrorMes.TENANT_REMOVE,
       );
     }
   }

@@ -3,12 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PageDto, PageMetaDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { ACREAGE_LEVEL_MAP, PRICE_LEVEL_MAP } from 'src/common/helpers/constants';
 import { RoomStatus } from 'src/common/helpers/enum';
-import { generateRoomCode, getSkip, slugifyVN } from 'src/common/helpers/utils';
-import { DataSource, In, Repository } from 'typeorm';
-import { Upload } from '../uploads/entities/upload.entity';
-import { CreateRoomDto } from './dto/create-room.dto';
+import { getSkip } from 'src/common/helpers/utils';
+import { DataSource, Repository } from 'typeorm';
 import { QueryRoomPublicDto } from './dto/query-room-public.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
 import { Room } from './entities/rooms.entity';
 
 @Injectable()
@@ -19,97 +16,6 @@ export class RoomsRepository {
         private readonly dataSource: DataSource
     ) { }
 
-    async create(
-        dto: CreateRoomDto,
-        user: any,
-    ): Promise<Room> {
-        const room = this.repo.create({
-            rental_id: dto.rental_id,
-            collaborator_id: dto.collaborator_id,
-            created_by: user.id,
-
-            title: dto.title,
-            room_code: generateRoomCode(),
-            slug: slugifyVN(`${dto.title}-${Date.now()}`),
-
-            price: dto.price,
-            status: dto.status ?? RoomStatus.Available,
-
-            floor: dto.floor,
-            room_number: dto.room_number,
-            area: dto.area,
-            max_people: dto.max_people,
-
-            amenities: dto.amenities,
-            description: dto.description,
-            active: dto.active ?? true,
-        });
-
-        return await this.repo.save(room);
-    }
-
-
-    async update(id: string, dto: UpdateRoomDto): Promise<Room | null> {
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
-        try {
-            const room = await queryRunner.manager.findOne(Room, {
-                where: { id },
-            });
-
-            if (!room) return null;
-
-            /* ================= UPDATE ROOM ================= */
-
-            queryRunner.manager.merge(Room, room, {
-                title: dto.title,
-                price: dto.price,
-                area: dto.area,
-                max_people: dto.max_people,
-                status: dto.status,
-                amenities: dto.amenities,
-                description: dto.description,
-                active: dto.active,
-                cover_index: dto.cover_index,
-            });
-
-            await queryRunner.manager.save(room);
-
-            /* ================= UPDATE UPLOADS ================= */
-
-            if (dto.upload_ids?.length) {
-                // reset uploads cũ (optional – rất nên)
-                await queryRunner.manager.update(
-                    Upload,
-                    { room: { id } },
-                    { room: null },
-                );
-
-                // gán uploads mới
-                await queryRunner.manager.update(
-                    Upload,
-                    { id: In(dto.upload_ids) },
-                    { room },
-                );
-            }
-
-            await queryRunner.commitTransaction();
-            return room;
-        } catch (error) {
-            await queryRunner.rollbackTransaction();
-            throw error;
-        } finally {
-            await queryRunner.release();
-        }
-    }
-
-    // ---------------- DELETE ----------------
-    async remove(id: string): Promise<boolean> {
-        const { affected } = await this.repo.delete(id);
-        return affected === 1;
-    }
 
     // ---------------- LIST + PAGINATION ----------------
     async findAll(pageOptions: PageOptionsDto): Promise<PageDto<Room>> {

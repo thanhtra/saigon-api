@@ -43,6 +43,7 @@ export const PERMISSIONS = {
     create: { key: 'rentals:create', roles: ADMIN_ROLES },
     update: { key: 'rentals:update', roles: ADMIN_ROLES },
     delete: { key: 'rentals:delete', roles: ADMIN_ROLES },
+    force_delete: { key: 'rentals:force_delete', roles: ADMIN_ROLES },
   },
 
   rooms: {

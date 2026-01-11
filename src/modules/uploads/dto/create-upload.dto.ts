@@ -1,31 +1,25 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-
-export enum FileType {
-    Image = 'image',
-    Video = 'video',
-}
-
-export enum DomainType {
-    Rental = 'rental',
-    RealEstate = 'real_estate'
-}
+import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
+import { UploadDomain, FileType } from 'src/common/helpers/enum';
 
 export class CreateUploadDto {
     @IsEnum(FileType)
-    file_type: string;
+    file_type: FileType;
 
-    @IsEnum(DomainType)
-    domain: string;
+    @IsEnum(UploadDomain)
+    domain: UploadDomain;
 
     @IsString()
     file_path: string;
 
     @IsOptional()
+    @IsUUID()
     room_id?: string;
 
     @IsOptional()
+    @IsUUID()
     real_estate_id?: string;
 
     @IsOptional()
+    @IsUUID()
     contract_id?: string;
 }

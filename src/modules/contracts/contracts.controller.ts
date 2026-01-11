@@ -30,13 +30,13 @@ export class ContractsController {
 
   /* ================= ADMIN ================= */
 
-  @Post()
-  @Auth(PERMISSIONS.contracts.create)
-  async create(
-    @Body() dto: CreateContractDto,
-  ): Promise<DataRes<Contract>> {
-    return await this.contractsService.create(dto);
-  }
+  // @Post()
+  // @Auth(PERMISSIONS.contracts.create)
+  // async create(
+  //   @Body() dto: CreateContractDto,
+  // ): Promise<DataRes<Contract>> {
+  //   return await this.contractsService.create(dto);
+  // }
 
   @Get()
   @Auth(PERMISSIONS.contracts.read)

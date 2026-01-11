@@ -12,18 +12,8 @@ import { PasswordUtil } from 'src/common/helpers/password';
 import { UsersRepository } from '../users/users.repository';
 import { UsersService } from '../users/users.service';
 import { ChangePassworDto } from './dto/change-password.dto';
+import { TokenPayload } from 'src/common/interface/common';
 
-export interface TokenPayload {
-  sub: string;
-  username: string;
-  pv: number; // passwordVersion
-}
-
-interface LoginUser {
-  id: string;
-  phone: string;
-  role: any;
-}
 
 @Injectable()
 export class AuthService {
@@ -104,7 +94,7 @@ export class AuthService {
 
       return DataRes.success({ password: newPassword });
     } catch (error) {
-      return DataRes.failed(error?.message || 'Reset mật khẩu thất bại');
+      return DataRes.failed('Reset mật khẩu thất bại');
     }
   }
 
@@ -132,7 +122,7 @@ export class AuthService {
 
       return DataRes.success(null);
     } catch (error) {
-      return DataRes.failed(error?.message || 'Đổi mật khẩu thất bại');
+      return DataRes.failed('Đổi mật khẩu thất bại');
     }
   }
 

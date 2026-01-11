@@ -28,8 +28,6 @@ export class TenantsController {
     private readonly tenantsService: TenantsService,
   ) { }
 
-  /* ================= ADMIN ================= */
-
   @Post()
   @Auth(PERMISSIONS.tenants.create)
   async create(

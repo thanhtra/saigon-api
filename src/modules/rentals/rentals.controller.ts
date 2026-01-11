@@ -6,18 +6,18 @@ import {
   Param,
   Post,
   Put,
-  Query,
-  Req
+  Query
 } from '@nestjs/common';
 import { Auth } from 'src/common/decorators/auth.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { DataRes, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { PERMISSIONS } from 'src/config/permissions';
+import { User } from '../users/entities/user.entity';
 import { CreateRentalDto } from './dto/create-rental.dto';
+import { GetRentalsByCollaboratorDto } from './dto/get-rentals-by-collaborator.dto';
 import { UpdateRentalDto } from './dto/update-rental.dto';
 import { Rental } from './entities/rental.entity';
 import { RentalsService } from './rentals.service';
-import { User } from '../users/entities/user.entity';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('rentals')
 export class RentalsController {
@@ -26,6 +26,13 @@ export class RentalsController {
   ) { }
 
   /* ================= ADMIN ================= */
+  @Get()
+  @Auth(PERMISSIONS.rentals.read_many)
+  async getListRentals(
+    @Query() pageOptions: PageOptionsDto,
+  ): Promise<DataRes<any>> {
+    return await this.rentalsService.getListRentals(pageOptions);
+  }
 
   @Post()
   @Auth(PERMISSIONS.rentals.create)
@@ -36,32 +43,12 @@ export class RentalsController {
     return await this.rentalsService.create(dto, user);
   }
 
-  @Get()
-  @Auth(PERMISSIONS.rentals.read_many)
-  async getListRentals(
-    @Query() pageOptions: PageOptionsDto,
-  ): Promise<DataRes<any>> {
-    return await this.rentalsService.getListRentals(pageOptions);
-  }
-
-  @Get('by-collaborator')
-  @Auth(PERMISSIONS.rentals.read_many)
-  async getByCollaborator(
-    @Query('collaborator_id') collaboratorId: string,
-    @Query('active') active?: boolean,
-  ): Promise<DataRes<Rental[]>> {
-    return await this.rentalsService.getByCollaborator(
-      collaboratorId,
-      active,
-    );
-  }
-
   @Get('admin/:id')
   @Auth(PERMISSIONS.rentals.read_one)
-  async getOneAdmin(
+  async findOneAdmin(
     @Param('id') id: string,
   ): Promise<DataRes<Rental>> {
-    return await this.rentalsService.getOneAdmin(id);
+    return await this.rentalsService.findOneAdmin(id);
   }
 
   @Put(':id')
@@ -73,6 +60,10 @@ export class RentalsController {
     return await this.rentalsService.update(id, dto);
   }
 
+  /* ================= chua su dung ================= */
+
+
+
   @Delete(':id')
   @Auth(PERMISSIONS.rentals.delete)
   async remove(
@@ -80,5 +71,35 @@ export class RentalsController {
   ): Promise<DataRes<boolean>> {
     return await this.rentalsService.remove(id);
   }
+
+  @Delete(':id/force')
+  @Auth(PERMISSIONS.rentals.force_delete)
+  async forceDelete(
+    @Param('id') id: string,
+  ): Promise<DataRes<boolean>> {
+    return await this.rentalsService.forceDelete(id);
+  }
+
+
+  @Get('by-collaborator')
+  @Auth(PERMISSIONS.rentals.read_many)
+  async getByCollaborator(
+    @Query() query: GetRentalsByCollaboratorDto,
+  ): Promise<DataRes<Rental[]>> {
+    return this.rentalsService.getByCollaborator(
+      query.collaborator_id,
+      query.active,
+    );
+  }
+
+
+
+
+
+
+
+
+
+
 
 }

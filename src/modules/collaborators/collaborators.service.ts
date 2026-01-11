@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 
 import { CollaboratorsRepository } from './collaborators.repository';
-import { Collaborator } from './entities/collaborator.entity';
 import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
-import { UpdateCollaboratorDto } from './dto/update-collaborator.dto';
 import { QueryCollaboratorDto } from './dto/query-collaborator.dto';
+import { UpdateCollaboratorDto } from './dto/update-collaborator.dto';
+import { Collaborator } from './entities/collaborator.entity';
 
 import { DataRes, PageDto } from 'src/common/dtos/respones.dto';
 import { CollaboratorType, UserRole } from 'src/common/helpers/enum';
 import { ErrorMes } from 'src/common/helpers/errorMessage';
 
 import { UsersRepository } from '../users/users.repository';
+import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
 
 @Injectable()
 export class CollaboratorsService {
@@ -19,7 +20,18 @@ export class CollaboratorsService {
     private readonly usersRepository: UsersRepository,
   ) { }
 
-  /* ================= CREATE ================= */
+  async getCollaborators(
+    query: QueryCollaboratorDto,
+  ): Promise<DataRes<PageDto<Collaborator>>> {
+    try {
+      const data = await this.collaboratorsRepository.getCollaborators(query);
+      return DataRes.success(data);
+    } catch (error) {
+      return DataRes.failed(
+        ErrorMes.COLLABORATOR_GET_LIST,
+      );
+    }
+  }
 
   async create(
     dto: CreateCollaboratorDto,
@@ -30,8 +42,7 @@ export class CollaboratorsService {
         return DataRes.failed(ErrorMes.USER_GET_DETAIL);
       }
 
-      const existed =
-        await this.collaboratorsRepository.findByUserId(dto.user_id);
+      const existed = await this.collaboratorsRepository.findByUserId(dto.user_id);
       if (existed) {
         return DataRes.failed(ErrorMes.COLLABORATOR_EXISTED);
       }
@@ -46,18 +57,17 @@ export class CollaboratorsService {
           user_id: dto.user_id,
           type,
           field_cooperation: dto.field_cooperation,
+          note: dto.note,
           active: dto.active ?? true,
         });
 
       return DataRes.success(collaborator);
     } catch (error) {
       return DataRes.failed(
-        error?.message || ErrorMes.COLLABORATOR_CREATE,
+        ErrorMes.COLLABORATOR_CREATE,
       );
     }
   }
-
-  /* ================= DETAIL ================= */
 
   async getOne(
     id: string,
@@ -73,29 +83,10 @@ export class CollaboratorsService {
       return DataRes.success(collaborator);
     } catch (error) {
       return DataRes.failed(
-        error?.message || ErrorMes.COLLABORATOR_GET_DETAIL,
+        ErrorMes.COLLABORATOR_GET_DETAIL,
       );
     }
   }
-
-  /* ================= LIST / PAGINATION ================= */
-
-  async getPaginated(
-    query: QueryCollaboratorDto,
-  ): Promise<DataRes<PageDto<Collaborator>>> {
-    try {
-      const page =
-        await this.collaboratorsRepository.getCollaborators(query);
-
-      return DataRes.success(page);
-    } catch (error) {
-      return DataRes.failed(
-        error?.message || ErrorMes.COLLABORATOR_GET_LIST,
-      );
-    }
-  }
-
-  /* ================= UPDATE ================= */
 
   async update(
     id: string,
@@ -112,12 +103,10 @@ export class CollaboratorsService {
       return DataRes.success(collaborator);
     } catch (error) {
       return DataRes.failed(
-        error?.message || ErrorMes.COLLABORATOR_UPDATE,
+        ErrorMes.COLLABORATOR_UPDATE,
       );
     }
   }
-
-  /* ================= DELETE ================= */
 
   async remove(
     id: string,
@@ -133,8 +122,20 @@ export class CollaboratorsService {
       return DataRes.success(null);
     } catch (error) {
       return DataRes.failed(
-        error?.message || ErrorMes.COLLABORATOR_REMOVE,
+        ErrorMes.COLLABORATOR_REMOVE,
       );
     }
   }
+
+  async getAvailableCollaborators(query: GetAvailableCollaboratorsDto): Promise<DataRes<{ id: string; name: string; phone: string }[]>> {
+    try {
+      const { type, field_cooperation } = query;
+      const data = await this.collaboratorsRepository.getAvailableCollaborators(type, field_cooperation);
+      return DataRes.success(data);
+    } catch (error) {
+      return DataRes.failed('Không thể lấy danh sách cộng tác viên');
+    }
+  }
+
+
 }

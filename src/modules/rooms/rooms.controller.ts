@@ -6,8 +6,7 @@ import {
   Param,
   Post,
   Put,
-  Query,
-  Req
+  Query
 } from '@nestjs/common';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -22,8 +21,6 @@ import { QueryRoomPublicDto } from './dto/query-room-public.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { Room } from './entities/rooms.entity';
 import { RoomsService } from './rooms.service';
-import { User } from '../users/entities/user.entity';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('rooms')
 export class RoomsController {
@@ -58,16 +55,40 @@ export class RoomsController {
     return await this.roomsService.getPublicRoomBySlug(slug);
   }
 
+
+
+
   /* ================= ADMIN ================= */
+
+  @Put(':id')
+  @Auth(PERMISSIONS.rooms.update)
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateRoomDto,
+  ): Promise<DataRes<Room>> {
+    return await this.roomsService.update(id, dto);
+  }
+
+
+
+
+
+
+  /* ================= chua su dung ================= */
+
+
 
   @Post()
   @Auth(PERMISSIONS.rooms.create)
   async create(
-    @Body() dto: CreateRoomDto,
-    @CurrentUser() userReq: User,
+    @Body() dto: CreateRoomDto
   ): Promise<DataRes<Room>> {
-    return await this.roomsService.create(dto, userReq);
+    return await this.roomsService.create(dto);
   }
+
+
+
+
 
   @Get()
   @Auth(PERMISSIONS.rooms.read_many)
@@ -85,14 +106,6 @@ export class RoomsController {
     return await this.roomsService.getOneAdmin(id);
   }
 
-  @Put(':id')
-  @Auth(PERMISSIONS.rooms.update)
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateRoomDto,
-  ): Promise<DataRes<Room>> {
-    return await this.roomsService.update(id, dto);
-  }
 
   @Delete(':id')
   @Auth(PERMISSIONS.rooms.delete)

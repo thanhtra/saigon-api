@@ -21,6 +21,7 @@ import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
 import { QueryCollaboratorDto } from './dto/query-collaborator.dto';
 import { UpdateCollaboratorDto } from './dto/update-collaborator.dto';
 import { Collaborator } from './entities/collaborator.entity';
+import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
 
 @Controller('collaborators')
 export class CollaboratorsController {
@@ -29,6 +30,22 @@ export class CollaboratorsController {
   ) { }
 
   /* ================= ADMIN ================= */
+  @Get()
+  @Auth(PERMISSIONS.collaborators.read_many)
+  async getCollaborators(
+    @Query() query: QueryCollaboratorDto,
+  ): Promise<DataRes<PageDto<Collaborator>>> {
+    return await this.collaboratorsService.getCollaborators(query);
+  }
+
+  @Get('available')
+  @Auth(PERMISSIONS.collaborators.read_many)
+  async getAvailableCollaborators(
+    @Query() query: GetAvailableCollaboratorsDto,
+  ) {
+    return this.collaboratorsService.getAvailableCollaborators(query);
+  }
+
 
   @Post()
   @Auth(PERMISSIONS.collaborators.create)
@@ -38,13 +55,6 @@ export class CollaboratorsController {
     return await this.collaboratorsService.create(dto);
   }
 
-  @Get()
-  @Auth(PERMISSIONS.collaborators.read_many)
-  async getCollaborators(
-    @Query() query: QueryCollaboratorDto,
-  ): Promise<DataRes<PageDto<Collaborator>>> {
-    return await this.collaboratorsService.getPaginated(query);
-  }
 
   @Get(':id')
   @Auth(PERMISSIONS.collaborators.read_one)
@@ -70,4 +80,7 @@ export class CollaboratorsController {
   ): Promise<DataRes<null>> {
     return await this.collaboratorsService.remove(id);
   }
+
+
+
 }

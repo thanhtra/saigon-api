@@ -4,10 +4,11 @@ import { Room } from './entities/rooms.entity';
 import { RoomsController } from './rooms.controller';
 import { RoomsRepository } from './rooms.repository';
 import { RoomsService } from './rooms.service';
+import { UploadsModule } from '../uploads/uploads.module';
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Room])],
+  imports: [TypeOrmModule.forFeature([Room]), UploadsModule],
   controllers: [RoomsController],
   providers: [RoomsRepository, RoomsService],
   exports: [RoomsRepository, RoomsService],

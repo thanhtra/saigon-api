@@ -25,6 +25,7 @@ import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.
 import { RegisterAfterBookingDto } from './dto/register-after-booking.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
+import { GetAvailableTenantsDto } from './dto/get-available-tenants.dto';
 
 @Controller('users')
 export class UsersController {
@@ -55,7 +56,7 @@ export class UsersController {
   }
 
 
-  /* ================= USER ================= */
+  /* ================= ALL ROLE ================= */
 
 
   @Put('me')
@@ -73,20 +74,28 @@ export class UsersController {
 
   /* ================= ADMIN ================= */
 
-  @Post()
-  @Auth(PERMISSIONS.users.create)
-  async create(
-    @Body() dto: CreateUserDto,
-  ): Promise<DataRes<User>> {
-    return await this.usersService.create(dto);
-  }
-
   @Get('available-collaborator')
   @Auth(PERMISSIONS.users.read_many)
   async getAvailableCollaborators(
     @Query() query: GetAvailableCollaboratorsDto,
   ): Promise<DataRes<User[]>> {
     return await this.usersService.getAvailableCollaborators(query);
+  }
+
+  @Get('available-tenant')
+  @Auth(PERMISSIONS.users.read_many)
+  async getAvailableTenants(
+    @Query() query: GetAvailableTenantsDto,
+  ): Promise<DataRes<User[]>> {
+    return await this.usersService.getAvailableTenants(query);
+  }
+
+  @Post()
+  @Auth(PERMISSIONS.users.create)
+  async create(
+    @Body() dto: CreateUserDto,
+  ): Promise<DataRes<User>> {
+    return await this.usersService.create(dto);
   }
 
   @Get()

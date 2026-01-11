@@ -13,11 +13,12 @@ import { getSkip } from 'src/common/helpers/utils';
 
 import { UserRole } from 'src/common/helpers/enum';
 import { PasswordUtil } from 'src/common/helpers/password';
+import { User } from 'src/modules/users/entities/user.entity';
 import { Collaborator } from '../collaborators/entities/collaborator.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from 'src/modules/users/entities/user.entity';
+import { GetAvailableTenantsDto } from './dto/get-available-tenants.dto';
 
 @Injectable()
 export class UsersRepository {
@@ -26,7 +27,6 @@ export class UsersRepository {
     private readonly repo: Repository<User>,
   ) { }
 
-  // ---------- CREATE ----------
   async create(dto: CreateUserDto): Promise<User> {
     const user = this.repo.create({
       ...dto,
@@ -36,7 +36,6 @@ export class UsersRepository {
     return this.repo.save(user);
   }
 
-  // ---------- UPDATE ----------
   async updateProfile(
     id: string,
     dto: UpdateUserDto,
@@ -70,7 +69,6 @@ export class UsersRepository {
     });
   }
 
-  // ---------- FIND ----------
   async findOneUser(id: string): Promise<User | null> {
     if (!id) return null;
     return this.repo.findOne({ where: { id } });
@@ -81,7 +79,6 @@ export class UsersRepository {
     return this.repo.findOne({ where: { phone } });
   }
 
-  // ---------- LIST ----------
   async getUsers(
     pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<User>> {
@@ -109,7 +106,6 @@ export class UsersRepository {
     );
   }
 
-  // ---------- AVAILABLE COLLABORATORS ----------
   async getAvailableCollaborators(
     query: GetAvailableCollaboratorsDto,
   ): Promise<User[]> {
@@ -142,8 +138,36 @@ export class UsersRepository {
       .getMany();
   }
 
+  async getAvailableTenants(
+    query: GetAvailableTenantsDto,
+  ): Promise<User[]> {
+    const { keyword, limit = 20 } = query;
 
-  // ---------- DELETE ----------
+    const qb = this.repo
+      .createQueryBuilder('u')
+      .leftJoin(
+        'tenants',
+        't',
+        't.user_id = u.id',
+      )
+      .where('t.id IS NULL')
+      .andWhere('u.active = true')
+      .andWhere('u.role = :role', { role: UserRole.Tenant });
+
+    if (keyword) {
+      qb.andWhere(
+        '(u.name ILIKE :kw OR u.phone ILIKE :kw)',
+        { kw: `%${keyword}%` },
+      );
+    }
+
+    return qb
+      .orderBy('u.createdAt', 'DESC')
+      .limit(limit)
+      .getMany();
+  }
+
+
   async removeUser(id: string): Promise<boolean> {
     const { affected } = await this.repo.delete(id);
     return affected === 1;

@@ -356,5 +356,3 @@ export function generateRoomCode(length = 5): string {
 
   return code;
 }
-
-

@@ -19,8 +19,9 @@ import { UploadsModule } from './modules/uploads/uploads.module';
 import { UsersModule } from './modules/users/users.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { DatabaseModule } from './common/database/database.module';
+import { UPLOAD_DIR } from './common/helpers/constants';
 
-const UPLOAD_DIR = join(process.cwd(), 'uploads');
 
 @Module({
   imports: [
@@ -99,6 +100,7 @@ const UPLOAD_DIR = join(process.cwd(), 'uploads');
     }),
 
     /* ================= BUSINESS MODULES ================= */
+    DatabaseModule,
     AuthModule,
     UsersModule,
     UploadsModule,

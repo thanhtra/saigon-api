@@ -3,26 +3,26 @@ import {
     IsArray,
     IsBoolean,
     IsEnum,
+    IsNotEmpty,
     IsNumber,
     IsOptional,
     IsString,
-    Min
+    Min,
 } from 'class-validator';
 import { RentalAmenity, RoomStatus } from 'src/common/helpers/enum';
 
-
 export class CreateRoomDto {
     @IsString()
+    @IsNotEmpty()
     rental_id: string;
 
     @IsString()
-    collaborator_id: string;
-
-    @IsString()
+    @IsNotEmpty()
     title: string;
 
-    @IsNumber()
-    @Min(0)
+    @Type(() => Number)
+    @IsNumber({ maxDecimalPlaces: 2 })
+    @Min(1, { message: 'Giá thuê phải lớn hơn 0' })
     price: number;
 
     @IsOptional()
@@ -30,6 +30,7 @@ export class CreateRoomDto {
     status?: RoomStatus;
 
     @IsOptional()
+    @Type(() => Number)
     @IsNumber()
     floor?: number;
 
@@ -38,30 +39,42 @@ export class CreateRoomDto {
     room_number?: string;
 
     @IsOptional()
+    @Type(() => Number)
     @IsNumber()
     area?: number;
 
     @IsOptional()
+    @Type(() => Number)
     @IsNumber()
     max_people?: number;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    @Min(0)
+    cover_index?: number;
 
     @IsOptional()
     @IsArray()
     @IsEnum(RentalAmenity, { each: true })
     @Transform(({ value }) =>
         typeof value === 'string'
-            ? value.split(',').filter(Boolean)
+            ? value
+                .split(',')
+                .map(v => v.trim())
+                .filter(Boolean)
             : Array.isArray(value)
                 ? value
                 : [],
     )
     amenities?: RentalAmenity[];
 
-    @IsOptional()
     @IsString()
-    description?: string;
+    @IsNotEmpty()
+    description: string;
 
+    @IsOptional()
     @Type(() => Boolean)
     @IsBoolean()
-    active: boolean;
+    active?: boolean;
 }

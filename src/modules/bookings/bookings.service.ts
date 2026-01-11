@@ -44,7 +44,7 @@ export class BookingsService {
       });
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Đặt lịch xem phòng thất bại',
+        'Đặt lịch xem phòng thất bại',
       );
     }
   }
@@ -67,7 +67,7 @@ export class BookingsService {
       return DataRes.success(booking);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Tạo lịch xem phòng thất bại',
+        'Tạo lịch xem phòng thất bại',
       );
     }
   }
@@ -101,7 +101,7 @@ export class BookingsService {
       return DataRes.success(updated);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Cập nhật lịch xem phòng thất bại',
+        'Cập nhật lịch xem phòng thất bại',
       );
     }
   }
@@ -120,7 +120,7 @@ export class BookingsService {
       return DataRes.success(null);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Xóa lịch xem phòng thất bại',
+        'Xóa lịch xem phòng thất bại',
       );
     }
   }
@@ -139,7 +139,7 @@ export class BookingsService {
       return DataRes.success(booking);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Lấy chi tiết lịch xem phòng thất bại',
+        'Lấy chi tiết lịch xem phòng thất bại',
       );
     }
   }
@@ -155,7 +155,7 @@ export class BookingsService {
       return DataRes.success(bookings);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Lấy danh sách lịch xem phòng thất bại',
+        'Lấy danh sách lịch xem phòng thất bại',
       );
     }
   }

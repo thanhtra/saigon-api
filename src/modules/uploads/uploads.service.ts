@@ -1,124 +1,109 @@
-import { Injectable } from '@nestjs/common';
-import { UploadsRepository } from './uploads.repository';
-import { CreateUploadDto } from './dto/create-upload.dto';
-import { UpdateUploadDto } from './dto/update-upload.dto';
+import { Injectable, Logger } from '@nestjs/common';
+import { existsSync, unlink } from 'fs';
+import { join, normalize } from 'path';
 import {
-    DataRes,
-    PageDto,
-    PageOptionsDto,
+    DataRes
 } from 'src/common/dtos/respones.dto';
+import { UPLOAD_DIR } from 'src/common/helpers/constants';
+import { FileType, UploadDomain } from 'src/common/helpers/enum';
+import { promisify } from 'util';
+import { CreateUploadDto } from './dto/create-upload.dto';
 import { Upload } from './entities/upload.entity';
+import { UploadsRepository } from './uploads.repository';
+import { TransactionService } from 'src/common/database/transaction.service';
+import { UploadMultipleDto } from './dto/upload-multiple.dto';
+import { resolveUploadPath } from 'src/common/helpers/upload';
+
+const unlinkAsync = promisify(unlink);
 
 @Injectable()
 export class UploadsService {
+    private readonly logger = new Logger(UploadsService.name);
+
     constructor(
         private readonly uploadsRepository: UploadsRepository,
+        private readonly transactionService: TransactionService
     ) { }
 
-    /* ================= CREATE ================= */
-
-    async create(
-        dto: CreateUploadDto,
-    ): Promise<DataRes<Upload>> {
+    async createUpload(dto: CreateUploadDto): Promise<DataRes<Upload>> {
         try {
-            const upload = await this.uploadsRepository.create(dto);
-            return upload
-                ? DataRes.success(upload)
-                : DataRes.failed('Tạo upload thất bại');
+            // Validate domain & relation
+            const relationCount = [dto.room_id, dto.real_estate_id, dto.contract_id].filter(Boolean).length;
+            if (relationCount !== 1) {
+                return DataRes.failed('Upload chỉ được gắn với đúng một domain');
+            }
+
+            if (!dto.domain || (dto.domain === UploadDomain.Rooms && !dto.room_id) ||
+                (dto.domain === UploadDomain.RealEstates && !dto.real_estate_id) ||
+                (dto.domain === UploadDomain.Contracts && !dto.contract_id)) {
+                return DataRes.failed('Domain hoặc ID liên quan không hợp lệ');
+            }
+
+            const upload = await this.transactionService.runInTransaction(async (manager) => {
+                const entity = manager.create(Upload, dto);
+                return manager.save(Upload, entity);
+            });
+
+            return DataRes.success(upload);
         } catch (error) {
-            return DataRes.failed(
-                error?.message || 'Tạo upload thất bại',
+            console.error('Tạo upload thất bại', error);
+            return DataRes.failed(error?.message || 'Tạo upload thất bại');
+        }
+    }
+
+    async createMultipleUploads(dto: UploadMultipleDto, files: Express.Multer.File[]): Promise<DataRes<Upload[]>> {
+        const { entityId } = resolveUploadPath(dto);
+
+        const uploadResults = await Promise.allSettled(files.map(file => {
+            const filePath = `/${dto.domain}/${entityId}/${file.filename}`;
+            return this.createUpload({ ...dto, file_path: filePath, file_type: FileType.Image });
+        }));
+
+        const uploads = uploadResults
+            .filter(r => r.status === 'fulfilled' && r.value.success)
+            .map(r => (r as PromiseFulfilledResult<DataRes<Upload>>).value.data);
+
+
+        if (!uploads.length) return DataRes.failed('Không có file nào upload thành công');
+        return DataRes.success(uploads);
+    }
+
+
+    async removeFile(filePath: string): Promise<void> {
+        try {
+            if (!filePath) return;
+
+            /**
+             * filePath trong DB: /rooms/xxx/filename.jpg
+             * => convert sang absolute path
+             */
+            const absolutePath = normalize(
+                join(UPLOAD_DIR, filePath),
+            );
+
+            // bảo vệ: chỉ cho xoá trong thư mục uploads
+            if (!absolutePath.startsWith(UPLOAD_DIR)) {
+                this.logger.warn(
+                    `Blocked removeFile outside uploads: ${absolutePath}`,
+                );
+                return;
+            }
+
+            if (!existsSync(absolutePath)) {
+                this.logger.warn(
+                    `File not found, skip remove: ${absolutePath}`,
+                );
+                return;
+            }
+
+            await unlinkAsync(absolutePath);
+
+        } catch (error) {
+            this.logger.error(
+                `Remove file failed: ${filePath}`,
+                error?.stack,
             );
         }
     }
 
-    /* ================= UPDATE ================= */
-
-    async update(
-        id: string,
-        dto: UpdateUploadDto,
-    ): Promise<DataRes<Upload>> {
-        try {
-            const upload = await this.uploadsRepository.update(id, dto);
-            return upload
-                ? DataRes.success(upload)
-                : DataRes.failed('Upload không tồn tại');
-        } catch (error) {
-            return DataRes.failed(
-                error?.message || 'Cập nhật upload thất bại',
-            );
-        }
-    }
-
-    /* ================= DELETE ================= */
-
-    async remove(
-        id: string,
-    ): Promise<DataRes<{ id: string }>> {
-        try {
-            const removed = await this.uploadsRepository.remove(id);
-            return removed
-                ? DataRes.success({ id })
-                : DataRes.failed('Upload không tồn tại');
-        } catch (error) {
-            return DataRes.failed(
-                error?.message || 'Xóa upload thất bại',
-            );
-        }
-    }
-
-    /* ================= DETAIL ================= */
-
-    async getOne(
-        id: string,
-    ): Promise<DataRes<Upload>> {
-        try {
-            const upload = await this.uploadsRepository.findOne(id);
-            return upload
-                ? DataRes.success(upload)
-                : DataRes.failed('Upload không tồn tại');
-        } catch (error) {
-            return DataRes.failed(
-                error?.message || 'Lấy chi tiết upload thất bại',
-            );
-        }
-    }
-
-    /* ================= LIST ================= */
-
-    async getAll(
-        pageOptions: PageOptionsDto,
-    ): Promise<DataRes<PageDto<Upload>>> {
-        try {
-            const uploads = await this.uploadsRepository.findAll(
-                pageOptions,
-            );
-            return DataRes.success(uploads);
-        } catch (error) {
-            return DataRes.failed(
-                error?.message || 'Lấy danh sách upload thất bại',
-            );
-        }
-    }
-
-    /* ================= BY PARENT ================= */
-
-    async getByParent(
-        rentalId?: string,
-        roomId?: string,
-        contractId?: string,
-    ): Promise<DataRes<Upload[]>> {
-        try {
-            const uploads = await this.uploadsRepository.findByParent(
-                rentalId,
-                roomId,
-                contractId,
-            );
-            return DataRes.success(uploads);
-        } catch (error) {
-            return DataRes.failed(
-                error?.message || 'Lấy upload theo parent thất bại',
-            );
-        }
-    }
 }

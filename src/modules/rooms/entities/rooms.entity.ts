@@ -1,38 +1,29 @@
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
 import { RentalAmenity, RoomStatus } from 'src/common/helpers/enum';
-import { Collaborator } from 'src/modules/collaborators/entities/collaborator.entity';
 import { Contract } from 'src/modules/contracts/entities/contract.entity';
 import { Rental } from 'src/modules/rentals/entities/rental.entity';
 import { Upload } from 'src/modules/uploads/entities/upload.entity';
-import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
 
 @Entity('rooms')
 @Index(['room_code'], { unique: true })
+@Index(['slug'], { unique: true })
+@Index(['rental_id'])
+@Index(['status'])
+@Index(['price'])
+@Index(['active'])
 @Index('idx_rooms_amenities', { synchronize: false })
 export class Room extends BaseEntity {
+
     @Column()
     title: string;
 
-    @Column()
-    rental_id: string;
-
-    @ManyToOne(() => Rental, r => r.rooms, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'rental_id' })
-    rental: Rental;
-
-    @ManyToOne(() => Collaborator, c => c.rentals)
-    @JoinColumn({ name: 'collaborator_id' })
-    collaborator: Collaborator;
-
-    @Column()
-    collaborator_id: string;
-
-    @Column()
-    created_by: string;
-
     @Column({ unique: true })
     room_code: string;
+
+    @Column({ unique: true })
+    slug: string;
 
     @Column({ nullable: true })
     floor?: number;
@@ -40,7 +31,7 @@ export class Room extends BaseEntity {
     @Column({ nullable: true })
     room_number?: string;
 
-    @Column()
+    @Column({ type: 'decimal', precision: 12, scale: 2 })
     price: number;
 
     @Column({ nullable: true })
@@ -49,9 +40,6 @@ export class Room extends BaseEntity {
     @Column({ nullable: true })
     max_people?: number;
 
-    @Column({ unique: true })
-    slug: string;
-
     @Column({
         type: 'enum',
         enum: RoomStatus,
@@ -59,14 +47,27 @@ export class Room extends BaseEntity {
     })
     status: RoomStatus;
 
+    @Column({ type: 'text' })
+    description: string;
+
+    @Column({ default: true })
+    active: boolean;
+
+    @ManyToOne(() => Rental, rental => rental.rooms, {
+        nullable: false,
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'rental_id' })
+    rental: Rental;
+
+    @Column()
+    rental_id: string;
+
     @OneToMany(() => Contract, c => c.room)
     contracts: Contract[];
 
     @Column({ default: 0 })
     cover_index?: number;
-
-    @OneToMany(() => Upload, u => u.room)
-    uploads: Upload[];
 
     @Column({
         type: 'text',
@@ -76,9 +77,7 @@ export class Room extends BaseEntity {
     })
     amenities?: RentalAmenity[];
 
-    @Column()
-    description: string;
-
-    @Column({ default: true })
-    active: boolean;
+    // relation
+    @OneToMany(() => Upload, u => u.room)
+    uploads: Upload[];
 }

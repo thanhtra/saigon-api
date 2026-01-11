@@ -61,8 +61,8 @@ export class CommissionsService {
   }
 
   // ---------- FILTER BY COLLABORATOR ----------
-  async getByCollaborator(collaboratorId: string): Promise<DataRes<Commission[]>> {
-    const entities = await this.repo.findByCollaborator(collaboratorId);
-    return DataRes.success(entities);
-  }
+  // async getByCollaborator(collaboratorId: string): Promise<DataRes<Commission[]>> {
+  //   const entities = await this.repo.findByCollaborator(collaboratorId);
+  //   return DataRes.success(entities);
+  // }
 }

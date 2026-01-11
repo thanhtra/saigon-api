@@ -1,4 +1,8 @@
+import { join } from "path";
 import { CustomerType, ProductStatus, RentalAmenity, RentalType, UserRole } from "./enum";
+
+
+export const UPLOAD_DIR = join(process.cwd(), 'uploads');
 
 export const UserRoleOptions: Record<UserRole, string> = {
     [UserRole.Admin]: 'Quản trị hệ thống',

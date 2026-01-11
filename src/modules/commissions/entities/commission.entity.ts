@@ -1,27 +1,39 @@
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
 import { CommissionStatus } from 'src/common/helpers/enum';
-import { Collaborator } from 'src/modules/collaborators/entities/collaborator.entity';
 import { Contract } from 'src/modules/contracts/entities/contract.entity';
-import { Rental } from 'src/modules/rentals/entities/rental.entity';
-import { Room } from 'src/modules/rooms/entities/rooms.entity';
 import { User } from 'src/modules/users/entities/user.entity';
-import { Entity, Column, ManyToOne, OneToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 
 @Entity('commissions')
+@Index(['contract_id'])
+@Index(['status'])
 export class Commission extends BaseEntity {
-    @ManyToOne(() => Contract)
+
+    @OneToOne(() => Contract, {
+        nullable: false,
+        onDelete: 'RESTRICT',
+    })
+    @JoinColumn({ name: 'contract_id' })
     contract: Contract;
 
-    @ManyToOne(() => Rental)
-    rental: Rental;
+    @Column()
+    contract_id: string;
 
-    @ManyToOne(() => Room)
-    room: Room;
-
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, {
+        nullable: false,
+        onDelete: 'RESTRICT',
+    })
+    @JoinColumn({ name: 'sale_id' })
     sale: User;
 
     @Column()
+    sale_id: string;
+
+    @Column({
+        type: 'decimal',
+        precision: 12,
+        scale: 2,
+    })
     amount: number;
 
     @Column({
@@ -30,8 +42,4 @@ export class Commission extends BaseEntity {
         default: CommissionStatus.Pending,
     })
     status: CommissionStatus;
-
-    @ManyToOne(() => Collaborator)
-    collaborator: Collaborator;
-
 }

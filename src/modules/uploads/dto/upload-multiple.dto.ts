@@ -3,7 +3,7 @@ import { UploadDomain } from 'src/common/helpers/enum';
 
 export class UploadMultipleDto {
     @IsEnum(UploadDomain)
-    domain: string;
+    domain: UploadDomain;
 
     @IsOptional()
     @IsUUID()

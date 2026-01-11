@@ -1,7 +1,9 @@
+
+
 import { IsOptional, IsString, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class GetAvailableCollaboratorsDto {
+export class GetAvailableTenantsDto {
     @IsOptional()
     @IsString()
     keyword?: string;

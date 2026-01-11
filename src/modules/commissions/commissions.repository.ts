@@ -73,10 +73,10 @@ export class CommissionsRepository {
     }
 
     // ---------- FILTER BY COLLABORATOR ----------
-    async findByCollaborator(collaboratorId: string): Promise<Commission[]> {
-        return this.repo.find({
-            where: { collaborator: { id: collaboratorId } },
-            relations: ['contract', 'sale', 'collaborator'],
-        });
-    }
+    // async findByCollaborator(collaboratorId: string): Promise<Commission[]> {
+    //     return this.repo.find({
+    //         where: { collaborator: { id: collaboratorId } },
+    //         relations: ['contract', 'sale', 'collaborator'],
+    //     });
+    // }
 }

@@ -3,6 +3,16 @@ export enum Order {
     DESC = "DESC",
 }
 
+export enum FileType {
+    Image = 'image',
+    Video = 'video'
+}
+
+export enum UploadDomain {
+    Rooms = 'rooms',
+    RealEstates = 'real_estates',
+    Contracts = 'contracts',
+}
 
 export enum RentalType {
     BoardingHouse = 'boarding_house',   // Dãy trọ (nhiều phòng)
@@ -23,6 +33,7 @@ export enum RoomStatus {
     Rented = 'rented',             // Đã thuê
     Deposited = 'deposited',       // Đã cọc
     Maintenance = 'maintenance',   // Bảo trì
+    Disabled = 'disabled'          // Vô hiệu
 }
 
 export enum UserRole {
@@ -93,10 +104,4 @@ export enum RentalAmenity {
     FreeTime = 'free_time',
     Security247 = 'security_24_7',
     BasementParking = 'basement_parking',
-}
-
-export enum UploadDomain {
-    Rooms = 'rooms',
-    RealEstates = 'real-estates',
-    Contracts = 'contracts',
 }

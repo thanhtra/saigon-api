@@ -21,35 +21,35 @@ export class ContractsService {
 
   /* ================= CREATE ================= */
 
-  async create(
-    dto: CreateContractDto,
-  ): Promise<DataRes<Contract>> {
-    try {
-      // 1️⃣ Tạo contract
-      const contract = await this.contractsRepository.create(dto);
+  // async create(
+  //   dto: CreateContractDto,
+  // ): Promise<DataRes<Contract>> {
+  //   try {
+  //     // 1️⃣ Tạo contract
+  //     const contract = await this.contractsRepository.create(dto);
 
-      // 2️⃣ Tạo commission (nếu có)
-      if (dto.sale_id || dto.collaborator_id) {
-        await this.commissionsRepository.createCommission({
-          contract,
-          sale: dto.sale_id
-            ? ({ id: dto.sale_id } as any)
-            : null,
-          collaborator: dto.collaborator_id
-            ? ({ id: dto.collaborator_id } as any)
-            : null,
-          amount: dto.commission_amount || 0,
-          status: CommissionStatus.Pending,
-        });
-      }
+  //     // 2️⃣ Tạo commission (nếu có)
+  //     if (dto.sale_id || dto.collaborator_id) {
+  //       await this.commissionsRepository.createCommission({
+  //         contract,
+  //         sale: dto.sale_id
+  //           ? ({ id: dto.sale_id } as any)
+  //           : null,
+  //         collaborator: dto.collaborator_id
+  //           ? ({ id: dto.collaborator_id } as any)
+  //           : null,
+  //         amount: dto.commission_amount || 0,
+  //         status: CommissionStatus.Pending,
+  //       });
+  //     }
 
-      return DataRes.success(contract);
-    } catch (error) {
-      return DataRes.failed(
-        error?.message || 'Tạo hợp đồng thất bại',
-      );
-    }
-  }
+  //     return DataRes.success(contract);
+  //   } catch (error) {
+  //     return DataRes.failed(
+  //       'Tạo hợp đồng thất bại',
+  //     );
+  //   }
+  // }
 
   /* ================= UPDATE ================= */
 
@@ -70,7 +70,7 @@ export class ContractsService {
       return DataRes.success(updated);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Cập nhật hợp đồng thất bại',
+        'Cập nhật hợp đồng thất bại',
       );
     }
   }
@@ -92,7 +92,7 @@ export class ContractsService {
       return DataRes.success(null);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Xóa hợp đồng thất bại',
+        'Xóa hợp đồng thất bại',
       );
     }
   }
@@ -114,7 +114,7 @@ export class ContractsService {
       return DataRes.success(contract);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Lấy chi tiết hợp đồng thất bại',
+        'Lấy chi tiết hợp đồng thất bại',
       );
     }
   }
@@ -132,7 +132,7 @@ export class ContractsService {
       return DataRes.success(data);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Lấy danh sách hợp đồng thất bại',
+        'Lấy danh sách hợp đồng thất bại',
       );
     }
   }
@@ -151,7 +151,7 @@ export class ContractsService {
       return DataRes.success(contracts);
     } catch (error) {
       return DataRes.failed(
-        error?.message ||
+
         'Lấy hợp đồng theo tenant thất bại',
       );
     }
@@ -169,7 +169,7 @@ export class ContractsService {
       return DataRes.success(contracts);
     } catch (error) {
       return DataRes.failed(
-        error?.message ||
+
         'Lấy hợp đồng theo rental thất bại',
       );
     }
@@ -187,7 +187,7 @@ export class ContractsService {
       return DataRes.success(contracts);
     } catch (error) {
       return DataRes.failed(
-        error?.message ||
+
         'Lấy hợp đồng theo phòng thất bại',
       );
     }

@@ -14,6 +14,7 @@ import {
 
 import {
     RentalAmenity,
+    RentalStatus,
     RentalType,
 } from 'src/common/helpers/enum';
 
@@ -73,6 +74,10 @@ export class CreateRentalDto {
     @IsEnum(RentalType)
     rental_type: RentalType;
 
+    @IsOptional()
+    @IsEnum(RentalStatus)
+    status?: RentalStatus;
+
     @Type(() => Boolean)
     @IsBoolean()
     active: boolean;
@@ -93,6 +98,11 @@ export class CreateRentalDto {
     @Type(() => Number)
     @IsNumber()
     area?: number;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    max_people?: number;
 
     @RequireDetail
     @IsArray()

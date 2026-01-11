@@ -12,6 +12,7 @@ import { RegisterAfterBookingDto } from './dto/register-after-booking.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
 import { User } from 'src/modules/users/entities/user.entity';
+import { GetAvailableTenantsDto } from './dto/get-available-tenants.dto';
 
 
 @Injectable()
@@ -119,12 +120,10 @@ export class UsersService {
       return DataRes.success(toSafeUser(user));
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Tạo người dùng thất bại',
+        'Tạo người dùng thất bại',
       );
     }
   }
-
-  /* ================= UPDATE ================= */
 
   async update(
     id: string,
@@ -142,12 +141,10 @@ export class UsersService {
       return DataRes.success(toSafeUser(updated));
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Cập nhật người dùng thất bại',
+        'Cập nhật người dùng thất bại',
       );
     }
   }
-
-  /* ================= GET ONE ================= */
 
   async getUser(id: string): Promise<DataRes<User>> {
     try {
@@ -156,15 +153,13 @@ export class UsersService {
         return DataRes.failed(ErrorMes.USER_GET_DETAIL);
       }
 
-      return DataRes.success(toSafeUser(user));
+      return DataRes.success(user);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Lấy thông tin người dùng thất bại',
+        'Lấy thông tin người dùng thất bại',
       );
     }
   }
-
-  /* ================= LIST ================= */
 
   async getUsers(
     pageOptionsDto: PageOptionsDto,
@@ -174,28 +169,10 @@ export class UsersService {
       return DataRes.success(users);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Lấy danh sách người dùng thất bại',
+        'Lấy danh sách người dùng thất bại',
       );
     }
   }
-
-  async getAvailableCollaborators(
-    query: GetAvailableCollaboratorsDto,
-  ): Promise<DataRes<User[]>> {
-    try {
-      const users = await this.usersRepository.getAvailableCollaborators(query);
-
-      return DataRes.success(
-        users.map(user => toSafeUser(user)),
-      );
-    } catch (error) {
-      return DataRes.failed(
-        error?.message || 'Lấy danh sách cộng tác viên thất bại',
-      );
-    }
-  }
-
-  /* ================= DELETE ================= */
 
   async removeUser(id: string): Promise<DataRes<null>> {
     try {
@@ -205,10 +182,39 @@ export class UsersService {
         : DataRes.failed(ErrorMes.USER_REMOVE);
     } catch (error) {
       return DataRes.failed(
-        error?.message || 'Xoá người dùng thất bại',
+        'Xoá người dùng thất bại',
       );
     }
   }
+
+  async getAvailableCollaborators(
+    query: GetAvailableCollaboratorsDto,
+  ): Promise<DataRes<User[]>> {
+    try {
+      const users = await this.usersRepository.getAvailableCollaborators(query);
+      return DataRes.success(users);
+    } catch (error) {
+      return DataRes.failed(
+        'Lấy danh sách cộng tác viên thất bại',
+      );
+    }
+  }
+
+  async getAvailableTenants(
+    query: GetAvailableTenantsDto,
+  ): Promise<DataRes<User[]>> {
+    try {
+      const users = await this.usersRepository.getAvailableTenants(query);
+      return DataRes.success(users);
+    } catch (error) {
+      return DataRes.failed(
+        'Lấy danh sách khách hàng thất bại',
+      );
+    }
+  }
+
+
+
 
   /* ================= PRIVATE HELPERS ================= */
 

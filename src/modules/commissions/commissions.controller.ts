@@ -58,9 +58,9 @@ export class CommissionsController {
     return this.commissionsService.getBySale(saleId);
   }
 
-  @Get('/collaborator/:collaboratorId')
-  @Auth(PERMISSIONS.commissions.read)
-  async getByCollaborator(@Param('collaboratorId') collaboratorId: string): Promise<DataRes<Commission[]>> {
-    return this.commissionsService.getByCollaborator(collaboratorId);
-  }
+  // @Get('/collaborator/:collaboratorId')
+  // @Auth(PERMISSIONS.commissions.read)
+  // async getByCollaborator(@Param('collaboratorId') collaboratorId: string): Promise<DataRes<Commission[]>> {
+  //   return this.commissionsService.getByCollaborator(collaboratorId);
+  // }
 }

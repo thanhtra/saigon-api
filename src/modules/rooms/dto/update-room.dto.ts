@@ -1,18 +1,64 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateRoomDto } from './create-room.dto';
-import { RoomStatus } from 'src/common/helpers/enum';
-import { IsOptional, IsEnum, IsNumber, IsArray, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { RentalAmenity, RoomStatus } from 'src/common/helpers/enum';
 
-export class UpdateRoomDto extends PartialType(CreateRoomDto) {
+export class UpdateRoomDto {
+    /* ===== ROOM INFO ===== */
+
+    @IsOptional()
+    @IsString()
+    title?: string;
+
+    @IsOptional()
+    @IsNumber({ maxDecimalPlaces: 2 })
+    @Min(1, { message: 'Giá thuê phải lớn hơn 0' })
+    price?: number;
+
     @IsOptional()
     @IsEnum(RoomStatus)
     status?: RoomStatus;
 
     @IsOptional()
     @IsNumber()
+    floor?: number;
+
+    @IsOptional()
+    @IsString()
+    room_number?: string;
+
+    @IsOptional()
+    @IsNumber()
+    area?: number;
+
+    @IsOptional()
+    @IsNumber()
+    max_people?: number;
+
+    @IsOptional()
+    @IsArray()
+    @IsEnum(RentalAmenity, { each: true })
+    amenities?: RentalAmenity[];
+
+    @IsOptional()
+    @IsString()
+    description?: string;
+
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
     cover_index?: number;
 
+    @IsOptional()
+    active?: boolean;
+
+    /* ===== UPLOAD MANAGEMENT ===== */
+
+    @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    upload_ids: string[];
+    upload_ids?: string[];
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    delete_upload_ids?: string[];
 }
