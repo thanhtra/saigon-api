@@ -7,12 +7,21 @@ export class CreateBookingDto {
     @IsNotEmpty()
     room_id: string;
 
+
+    @IsString()
+    @IsNotEmpty()
+    rental_id: string;
+
     @IsString()
     @IsNotEmpty()
     customer_name: string;
 
     @IsPhoneNumber('VN')
     customer_phone: string;
+
+    @IsOptional()
+    @IsPhoneNumber('VN')
+    referrer_phone?: string;
 
     @IsString()
     @IsOptional()
@@ -34,13 +43,23 @@ export class CreateBookingDto {
 export class CreateBookingPublicDto {
 
     @IsString()
+    @IsNotEmpty()
     room_id: string;
 
     @IsString()
+    @IsNotEmpty()
+    rental_id: string;
+
+    @IsString()
+    @IsNotEmpty()
     customer_name: string;
 
     @IsPhoneNumber('VN')
     customer_phone: string;
+
+    @IsOptional()
+    @IsPhoneNumber('VN')
+    referrer_phone?: string;
 
     @IsDateString()
     viewing_at: string;

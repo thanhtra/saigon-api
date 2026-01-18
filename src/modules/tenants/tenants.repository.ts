@@ -73,7 +73,6 @@ export class TenantsRepository {
     );
   }
 
-
   async updateTenant(
     id: string,
     dto: UpdateTenantDto,

@@ -113,6 +113,7 @@ export class DataRes<T> {
     success: boolean;
     message: string;
     data: T | null;
+    code: string;
 
     static success<T>(data: T, message = 'Successfully'): DataRes<T> {
         const res = new DataRes<T>();
@@ -122,11 +123,12 @@ export class DataRes<T> {
         return res;
     }
 
-    static failed<T>(message: string): DataRes<T> {
+    static failed<T>(message: string, code = ''): DataRes<T> {
         const res = new DataRes<T>();
         res.success = false;
         res.data = null;
         res.message = message;
+        res.code = code;
         return res;
     }
 }

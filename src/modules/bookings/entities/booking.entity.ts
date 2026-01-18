@@ -1,26 +1,34 @@
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
 import { BookingStatus } from 'src/common/helpers/enum';
 import { Room } from 'src/modules/rooms/entities/rooms.entity';
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import {
+    Column,
+    Entity,
+    Index,
+    JoinColumn,
+    ManyToOne,
+} from 'typeorm';
 
 @Entity('bookings')
 @Index(['rental_id'])
 @Index(['room_id'])
 @Index(['status'])
 @Index(['viewing_at'])
+@Index(['room_id', 'viewing_at'])
 export class Booking extends BaseEntity {
-    @Column({ nullable: true })
-    rental_id?: string;
+
+    @Column()
+    rental_id: string;
+
+    @Column()
+    room_id: string;
 
     @ManyToOne(() => Room, {
-        nullable: true,
-        onDelete: 'SET NULL',
+        nullable: false,
+        onDelete: 'RESTRICT',
     })
     @JoinColumn({ name: 'room_id' })
-    room?: Room;
-
-    @Column({ nullable: true })
-    room_id?: string;
+    room: Room;
 
     @Column({ length: 150 })
     customer_name: string;
@@ -29,13 +37,16 @@ export class Booking extends BaseEntity {
     customer_phone: string;
 
     @Column({ type: 'text', nullable: true })
-    customer_note?: string;
+    customer_note?: string | null;
 
     @Column({ type: 'text', nullable: true })
-    admin_note?: string;
+    admin_note?: string | null;
 
     @Column({ type: 'timestamp' })
     viewing_at: Date;
+
+    @Column({ length: 20, nullable: true })
+    referrer_phone?: string | null;
 
     @Column({
         type: 'enum',

@@ -43,6 +43,7 @@ import { UPLOAD_DIR } from './common/helpers/constants';
 
         return {
           type: 'postgres',
+          timezone: 'Asia/Ho_Chi_Minh',
           host: config.get<string>('database.host'),
           port: config.get<number>('database.port'),
           username: config.get<string>('database.username'),

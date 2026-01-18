@@ -74,23 +74,7 @@ export class UsersController {
 
   /* ================= ADMIN ================= */
 
-  @Get('available-collaborator')
-  @Auth(PERMISSIONS.users.read_many)
-  async getAvailableCollaborators(
-    @Query() query: GetAvailableCollaboratorsDto,
-  ): Promise<DataRes<User[]>> {
-    return await this.usersService.getAvailableCollaborators(query);
-  }
-
-  @Get('available-tenant')
-  @Auth(PERMISSIONS.users.read_many)
-  async getAvailableTenants(
-    @Query() query: GetAvailableTenantsDto,
-  ): Promise<DataRes<User[]>> {
-    return await this.usersService.getAvailableTenants(query);
-  }
-
-  @Post()
+  @Post('admintra')
   @Auth(PERMISSIONS.users.create)
   async create(
     @Body() dto: CreateUserDto,
@@ -98,7 +82,23 @@ export class UsersController {
     return await this.usersService.create(dto);
   }
 
-  @Get()
+  @Get('available-collaborator/admintra')
+  @Auth(PERMISSIONS.users.read_many)
+  async getAvailableCollaborators(
+    @Query() query: GetAvailableCollaboratorsDto,
+  ): Promise<DataRes<User[]>> {
+    return await this.usersService.getAvailableCollaborators(query);
+  }
+
+  @Get('available-tenant/admintra')
+  @Auth(PERMISSIONS.users.read_many)
+  async getAvailableTenants(
+    @Query() query: GetAvailableTenantsDto,
+  ): Promise<DataRes<User[]>> {
+    return await this.usersService.getAvailableTenants(query);
+  }
+
+  @Get('admintra')
   @Auth(PERMISSIONS.users.read_many)
   async getUsers(
     @Query() pageOptionsDto: PageOptionsDto,
@@ -106,7 +106,7 @@ export class UsersController {
     return await this.usersService.getUsers(pageOptionsDto);
   }
 
-  @Get(':id')
+  @Get(':id/admintra')
   @Auth(PERMISSIONS.users.read_one)
   async getUser(
     @Param('id') id: string,
@@ -114,7 +114,7 @@ export class UsersController {
     return await this.usersService.getUser(id);
   }
 
-  @Put(':id')
+  @Put(':id/admintra')
   @Auth(PERMISSIONS.users.update)
   async update(
     @Param('id') id: string,
@@ -124,7 +124,7 @@ export class UsersController {
     return await this.usersService.update(id, dto, userReq);
   }
 
-  @Delete(':id')
+  @Delete(':id/admintra')
   @Auth(PERMISSIONS.users.delete)
   async remove(
     @Param('id') id: string,

@@ -47,10 +47,10 @@ export class Contract extends BaseEntity {
     @Column({ type: 'date', nullable: true })
     end_date?: Date;
 
-    @Column({ type: 'decimal', precision: 12, scale: 2 })
+    @Column({ type: 'int' })
     rent_price: number;
 
-    @Column({ type: 'decimal', precision: 12, scale: 2 })
+    @Column({ type: 'int' })
     deposit: number;
 
     @OneToOne(() => Commission, c => c.contract)

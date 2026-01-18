@@ -11,6 +11,7 @@ export interface Response<T> {
     statusCode: number;
     success: boolean;
     message: string;
+    code: string;
     result: T;
 }
 
@@ -23,7 +24,8 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
                     statusCode: context.switchToHttp().getResponse().statusCode,
                     success: data?.success,
                     message: data?.message,
-                    result: data?.data
+                    result: data?.data,
+                    code: data?.code
                 })),
             );
     }

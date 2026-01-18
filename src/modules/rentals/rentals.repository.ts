@@ -8,7 +8,7 @@ import {
 import { getSkip } from 'src/common/helpers/utils';
 import { Repository } from 'typeorm';
 import { Rental } from './entities/rental.entity';
-import { RoomStatus } from 'src/common/helpers/enum';
+import { RentalType } from 'src/common/helpers/enum';
 
 @Injectable()
 export class RentalsRepository {
@@ -122,6 +122,10 @@ export class RentalsRepository {
                 'rooms.area',
                 'rooms.description',
                 'rooms.cover_index',
+                'rooms.deposit',
+                'rooms.max_people',
+                'rooms.floor',
+                'rooms.room_number',
 
                 'room_uploads.id',
                 'room_uploads.file_path',
@@ -171,47 +175,33 @@ export class RentalsRepository {
         return qb.getMany();
     }
 
+    async getMyBoardingHouses(userId: string): Promise<any[]> {
+        const rows = await this.rentalRepo
+            .createQueryBuilder('rental')
+            .innerJoin('rental.collaborator', 'collaborator')
+            .leftJoin('rental.rooms', 'room')
+            .select([
+                'rental.id AS id',
+                'rental.address_detail AS address',
+                'rental.createdAt AS created_at',
+                'COUNT(room.id) AS total_rooms',
+            ])
+            .where('collaborator.user_id = :userId', { userId })
+            .andWhere('rental.rental_type = :type', {
+                type: RentalType.BoardingHouse,
+            })
+            .andWhere('rental.active = true')
+            .groupBy('rental.id')
+            .orderBy('rental.createdAt', 'DESC')
+            .getRawMany();
 
-    // async remove(id: string): Promise<boolean> {
-    //     const { affected } = await this.rentalRepo.delete(id);
-    //     return affected === 1;
-    // }
-
-
-    // async create(dto: Partial<Rental>): Promise<Rental> {
-    //     const entity = this.repo.create(dto);
-    //     return this.repo.save(entity);
-    // }
-
-
-    // async update(
-    //     id: string,
-    //     dto: UpdateRentalDto,
-    // ): Promise<Rental | null> {
-    //     const rental = await this.rentalRepo.preload({
-    //         id,
-    //         ...dto,
-    //     });
-
-    //     if (!rental) return null;
-
-    //     // cập nhật upload nếu có
-    //     // if (dto.upload_ids) {
-    //     //     await this.uploadRepo.update(
-    //     //         { rental: { id } },
-    //     //         { rental: null },
-    //     //     );
-
-    //     //     if (dto.upload_ids.length) {
-    //     //         await this.uploadRepo.update(
-    //     //             { id: In(dto.upload_ids) },
-    //     //             { rental },
-    //     //         );
-    //     //     }
-    //     // }
-
-    //     return this.rentalRepo.save(rental);
-    // }
+        return rows.map(r => ({
+            id: r.id,
+            address: r.address,
+            total_rooms: Number(r.total_rooms),
+            created_at: r.created_at,
+        }));
+    }
 
 
 

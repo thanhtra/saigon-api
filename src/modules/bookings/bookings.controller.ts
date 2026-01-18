@@ -4,19 +4,28 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
-  UseGuards,
+  Query,
 } from '@nestjs/common';
 
-import { DataRes } from 'src/common/dtos/respones.dto';
+import {
+  DataRes,
+  PageDto,
+  PageOptionsDto,
+} from 'src/common/dtos/respones.dto';
 import { PERMISSIONS } from 'src/config/permissions';
 
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
+
 import { BookingsService } from './bookings.service';
-import { CreateBookingDto, CreateBookingPublicDto } from './dto/create-booking.dto';
+import {
+  CreateBookingDto,
+  CreateBookingPublicDto,
+} from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Booking } from './entities/booking.entity';
 
@@ -26,58 +35,63 @@ export class BookingsController {
     private readonly bookingsService: BookingsService,
   ) { }
 
+  /* ======================================================
+   * CUSTOMER (PUBLIC)
+   * ====================================================== */
 
-  /* ================= CUSTOMER ================= */
-
-  @Post('register')
+  @Post('customer/register')
   @Public()
-  @UseGuards(ThrottlerGuard)
-  @Throttle(5, 60)            // 5 lần / 60 giây / IP
+  @Throttle(5, 60) // 5 requests / minute / IP
   async customerCreate(
     @Body() dto: CreateBookingPublicDto,
   ): Promise<DataRes<any>> {
-    return await this.bookingsService.customerCreate(dto);
+    return this.bookingsService.customerCreate(dto);
   }
 
+  /* ======================================================
+   * ADMIN
+   * ====================================================== */
 
-  /* ================= ADMIN ================= */
-
-  @Post()
+  @Post('admintra')
   @Auth(PERMISSIONS.bookings.create)
   async create(
     @Body() dto: CreateBookingDto,
   ): Promise<DataRes<Booking>> {
-    return await this.bookingsService.create(dto);
+    return this.bookingsService.create(dto);
   }
 
-  @Get()
+  @Get('admintra')
   @Auth(PERMISSIONS.bookings.read)
-  async getAll(): Promise<DataRes<Booking[]>> {
-    return await this.bookingsService.getAll();
+  async getBookings(
+    @Query() pageOptionsDto: PageOptionsDto,
+  ): Promise<DataRes<PageDto<Booking>>> {
+    return this.bookingsService.getBookings(
+      pageOptionsDto,
+    );
   }
 
-  @Get(':id')
+  @Get(':id/admintra')
   @Auth(PERMISSIONS.bookings.read)
   async getOne(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<DataRes<Booking>> {
-    return await this.bookingsService.getOne(id);
+    return this.bookingsService.getBooking(id);
   }
 
-  @Put(':id')
+  @Put(':id/admintra')
   @Auth(PERMISSIONS.bookings.update)
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateBookingDto,
   ): Promise<DataRes<Booking>> {
-    return await this.bookingsService.update(id, dto);
+    return this.bookingsService.update(id, dto);
   }
 
-  @Delete(':id')
+  @Delete(':id/admintra')
   @Auth(PERMISSIONS.bookings.delete)
   async remove(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<DataRes<null>> {
-    return await this.bookingsService.remove(id);
+    return this.bookingsService.remove(id);
   }
 }

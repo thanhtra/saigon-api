@@ -19,11 +19,13 @@ import { RentalsController } from './rentals.controller';
 import { RentalsService } from './rentals.service';
 import { RentalsRepository } from './rentals.repository';
 import { UsersModule } from '../users/users.module';
+import { UploadsModule } from '../uploads/uploads.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Rental, User]),
     forwardRef(() => UsersModule),
+    UploadsModule
   ],
   controllers: [RentalsController],
   providers: [RentalsService, RentalsRepository],

@@ -29,11 +29,7 @@ export class Commission extends BaseEntity {
     @Column()
     sale_id: string;
 
-    @Column({
-        type: 'decimal',
-        precision: 12,
-        scale: 2,
-    })
+    @Column({ type: 'int' })
     amount: number;
 
     @Column({

@@ -13,17 +13,22 @@ export const UserRoleOptions: Record<UserRole, string> = {
 };
 
 export const RentalAmenityOptions: Record<RentalAmenity, string> = {
-    [RentalAmenity.FullFurnished]: 'Đầy đủ nội thất',
-    [RentalAmenity.Mezzanine]: 'Có gác',
-    [RentalAmenity.KitchenShelf]: 'Có kệ bếp',
-    [RentalAmenity.AirConditioner]: 'Có máy lạnh',
-    [RentalAmenity.WashingMachine]: 'Có máy giặt',
-    [RentalAmenity.Refrigerator]: 'Có tủ lạnh',
-    [RentalAmenity.Elevator]: 'Có thang máy',
+    [RentalAmenity.FullFurnished]: 'Nội thất đầy đủ',
+    [RentalAmenity.Toilet]: 'WC riêng',
+    [RentalAmenity.Mezzanine]: 'Gác lửng',
+    [RentalAmenity.KitchenShelf]: 'Kệ bếp',
+    [RentalAmenity.AirConditioner]: 'Máy lạnh',
+    [RentalAmenity.WashingMachine]: 'Máy giặt',
+    [RentalAmenity.Refrigerator]: 'Tủ lạnh',
+    [RentalAmenity.Elevator]: 'Thang máy',
     [RentalAmenity.NoLiveWithOwner]: 'Không chung chủ',
     [RentalAmenity.FreeTime]: 'Giờ giấc tự do',
-    [RentalAmenity.Security247]: 'Có bảo vệ 24/24',
-    [RentalAmenity.BasementParking]: 'Có hầm để xe',
+    [RentalAmenity.Security247]: 'An ninh 24/7',
+    [RentalAmenity.BasementParking]: 'Chỗ để xe',
+    [RentalAmenity.PetAllowed]: 'Nuôi thú cưng',
+    [RentalAmenity.ElectricMotorbike]: 'Xe máy điện',
+    [RentalAmenity.Window]: 'Cửa sổ',
+    [RentalAmenity.Balcony]: 'Ban công',
 };
 
 

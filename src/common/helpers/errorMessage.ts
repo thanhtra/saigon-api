@@ -1,4 +1,11 @@
 export const ErrorMes = {
+    BOOKING_CREATE: 'Tạo lịch xem phòng thất bại',
+    BOOKING_GET_DETAIL: 'Không tìm thấy lịch xem phòng',
+    BOOKING_GET_LIST: 'Lấy danh sách lịch xem phòng thất bại',
+    BOOKING_UPDATE: 'Cập nhật lịch xem phòng thất bại',
+    BOOKING_REMOVE: 'Xóa lịch xem phòng thất bại',
+
+
     SYSTEM_ERROR: "Lỗi hệ thống!",
     GET_ALL: "Lỗi lấy nhiều",
     UPDATE: "Lỗi cập nhật",
@@ -100,4 +107,21 @@ export const ErrorMes = {
 
     TENANT_GET_LIST: "Lỗi lấy danh sách khách hàng"
 
+}
+
+
+
+export enum RoomErrorCode {
+    RENTAL_NOT_CONFIRMED = 'ROOM_RENTAL_NOT_CONFIRMED',
+}
+
+export const RoomErrorMessage: Record<RoomErrorCode, string> = {
+    [RoomErrorCode.RENTAL_NOT_CONFIRMED]: 'Nhà chưa được xác nhận hoa hồng, không thể mở phòng để cho thuê',
+};
+
+export const ErrorResponse = (code: string) => {
+    return {
+        code: code,
+        message: RoomErrorMessage[code],
+    }
 }

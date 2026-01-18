@@ -1,18 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { existsSync, unlink } from 'fs';
 import { join, normalize } from 'path';
+import { TransactionService } from 'src/common/database/transaction.service';
 import {
     DataRes
 } from 'src/common/dtos/respones.dto';
 import { UPLOAD_DIR } from 'src/common/helpers/constants';
 import { FileType, UploadDomain } from 'src/common/helpers/enum';
+import { resolveUploadPath } from 'src/common/helpers/upload';
 import { promisify } from 'util';
 import { CreateUploadDto } from './dto/create-upload.dto';
+import { UploadMultipleDto } from './dto/upload-multiple.dto';
 import { Upload } from './entities/upload.entity';
 import { UploadsRepository } from './uploads.repository';
-import { TransactionService } from 'src/common/database/transaction.service';
-import { UploadMultipleDto } from './dto/upload-multiple.dto';
-import { resolveUploadPath } from 'src/common/helpers/upload';
+import { promises as fs } from 'fs';
 
 const unlinkAsync = promisify(unlink);
 
@@ -105,5 +106,40 @@ export class UploadsService {
             );
         }
     }
+
+    async removeFolder(folderPath: string): Promise<void> {
+        try {
+            if (!folderPath) return;
+
+            /**
+             * folderPath: /rooms/{roomId}
+             * => uploads/rooms/{roomId}
+             */
+            const absolutePath = normalize(
+                join(UPLOAD_DIR, folderPath),
+            );
+
+            // bảo vệ an toàn
+            if (!absolutePath.startsWith(UPLOAD_DIR)) {
+                this.logger.warn(
+                    `Blocked removeFolder outside uploads: ${absolutePath}`,
+                );
+                return;
+            }
+
+            await fs.rm(absolutePath, {
+                recursive: true,
+                force: true, // không throw nếu không tồn tại
+            });
+
+            this.logger.log(`Removed folder: ${absolutePath}`);
+        } catch (error) {
+            this.logger.error(
+                `Remove folder failed: ${folderPath}`,
+                error?.stack,
+            );
+        }
+    }
+
 
 }

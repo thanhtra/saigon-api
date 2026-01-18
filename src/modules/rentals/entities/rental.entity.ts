@@ -35,11 +35,31 @@ export class Rental extends BaseEntity {
     @Column()
     created_by: string;
 
+    @OneToMany(() => Room, room => room.rental)
+    rooms: Room[];
+
+
     @Column({ type: 'enum', enum: RentalType })
     rental_type: RentalType;
 
-    @Column({ type: 'enum', enum: RentalStatus, default: RentalStatus.New })
+    @Column({ nullable: true })
+    commission: string;
+
+    @Column({ type: 'text', nullable: true })
+    note?: string;
+
+    @Column({
+        type: 'enum',
+        enum: RentalStatus,
+        default: RentalStatus.New
+    })
     status: RentalStatus;
+
+    @Column({ default: true })
+    active: boolean;
+
+
+    // ADDRESS
 
     @Column({ length: 100 })
     province: string;
@@ -62,15 +82,25 @@ export class Rental extends BaseEntity {
     @Column({ type: 'text' })
     address_detail_display: string;
 
-    @Column()
-    commission_value: string;
 
-    @Column({ default: true })
-    active: boolean;
+    // FEE
+
+    @Column({ type: 'int', default: 0 })
+    fee_electric?: number;
+
+    @Column({ type: 'int', default: 0 })
+    fee_water?: number;
+
+    @Column({ type: 'int', default: 0 })
+    fee_wifi?: number;
+
+    @Column({ type: 'int', default: 0 })
+    fee_service?: number;
+
+    @Column({ type: 'int', default: 0 })
+    fee_parking?: number;
 
     @Column({ type: 'text', nullable: true })
-    description?: string;
+    fee_other?: string;
 
-    @OneToMany(() => Room, room => room.rental)
-    rooms: Room[];
 }

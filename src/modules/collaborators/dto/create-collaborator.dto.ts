@@ -1,11 +1,14 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { FieldCooperation } from 'src/common/helpers/enum';
+import { CollaboratorType, FieldCooperation } from 'src/common/helpers/enum';
 
 export class CreateCollaboratorDto {
     @IsString()
     @IsNotEmpty()
     user_id: string;
+
+    @IsEnum(CollaboratorType)
+    type: CollaboratorType;
 
     @IsEnum(FieldCooperation)
     field_cooperation: FieldCooperation;

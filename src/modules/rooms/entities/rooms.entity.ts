@@ -31,8 +31,11 @@ export class Room extends BaseEntity {
     @Column({ nullable: true })
     room_number?: string;
 
-    @Column({ type: 'decimal', precision: 12, scale: 2 })
+    @Column({ type: 'int' })
     price: number;
+
+    @Column({ type: 'int', nullable: true })
+    deposit?: number;
 
     @Column({ nullable: true })
     area?: number;
@@ -43,7 +46,7 @@ export class Room extends BaseEntity {
     @Column({
         type: 'enum',
         enum: RoomStatus,
-        default: RoomStatus.Available,
+        default: RoomStatus.PendingApproval,
     })
     status: RoomStatus;
 
@@ -77,7 +80,6 @@ export class Room extends BaseEntity {
     })
     amenities?: RentalAmenity[];
 
-    // relation
     @OneToMany(() => Upload, u => u.room)
     uploads: Upload[];
 }

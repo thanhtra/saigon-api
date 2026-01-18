@@ -234,7 +234,6 @@ export function getRawSql(sql, params) {
 }
 
 export function getDateTime(date?: Date) {
-  // current timestamp in milliseconds
   let ts = date ? date : Date.now();
   let date_time = new Date(ts);
 

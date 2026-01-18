@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataRes } from 'src/common/dtos/respones.dto';
+import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { BookingStatus } from 'src/common/helpers/enum';
 import { BookingsRepository } from './bookings.repository';
 import {
@@ -9,6 +9,7 @@ import {
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Booking } from './entities/booking.entity';
 import { UsersRepository } from '../users/users.repository';
+import { ErrorMes } from 'src/common/helpers/errorMessage';
 
 @Injectable()
 export class BookingsService {
@@ -17,18 +18,19 @@ export class BookingsService {
     private readonly usersRepository: UsersRepository
   ) { }
 
-  /* ================= CREATE (PUBLIC) ================= */
 
   async customerCreate(
     dto: CreateBookingPublicDto,
   ): Promise<DataRes<any>> {
     try {
-      const booking = await this.bookingsRepository.create({
+      const booking = await this.bookingsRepository.createBooking({
         room_id: dto.room_id,
+        rental_id: dto.rental_id,
         customer_name: dto.customer_name,
-        customer_phone: dto.customer_phone,
+        customer_phone: dto.customer_phone.trim(),
         customer_note: dto.customer_note,
         viewing_at: new Date(dto.viewing_at),
+        referrer_phone: dto.referrer_phone ? dto.referrer_phone.trim() : null,
         status: BookingStatus.Pending,
       });
 
@@ -49,114 +51,113 @@ export class BookingsService {
     }
   }
 
-
-  /* ================= CREATE (ADMIN) ================= */
-
-  async create(dto: CreateBookingDto): Promise<DataRes<Booking>> {
+  async create(
+    dto: CreateBookingDto,
+  ): Promise<DataRes<Booking>> {
     try {
-      const booking = await this.bookingsRepository.create({
-        room_id: dto.room_id,
-        customer_name: dto.customer_name,
-        customer_phone: dto.customer_phone,
-        customer_note: dto.customer_note,
-        viewing_at: new Date(dto.viewing_at),
-        admin_note: dto.admin_note,
-        status: dto.status,
-      });
+      const booking =
+        await this.bookingsRepository.createBooking({
+          rental_id: dto.rental_id,
+          room_id: dto.room_id,
+          customer_name: dto.customer_name.trim(),
+          customer_phone: dto.customer_phone.trim(),
+          referrer_phone: dto.referrer_phone?.trim() || null,
+          customer_note: dto.customer_note,
+          admin_note: dto.admin_note,
+          viewing_at: new Date(dto.viewing_at), // LOCAL VN
+          status: dto.status ?? BookingStatus.Pending,
+        });
 
       return DataRes.success(booking);
     } catch (error) {
-      return DataRes.failed(
-        'Tạo lịch xem phòng thất bại',
-      );
+      return DataRes.failed(ErrorMes.BOOKING_CREATE);
     }
   }
-
-
-  /* ================= UPDATE ================= */
 
   async update(
     id: string,
     dto: UpdateBookingDto,
   ): Promise<DataRes<Booking>> {
     try {
-      const updated = await this.bookingsRepository.update(id, {
-        room_id: dto.room_id,
-        customer_name: dto.customer_name,
-        customer_phone: dto.customer_phone,
-        customer_note: dto.customer_note,
-        viewing_at: dto.viewing_at
-          ? new Date(dto.viewing_at)
-          : undefined,
-        admin_note: dto.admin_note,
-        status: dto.status,
-      });
-
-      if (!updated) {
-        return DataRes.failed(
-          'Lịch xem phòng không tồn tại',
+      const booking =
+        await this.bookingsRepository.updateBooking(
+          id,
+          {
+            ...dto,
+            viewing_at: dto.viewing_at ? new Date(dto.viewing_at) : undefined,
+          },
         );
+
+      if (!booking) {
+        return DataRes.failed(ErrorMes.BOOKING_UPDATE);
       }
 
-      return DataRes.success(updated);
+      return DataRes.success(booking);
     } catch (error) {
-      return DataRes.failed(
-        'Cập nhật lịch xem phòng thất bại',
-      );
+      return DataRes.failed(ErrorMes.BOOKING_UPDATE);
     }
   }
 
-  /* ================= DELETE ================= */
 
-  async remove(id: string): Promise<DataRes<null>> {
+  async getBooking(
+    id: string,
+  ): Promise<DataRes<Booking>> {
     try {
-      const success = await this.bookingsRepository.remove(id);
-      if (!success) {
-        return DataRes.failed(
-          'Lịch xem phòng không tồn tại',
-        );
-      }
+      const booking =
+        await this.bookingsRepository.findOneBooking(id);
 
-      return DataRes.success(null);
-    } catch (error) {
-      return DataRes.failed(
-        'Xóa lịch xem phòng thất bại',
-      );
-    }
-  }
-
-  /* ================= DETAIL ================= */
-
-  async getOne(id: string): Promise<DataRes<Booking>> {
-    try {
-      const booking = await this.bookingsRepository.findOne(id);
       if (!booking) {
         return DataRes.failed(
-          'Không tìm thấy lịch xem phòng',
+          ErrorMes.BOOKING_GET_DETAIL,
         );
       }
 
       return DataRes.success(booking);
     } catch (error) {
       return DataRes.failed(
-        'Lấy chi tiết lịch xem phòng thất bại',
+        ErrorMes.BOOKING_GET_DETAIL,
       );
     }
   }
 
-  /* ================= LIST ================= */
-
-  async getAll(): Promise<DataRes<Booking[]>> {
+  async getBookings(
+    pageOptionsDto: PageOptionsDto,
+  ): Promise<DataRes<PageDto<Booking>>> {
     try {
-      const bookings = await this.bookingsRepository.findAll({
-        viewing_at: 'DESC',
-      });
+      const bookings =
+        await this.bookingsRepository.getBookings(pageOptionsDto);
 
       return DataRes.success(bookings);
     } catch (error) {
+      console.log('dsafsd', error)
       return DataRes.failed(
-        'Lấy danh sách lịch xem phòng thất bại',
+        ErrorMes.BOOKING_GET_LIST,
       );
     }
   }
+
+  async remove(
+    id: string,
+  ): Promise<DataRes<null>> {
+    try {
+      const removed =
+        await this.bookingsRepository.removeBooking(
+          id,
+        );
+
+      if (!removed) {
+        return DataRes.failed(
+          ErrorMes.BOOKING_REMOVE,
+        );
+      }
+
+      return DataRes.success(null);
+    } catch (error) {
+      return DataRes.failed(
+        ErrorMes.BOOKING_REMOVE,
+      );
+    }
+  }
+
+
 }

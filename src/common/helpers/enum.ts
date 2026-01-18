@@ -29,9 +29,9 @@ export enum RentalStatus {
 }
 
 export enum RoomStatus {
+    PendingApproval = 'pending_approval',   // Chờ duyệt
     Available = 'available',       // Trống
     Rented = 'rented',             // Đã thuê
-    Deposited = 'deposited',       // Đã cọc
     Maintenance = 'maintenance',   // Bảo trì
     Disabled = 'disabled'          // Vô hiệu
 }
@@ -73,6 +73,7 @@ export enum CommissionStatus {
 
 
 export enum FieldCooperation {
+    Undetermined = 'undetermined',  // user tạo tài khoản nên chưa xác định
     Land = 'land',       // Bất động sản (mua bán)
     Rental = 'rental',   // Cho thuê
 }
@@ -94,14 +95,19 @@ export enum ProductStatus {
 
 export enum RentalAmenity {
     FullFurnished = 'full_furnished',
-    Mezzanine = 'mezzanine',
+    Toilet = 'toilet',
     KitchenShelf = 'kitchen_shelf',
+    Mezzanine = 'mezzanine',
     AirConditioner = 'air_conditioner',
     WashingMachine = 'washing_machine',
     Refrigerator = 'refrigerator',
-    Elevator = 'elevator',
     NoLiveWithOwner = 'no_live_with_owner',
     FreeTime = 'free_time',
     Security247 = 'security_24_7',
     BasementParking = 'basement_parking',
+    ElectricMotorbike = 'electric_motorbike',   // Xe máy điện
+    PetAllowed = 'pet_allowed',                 // Nuôi thú cưng
+    Window = 'window',                          // Cửa sổ
+    Balcony = 'balcony',                        // Ban công
+    Elevator = 'elevator',
 }

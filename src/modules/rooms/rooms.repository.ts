@@ -4,45 +4,19 @@ import { PageDto, PageMetaDto, PageOptionsDto } from 'src/common/dtos/respones.d
 import { ACREAGE_LEVEL_MAP, PRICE_LEVEL_MAP } from 'src/common/helpers/constants';
 import { RoomStatus } from 'src/common/helpers/enum';
 import { getSkip } from 'src/common/helpers/utils';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { QueryRoomPublicDto } from './dto/query-room-public.dto';
 import { Room } from './entities/rooms.entity';
+import { QueryRoomDto } from './dto/query-room.dto';
 
 @Injectable()
 export class RoomsRepository {
     constructor(
         @InjectRepository(Room)
         private readonly repo: Repository<Room>,
-        private readonly dataSource: DataSource
     ) { }
 
-
-    // ---------------- LIST + PAGINATION ----------------
-    async findAll(pageOptions: PageOptionsDto): Promise<PageDto<Room>> {
-        const qb = this.repo.createQueryBuilder('room')
-            .orderBy('room.createdAt', pageOptions.order)
-            .skip(getSkip(pageOptions.page, pageOptions.size))
-            .take(Math.min(pageOptions.size, 50));
-
-        if (pageOptions.key_search) {
-            qb.andWhere('room.room_code LIKE :q OR room.price::text LIKE :q', { q: `%${pageOptions.key_search}%` });
-        }
-
-        const [entities, itemCount] = await qb.getManyAndCount();
-        return new PageDto(entities, new PageMetaDto({ itemCount, pageOptionsDto: pageOptions }));
-    }
-
-    // ---------------- GET ONE ----------------
-    async findOne(id: string): Promise<Room | null> {
-        return this.repo.findOne({ where: { id } });
-    }
-
     // ---------------- CUSTOMER ----------------
-    async findByRental(rental_id: string): Promise<Room[]> {
-        return this.repo.find({ where: { rental_id } });
-    }
-
-    // ---------------- PUBLIC ----------------
 
     async findPublicRoomBySlug(slug: string): Promise<Room | null> {
         return await this.repo
@@ -189,6 +163,102 @@ export class RoomsRepository {
         );
     }
 
+
+    // ---------------- ADMIN ----------------
+    async getRooms(
+        query: QueryRoomDto,
+    ): Promise<PageDto<Room>> {
+
+        const qb = this.repo
+            .createQueryBuilder('room')
+            .leftJoinAndSelect('room.rental', 'rental')
+            .where('1 = 1')
+            .orderBy('room.createdAt', query.order)
+            .skip(getSkip(query.page, query.size))
+            .take(Math.min(query.size, 50));
+
+        /* ===============================
+           FILTER
+        ================================ */
+
+        // room.active
+        if (query.active !== undefined) {
+            qb.andWhere('room.active = :active', {
+                active: query.active,
+            });
+        }
+
+        // rental.active (luôn true)
+        qb.andWhere('rental.active = true');
+
+        // status
+        if (query.status) {
+            qb.andWhere('room.status = :status', {
+                status: query.status,
+            });
+        }
+
+        // rental_id
+        if (query.rental_id) {
+            qb.andWhere('room.rental_id = :rental_id', {
+                rental_id: query.rental_id,
+            });
+        }
+
+        // rental_type
+        if (query.rental_type) {
+            qb.andWhere('rental.rental_type = :rental_type', {
+                rental_type: query.rental_type,
+            });
+        }
+
+        /* ===============================
+           SEARCH
+        ================================ */
+
+        if (query.key_search) {
+            const q = query.key_search.trim();
+
+            qb.andWhere(
+                `
+                room.room_code ILIKE :q
+                OR room.price::text ILIKE :q
+                `,
+                { q: `%${q}%` },
+            );
+        }
+
+        if (query.room_code) {
+            qb.andWhere('room.room_code ILIKE :room_code', {
+                room_code: `%${query.room_code}%`,
+            });
+        }
+
+        const [entities, itemCount] = await qb.getManyAndCount();
+
+        return new PageDto(
+            entities,
+            new PageMetaDto({
+                itemCount,
+                pageOptionsDto: query,
+            }),
+        );
+    }
+
+
+    async getOneAdmin(id: string): Promise<Room | null> {
+        return this.repo
+            .createQueryBuilder('room')
+            .leftJoinAndSelect('room.uploads', 'upload')
+            .leftJoinAndSelect('room.rental', 'rental')
+            .where('room.id = :id', { id })
+            .orderBy('upload.created_at', 'ASC')
+            .getOne();
+    }
+
+    // async findByRental(rental_id: string): Promise<Room[]> {
+    //     return this.repo.find({ where: { rental_id } });
+    // }
 
 
 }

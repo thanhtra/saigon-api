@@ -82,14 +82,13 @@ export class CollaboratorsRepository {
       .createQueryBuilder('c')
       .leftJoin('c.user', 'user')
       .select([
-        // Collaborator fields
         'c.id',
         'c.user_id',
+        'c.type',
         'c.field_cooperation',
         'c.active',
         'c.note',
 
-        // User fields (CHỈ LẤY CẦN THIẾT)
         'user.id',
         'user.name',
         'user.phone',
@@ -99,7 +98,9 @@ export class CollaboratorsRepository {
   }
 
   async updateCollaborator(id: string, dto: Partial<Collaborator>): Promise<Collaborator | null> {
-    const collaborator = await this.findOneCollaborator(id);
+    const collaborator = await this.repo.findOne({
+      where: { id },
+    });
     if (!collaborator) return null;
 
     const updated = this.repo.merge(collaborator, dto);

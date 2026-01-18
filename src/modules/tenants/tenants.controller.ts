@@ -28,7 +28,7 @@ export class TenantsController {
     private readonly tenantsService: TenantsService,
   ) { }
 
-  @Post()
+  @Post('admintra')
   @Auth(PERMISSIONS.tenants.create)
   async create(
     @Body() dto: CreateTenantDto,
@@ -36,7 +36,7 @@ export class TenantsController {
     return await this.tenantsService.create(dto);
   }
 
-  @Get()
+  @Get('admintra')
   @Auth(PERMISSIONS.tenants.read_many)
   async getTenants(
     @Query() pageOptionsDto: PageOptionsDto,
@@ -46,7 +46,7 @@ export class TenantsController {
     );
   }
 
-  @Get(':id')
+  @Get(':id/admintra')
   @Auth(PERMISSIONS.tenants.read_one)
   async getTenant(
     @Param('id') id: string,
@@ -55,7 +55,7 @@ export class TenantsController {
   }
 
 
-  @Put(':id')
+  @Put(':id/admintra')
   @Auth(PERMISSIONS.tenants.update)
   async update(
     @Param('id') id: string,
@@ -64,7 +64,7 @@ export class TenantsController {
     return await this.tenantsService.update(id, dto);
   }
 
-  @Delete(':id')
+  @Delete(':id/admintra')
   @Auth(PERMISSIONS.tenants.delete)
   async remove(
     @Param('id') id: string,

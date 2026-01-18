@@ -7,17 +7,21 @@ import { UpdateCollaboratorDto } from './dto/update-collaborator.dto';
 import { Collaborator } from './entities/collaborator.entity';
 
 import { DataRes, PageDto } from 'src/common/dtos/respones.dto';
-import { CollaboratorType, UserRole } from 'src/common/helpers/enum';
+import { CollaboratorType, FieldCooperation, UserRole } from 'src/common/helpers/enum';
 import { ErrorMes } from 'src/common/helpers/errorMessage';
 
+import { TransactionService } from 'src/common/database/transaction.service';
+import { User } from '../users/entities/user.entity';
 import { UsersRepository } from '../users/users.repository';
 import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class CollaboratorsService {
   constructor(
     private readonly collaboratorsRepository: CollaboratorsRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly transactionService: TransactionService,
   ) { }
 
   async getCollaborators(
@@ -38,7 +42,7 @@ export class CollaboratorsService {
   ): Promise<DataRes<Collaborator>> {
     try {
       const user = await this.usersRepository.findOneUser(dto.user_id);
-      if (!user) {
+      if (!user || !user.active) {
         return DataRes.failed(ErrorMes.USER_GET_DETAIL);
       }
 
@@ -47,15 +51,10 @@ export class CollaboratorsService {
         return DataRes.failed(ErrorMes.COLLABORATOR_EXISTED);
       }
 
-      const type: CollaboratorType =
-        user.role === UserRole.Owner
-          ? CollaboratorType.Owner
-          : CollaboratorType.Broker;
-
       const collaborator =
         await this.collaboratorsRepository.saveCollaborator({
           user_id: dto.user_id,
-          type,
+          type: dto.type,
           field_cooperation: dto.field_cooperation,
           note: dto.note,
           active: dto.active ?? true,
@@ -73,9 +72,7 @@ export class CollaboratorsService {
     id: string,
   ): Promise<DataRes<Collaborator>> {
     try {
-      const collaborator =
-        await this.collaboratorsRepository.findOneCollaborator(id);
-
+      const collaborator = await this.collaboratorsRepository.findOneCollaborator(id);
       if (!collaborator) {
         return DataRes.failed(ErrorMes.COLLABORATOR_GET_DETAIL);
       }
@@ -93,28 +90,90 @@ export class CollaboratorsService {
     dto: UpdateCollaboratorDto,
   ): Promise<DataRes<Collaborator>> {
     try {
-      const collaborator =
-        await this.collaboratorsRepository.updateCollaborator(id, dto);
+      const result = await this.transactionService.runInTransaction(
+        async (manager) => {
+          /* ===== 1. LOAD COLLABORATOR ===== */
+          const collaborator = await manager.findOne(Collaborator, {
+            where: { id },
+          });
 
-      if (!collaborator) {
-        return DataRes.failed(ErrorMes.COLLABORATOR_UPDATE);
-      }
+          if (!collaborator) {
+            throw new Error(ErrorMes.COLLABORATOR_UPDATE);
+          }
 
-      return DataRes.success(collaborator);
+          /* ===== 2. LOAD USER ===== */
+          const user = collaborator.user_id
+            ? await manager.findOne(User, { where: { id: collaborator.user_id } })
+            : null;
+
+          const previousType = collaborator.type;
+          const previousUserRole = user?.role;
+
+          /* ===== 3. UPDATE COLLABORATOR ===== */
+          Object.assign(collaborator, {
+            ...(dto.type !== undefined && { type: dto.type }),
+            ...(dto.field_cooperation !== undefined && { field_cooperation: dto.field_cooperation }),
+            ...(dto.note !== undefined && { note: dto.note }),
+            ...(dto.active !== undefined && { active: dto.active }),
+          });
+
+          const updatedCollaborator = await manager.save(
+            Collaborator,
+            collaborator,
+          );
+
+          /* ===== 4. BUSINESS RULE: SYNC USER ROLE ===== */
+          let roleChanged = false;
+
+          // Broker → Owner
+          if (
+            user &&
+            dto.type === CollaboratorType.Owner &&
+            dto.field_cooperation !== undefined &&
+            dto.field_cooperation !== FieldCooperation.Undetermined &&
+            previousUserRole === UserRole.Broker
+          ) {
+            user.role = UserRole.Owner;
+            roleChanged = true;
+          }
+
+          // Owner → Broker
+          if (
+            user &&
+            previousType === CollaboratorType.Owner &&
+            dto.type === CollaboratorType.Broker &&
+            previousUserRole === UserRole.Owner
+          ) {
+            user.role = UserRole.Broker;
+            roleChanged = true;
+          }
+
+          /* ===== 5. INVALIDATE SESSION IF ROLE CHANGED ===== */
+          if (user && roleChanged) {
+            user.password_version += 1; // ❗ invalidate all tokens
+            user.refresh_token = null;
+
+            await manager.save(User, user);
+          }
+
+          return updatedCollaborator;
+        },
+      );
+
+      return DataRes.success(result);
     } catch (error) {
       return DataRes.failed(
-        ErrorMes.COLLABORATOR_UPDATE,
+        error?.message || ErrorMes.COLLABORATOR_UPDATE,
       );
     }
   }
+
 
   async remove(
     id: string,
   ): Promise<DataRes<null>> {
     try {
-      const removed =
-        await this.collaboratorsRepository.removeCollaborator(id);
-
+      const removed = await this.collaboratorsRepository.removeCollaborator(id);
       if (!removed) {
         return DataRes.failed(ErrorMes.COLLABORATOR_REMOVE);
       }
