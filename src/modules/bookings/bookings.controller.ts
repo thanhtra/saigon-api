@@ -21,11 +21,14 @@ import { Throttle } from '@nestjs/throttler';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { User } from '../users/entities/user.entity';
 import { BookingsService } from './bookings.service';
 import {
   CreateBookingDto,
   CreateBookingPublicDto,
 } from './dto/create-booking.dto';
+import { QueryMyBookingDto } from './dto/query-my-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Booking } from './entities/booking.entity';
 
@@ -35,9 +38,6 @@ export class BookingsController {
     private readonly bookingsService: BookingsService,
   ) { }
 
-  /* ======================================================
-   * CUSTOMER (PUBLIC)
-   * ====================================================== */
 
   @Post('customer/register')
   @Public()
@@ -47,6 +47,17 @@ export class BookingsController {
   ): Promise<DataRes<any>> {
     return this.bookingsService.customerCreate(dto);
   }
+
+
+  @Get('customer/me')
+  @Auth()
+  async getMyBookings(
+    @CurrentUser() user: User,
+    @Query() query: QueryMyBookingDto,
+  ): Promise<DataRes<PageDto<Booking>>> {
+    return this.bookingsService.getMyBookingsByPhone(user.phone, query);
+  }
+
 
   /* ======================================================
    * ADMIN

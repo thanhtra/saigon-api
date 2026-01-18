@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
 import { BookingStatus } from 'src/common/helpers/enum';
+import { ErrorMes } from 'src/common/helpers/errorMessage';
+import { UsersRepository } from '../users/users.repository';
 import { BookingsRepository } from './bookings.repository';
 import {
   CreateBookingDto,
   CreateBookingPublicDto,
 } from './dto/create-booking.dto';
+import { QueryMyBookingDto } from './dto/query-my-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Booking } from './entities/booking.entity';
-import { UsersRepository } from '../users/users.repository';
-import { ErrorMes } from 'src/common/helpers/errorMessage';
 
 @Injectable()
 export class BookingsService {
@@ -18,38 +19,6 @@ export class BookingsService {
     private readonly usersRepository: UsersRepository
   ) { }
 
-
-  async customerCreate(
-    dto: CreateBookingPublicDto,
-  ): Promise<DataRes<any>> {
-    try {
-      const booking = await this.bookingsRepository.createBooking({
-        room_id: dto.room_id,
-        rental_id: dto.rental_id,
-        customer_name: dto.customer_name,
-        customer_phone: dto.customer_phone.trim(),
-        customer_note: dto.customer_note,
-        viewing_at: new Date(dto.viewing_at),
-        referrer_phone: dto.referrer_phone ? dto.referrer_phone.trim() : null,
-        status: BookingStatus.Pending,
-      });
-
-      const user = await this.usersRepository.findOneUserByPhone(dto.customer_phone);
-
-      return DataRes.success({
-        ...booking,
-        user_exists: !!user,
-        prefill: user ? null : {
-          name: dto.customer_name,
-          phone: dto.customer_phone
-        }
-      });
-    } catch (error) {
-      return DataRes.failed(
-        'Đặt lịch xem phòng thất bại',
-      );
-    }
-  }
 
   async create(
     dto: CreateBookingDto,
@@ -97,7 +66,6 @@ export class BookingsService {
       return DataRes.failed(ErrorMes.BOOKING_UPDATE);
     }
   }
-
 
   async getBooking(
     id: string,
@@ -156,6 +124,53 @@ export class BookingsService {
       return DataRes.failed(
         ErrorMes.BOOKING_REMOVE,
       );
+    }
+  }
+
+  // CUSTOMER
+
+  async customerCreate(
+    dto: CreateBookingPublicDto,
+  ): Promise<DataRes<any>> {
+    try {
+      const booking = await this.bookingsRepository.createBooking({
+        room_id: dto.room_id,
+        rental_id: dto.rental_id,
+        customer_name: dto.customer_name,
+        customer_phone: dto.customer_phone.trim(),
+        customer_note: dto.customer_note,
+        viewing_at: new Date(dto.viewing_at),
+        referrer_phone: dto.referrer_phone ? dto.referrer_phone.trim() : null,
+        status: BookingStatus.Pending,
+      });
+
+      const user = await this.usersRepository.findOneUserByPhone(dto.customer_phone);
+
+      return DataRes.success({
+        ...booking,
+        user_exists: !!user,
+        prefill: user ? null : {
+          name: dto.customer_name,
+          phone: dto.customer_phone
+        }
+      });
+    } catch (error) {
+      return DataRes.failed(
+        'Đặt lịch xem phòng thất bại',
+      );
+    }
+  }
+
+  async getMyBookingsByPhone(
+    phone: string,
+    query: QueryMyBookingDto,
+  ): Promise<DataRes<PageDto<Booking>>> {
+    try {
+      const bookings = await this.bookingsRepository.getMyBookingsByPhone(phone, query);
+
+      return DataRes.success(bookings);
+    } catch (error) {
+      return DataRes.failed(ErrorMes.BOOKING_GET_LIST);
     }
   }
 

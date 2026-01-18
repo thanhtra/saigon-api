@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PageDto, PageMetaDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
+import { BookingStatus } from 'src/common/helpers/enum';
 import { getSkip } from 'src/common/helpers/utils';
 import { Repository } from 'typeorm';
+import { QueryMyBookingDto } from './dto/query-my-booking.dto';
 import { Booking } from './entities/booking.entity';
-import { BookingStatus } from 'src/common/helpers/enum';
 
 
 @Injectable()
@@ -97,8 +98,6 @@ export class BookingsRepository {
         );
     }
 
-
-
     async updateBooking(
         id: string,
         dto: Partial<Booking>,
@@ -116,5 +115,64 @@ export class BookingsRepository {
         const result = await this.repo.delete(id);
         return result.affected === 1;
     }
+
+
+    // CUSTOMER
+
+    async getMyBookingsByPhone(
+        phone: string,
+        query: QueryMyBookingDto,
+    ): Promise<PageDto<Booking>> {
+        const qb = this.repo
+            .createQueryBuilder('booking')
+            .leftJoin('booking.room', 'room')
+            .leftJoin('room.rental', 'rental')
+            .select([
+                'booking.id',
+                'booking.status',
+                'booking.viewing_at',
+                'booking.createdAt',
+                'booking.updatedAt',
+
+                'room.id',
+                'room.title',
+                'room.price',
+                'room.area',
+                'room.room_number',
+                'room.room_code',
+                'room.slug',
+
+                'rental.address_detail_display',
+            ])
+            .where('booking.customer_phone = :phone', { phone });
+
+        if (query.status) {
+            qb.andWhere('booking.status = :status', { status: query.status });
+        }
+
+        if (query.key_search) {
+            qb.andWhere(
+                `(booking.customer_name ILIKE :q OR booking.customer_phone ILIKE :q)`,
+                { q: `%${query.key_search}%` },
+            );
+        }
+
+        qb.orderBy('booking.viewing_at', query.order)
+            .skip(getSkip(query.page, query.size))
+            .take(query.size);
+
+        const [entities, itemCount] = await qb.getManyAndCount();
+
+        return new PageDto(
+            entities,
+            new PageMetaDto({
+                itemCount,
+                pageOptionsDto: query,
+            }),
+        );
+
+    }
+
+
 }
 
