@@ -23,6 +23,7 @@ import { QueryRoomDto } from './dto/query-room.dto';
 import { CustomerUpdateRoomDto, UpdateRoomDto } from './dto/update-room.dto';
 import { Room } from './entities/rooms.entity';
 import { RoomsService } from './rooms.service';
+import { QueryMyRoomsDto } from './dto/query-my-rooms.dto';
 
 @Controller('rooms')
 export class RoomsController {
@@ -46,25 +47,25 @@ export class RoomsController {
   async customerCreateRoom(
     @Body() dto: CustomerCreateRoomDto,
     @CurrentUser() user: User,
-  ): Promise<DataRes<Room>> {
+  ): Promise<DataRes<any>> {
     return await this.roomsService.customerCreateRoom(dto, user);
   }
 
-  // CUSTOMER
-  // @Get('customer/:rental_id/rental')
-  // @Public()
-  // async getByRental(
-  //   @Param('rental_id') rentalId: string,
-  // ): Promise<DataRes<Room[]>> {
-  //   return await this.roomsService.getByRental(rentalId);
-  // }
+  @Get('customer/my')
+  @Auth(PERMISSIONS.rooms.my_rooms)
+  async getMyRooms(
+    @CurrentUser() user: User,
+    @Query() query: QueryMyRoomsDto,
+  ): Promise<DataRes<PageDto<any>>> {
+    return this.roomsService.getMyRooms(user, query);
+  }
 
   // CUSTOMER
   @Get('customer')
   @Public()
   async getPublicRooms(
     @Query() query: QueryRoomPublicDto,
-  ): Promise<DataRes<PageDto<Room>>> {
+  ): Promise<DataRes<PageDto<any>>> {
     return await this.roomsService.getPublicRooms(query);
   }
 
@@ -109,7 +110,7 @@ export class RoomsController {
     @Param('id') id: string,
     @Body() dto: CustomerUpdateRoomDto,
     @CurrentUser() user: User,
-  ): Promise<DataRes<Room>> {
+  ): Promise<DataRes<any>> {
     return await this.roomsService.customerUpdate(id, dto, user);
   }
 
@@ -122,5 +123,14 @@ export class RoomsController {
   }
 
 
+
+  // CUSTOMER
+  // @Get('customer/:rental_id/rental')
+  // @Public()
+  // async getByRental(
+  //   @Param('rental_id') rentalId: string,
+  // ): Promise<DataRes<Room[]>> {
+  //   return await this.roomsService.getByRental(rentalId);
+  // }
 
 }

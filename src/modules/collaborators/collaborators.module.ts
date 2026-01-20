@@ -14,7 +14,7 @@ import { UsersModule } from '../users/users.module';
     UsersModule
   ],
   controllers: [CollaboratorsController],
-  exports: [CollaboratorsService],
+  exports: [CollaboratorsService, CollaboratorsRepository],
   providers: [CollaboratorsService, CollaboratorsRepository],
 })
 export class CollaboratorsModule { }

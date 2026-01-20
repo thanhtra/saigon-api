@@ -20,6 +20,7 @@ import { QueryRoomDto } from './dto/query-room.dto';
 import { CustomerUpdateRoomDto, UpdateRoomDto } from './dto/update-room.dto';
 import { Room } from './entities/rooms.entity';
 import { RoomsRepository } from './rooms.repository';
+import { QueryMyRoomsDto } from './dto/query-my-rooms.dto';
 
 @Injectable()
 export class RoomsService {
@@ -255,7 +256,7 @@ export class RoomsService {
   async customerCreateRoom(
     dto: CustomerCreateRoomDto,
     user: User,
-  ): Promise<DataRes<Room>> {
+  ): Promise<DataRes<any>> {
     try {
       const room = await this.transactionService.runInTransaction(
         async (manager) => {
@@ -333,7 +334,7 @@ export class RoomsService {
         },
       );
 
-      return DataRes.success(room);
+      return DataRes.success({ id: room.id });
     } catch (error) {
       return DataRes.failed('Tạo phòng thất bại');
     }
@@ -344,7 +345,7 @@ export class RoomsService {
     id: string,
     dto: CustomerUpdateRoomDto,
     user: User
-  ): Promise<DataRes<Room>> {
+  ): Promise<DataRes<any>> {
     try {
       const room = await this.transactionService.runInTransaction(
         async (manager) => {
@@ -479,7 +480,7 @@ export class RoomsService {
         },
       );
 
-      return DataRes.success(room);
+      return DataRes.success({ id: room.id });
     } catch (error) {
       return DataRes.failed('Cập nhật phòng thất bại');
     }
@@ -587,6 +588,24 @@ export class RoomsService {
   }
 
 
+  // CUSTOMER
+
+  async getMyRooms(
+    user: User,
+    query: QueryMyRoomsDto,
+  ): Promise<DataRes<PageDto<any>>> {
+    try {
+      const data = await this.roomsRepository.getMyRooms(
+        user.id,
+        query,
+      );
+
+      return DataRes.success(data);
+    } catch (error) {
+      return DataRes.failed('Lấy danh sách phòng thất bại');
+    }
+  }
+
   /* ================= CUSTOMER / COMMON ================= */
 
   // async getByRental(
@@ -608,7 +627,7 @@ export class RoomsService {
 
   async getPublicRooms(
     query: QueryRoomPublicDto,
-  ): Promise<DataRes<PageDto<Room>>> {
+  ): Promise<DataRes<PageDto<any>>> {
     try {
       const page = await this.roomsRepository.findPublicRooms(query);
       return DataRes.success(page);

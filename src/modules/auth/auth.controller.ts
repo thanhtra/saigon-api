@@ -39,7 +39,10 @@ export class AuthController {
   async me(
     @CurrentUser() user: User,
   ): Promise<DataRes<any>> {
-    return DataRes.success(toSafeUser(user));
+    const collaborator = await this.authService.getCollaboratorByUserId(user.id);
+    const usafe = toSafeUser(user);
+
+    return DataRes.success({ ...usafe, is_ctv: collaborator?.is_confirmed_ctv });
   }
 
   @Public()

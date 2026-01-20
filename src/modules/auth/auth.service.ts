@@ -13,6 +13,7 @@ import { UsersRepository } from '../users/users.repository';
 import { UsersService } from '../users/users.service';
 import { ChangePassworDto } from './dto/change-password.dto';
 import { TokenPayload } from 'src/common/interface/common';
+import { CollaboratorsRepository } from '../collaborators/collaborators.repository';
 
 
 @Injectable()
@@ -21,6 +22,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly usersRepository: UsersRepository,
+    private readonly collaboratorsRepository: CollaboratorsRepository,
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
   ) { }
@@ -133,6 +135,11 @@ export class AuthService {
   async getUserById(id: string) {
     return this.usersRepository.findOneUser(id);
   }
+
+  async getCollaboratorByUserId(userId: string) {
+    return this.collaboratorsRepository.findByUserId(userId);
+  }
+
 
   // ---------------- TOKENS ----------------
   private getTokens(payload: TokenPayload) {

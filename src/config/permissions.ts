@@ -47,6 +47,8 @@ export const PERMISSIONS = {
   rooms: {
     customer_create: { key: 'rooms:customer_create', roles: ADMIN_SALE_OWNER_BROKER },
     customer_update: { key: 'rooms:customer_update', roles: ADMIN_SALE_OWNER_BROKER },
+    my_rooms: { key: 'rooms:my_rooms', roles: ADMIN_SALE_OWNER_BROKER },
+
     read_one: { key: 'rooms:read_one', roles: ADMIN },
     read_many: { key: 'rooms:read_many', roles: ADMIN },
     read: { key: 'rooms:read', roles: ADMIN },

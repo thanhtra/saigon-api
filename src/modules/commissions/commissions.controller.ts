@@ -9,7 +9,7 @@ import { CreateCommissionDto } from './dto/create-commission.dto';
 import { UpdateCommissionDto } from './dto/update-commission.dto';
 import { Commission } from './entities/commission.entity';
 
-@Controller('commissions')
+@Controller('commissions_fasfdfafewfefefweF')
 export class CommissionsController {
   constructor(
     private readonly commissionsService: CommissionsService,
@@ -58,9 +58,4 @@ export class CommissionsController {
     return this.commissionsService.getBySale(saleId);
   }
 
-  // @Get('/collaborator/:collaboratorId')
-  // @Auth(PERMISSIONS.commissions.read)
-  // async getByCollaborator(@Param('collaboratorId') collaboratorId: string): Promise<DataRes<Commission[]>> {
-  //   return this.commissionsService.getByCollaborator(collaboratorId);
-  // }
 }

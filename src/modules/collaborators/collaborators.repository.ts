@@ -88,6 +88,7 @@ export class CollaboratorsRepository {
         'c.field_cooperation',
         'c.active',
         'c.note',
+        'c.is_confirmed_ctv',
 
         'user.id',
         'user.name',

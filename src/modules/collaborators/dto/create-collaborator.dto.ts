@@ -21,4 +21,10 @@ export class CreateCollaboratorDto {
     @Transform(({ value }) => value === true || value === 'true')
     @IsBoolean()
     active?: boolean;
+
+    @IsOptional()
+    @Transform(({ value }) => value === true || value === 'true')
+    @IsBoolean()
+    is_confirmed_ctv?: boolean;
+
 }

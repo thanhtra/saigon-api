@@ -58,6 +58,7 @@ export class CollaboratorsService {
           field_cooperation: dto.field_cooperation,
           note: dto.note,
           active: dto.active ?? true,
+          is_confirmed_ctv: dto.is_confirmed_ctv
         });
 
       return DataRes.success(collaborator);
@@ -115,6 +116,7 @@ export class CollaboratorsService {
             ...(dto.field_cooperation !== undefined && { field_cooperation: dto.field_cooperation }),
             ...(dto.note !== undefined && { note: dto.note }),
             ...(dto.active !== undefined && { active: dto.active }),
+            ...(dto?.is_confirmed_ctv !== undefined && { is_confirmed_ctv: dto.is_confirmed_ctv }),
           });
 
           const updatedCollaborator = await manager.save(

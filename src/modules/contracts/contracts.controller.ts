@@ -22,7 +22,7 @@ import { CreateContractDto } from './dto/create-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
 import { Contract } from './entities/contract.entity';
 
-@Controller('contracts')
+@Controller('contracts_DSFGEWFRWEFDSFDSAFDS')
 export class ContractsController {
   constructor(
     private readonly contractsService: ContractsService,

@@ -50,6 +50,9 @@ export class Collaborator extends BaseEntity {
     @Column({ default: false })
     is_blacklisted: boolean;
 
+    @Column({ default: false })
+    is_confirmed_ctv: boolean;
+
     @Column({ type: 'text', nullable: true })
     blacklist_reason?: string;
 
