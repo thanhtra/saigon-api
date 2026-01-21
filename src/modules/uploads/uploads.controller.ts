@@ -11,6 +11,7 @@ import { UploadImagesInterceptor } from 'src/common/exceptions/upload-images.int
 import { UploadMultipleDto } from './dto/upload-multiple.dto';
 import { Upload } from './entities/upload.entity';
 import { UploadsService } from './uploads.service';
+import { Public } from 'src/common/decorators/public.decorator';
 
 
 
@@ -20,7 +21,7 @@ export class UploadsController {
     private readonly uploadsService: UploadsService,
   ) { }
 
-
+  @Public()
   @Post('multiple')
   @UseInterceptors(UploadImagesInterceptor)
   async uploadMultiple(

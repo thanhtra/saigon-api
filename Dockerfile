@@ -1,48 +1,44 @@
-FROM node:18
+# =========================
+# BUILD STAGE
+# =========================
+FROM node:18-alpine AS builder
 
-# Create app directory
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install app dependencies
-COPY package.json /usr/src/app/
-RUN npm install
+# Cài deps đầy đủ để build
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Bundle app source
-COPY . /usr/src/app
+# Copy source & build
+COPY . .
+RUN npm run build
+
+
+# =========================
+# RUNTIME STAGE
+# =========================
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Set env production (NestJS, TypeORM, Prisma đều hiểu)
+ENV NODE_ENV=production
+
+# Tạo user non-root (best practice)
+RUN addgroup -S app && adduser -S app -G app
+
+# Chỉ cài production deps
+COPY package.json package-lock.json ./
+RUN npm ci --only=production
+
+# Copy output build
+COPY --from=builder /app/dist ./dist
+
+# Đổi quyền thư mục
+RUN chown -R app:app /app
+
+USER app
 
 EXPOSE 3000
-CMD [ "npm", "start" ]
 
-
-
-# # Base image
-# FROM node:18
-
-# # Create app directory
-# WORKDIR /usr/src/app
-
-# # A wildcard is used to ensure both package.json AND package-lock.json are copied
-# COPY package*.json ./
-
-# # Install app dependencies
-# RUN npm install
-
-# # Bundle app source
-# COPY . .
-
-# # Creates a "dist" folder with the production build
-# RUN npm run build
-
-# # Start the server using the production build
-# CMD [ "node", "dist/main.js" ]
-
-
-
-
-# services:
-#     postgres:
-#       image: postgres:15
-#       environment:
-#         TZ: UTC
-#         POSTGRES_INITDB_ARGS: "--timezone=UTC"
+CMD ["node", "dist/main.js"]

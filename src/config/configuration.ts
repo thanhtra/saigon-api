@@ -28,27 +28,17 @@ export default () => ({
 
   /* ================= AUTH ================= */
   auth: {
-    jwtAccessTokenSecret:
-      process.env.JWT_ACCESS_TOKEN_SECRET,
-
-    jwtAccessTokenExpirationTime:
-      process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
-
-    jwtRefreshTokenSecret:
-      process.env.JWT_REFRESH_TOKEN_SECRET,
-
-    jwtRefreshExpirationTime:
-      process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
-
-    passwordSaltRounds: Number(
-      process.env.AUTH_PASSWORDS_SALT_ROUNDS,
-    ),
+    jwtAccessTokenSecret: process.env.JWT_ACCESS_TOKEN_SECRET,
+    jwtAccessTokenExpirationTime: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
+    jwtRefreshTokenSecret: process.env.JWT_REFRESH_TOKEN_SECRET,
+    jwtRefreshExpirationTime: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
   },
 
   /* ================= SECURITY ================= */
   cookie: {
-    secure: process.env.COOKIE_SECURE,
-    sameSite: process.env.COOKIE_SAMESITE,
+    secure: process.env.COOKIE_SECURE === 'true',
+    sameSite: process.env.COOKIE_SAMESITE as 'lax' | 'none',
+    domain: process.env.COOKIE_DOMAIN || undefined,
   },
 
   /* ================= THROTTLE ================= */
