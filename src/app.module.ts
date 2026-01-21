@@ -54,7 +54,7 @@ import { UsersModule } from './modules/users/users.module';
           database: config.get<string>('database.name'),
 
           autoLoadEntities: true,
-          synchronize: !isProd,
+          synchronize: true,
           logging: !isProd,
 
           namingStrategy: new SnakeNamingStrategy(),
