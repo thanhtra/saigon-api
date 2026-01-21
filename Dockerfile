@@ -64,27 +64,20 @@ RUN npm run build
 FROM node:18-alpine
 
 WORKDIR /app
-
 ENV NODE_ENV=production
 
 RUN addgroup -S app && adduser -S app -G app
 
-# ⚠️ CẦN devDependencies cho migration
+# 👉 CHỈ CÀI PROD DEPENDENCIES
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --only=production
 
 # Copy build output
 COPY --from=builder /app/dist ./dist
-
-# Copy migration + config
-COPY --from=builder /app/src/database ./src/database
-COPY --from=builder /app/src/data-source.ts ./src/data-source.ts
 
 RUN chown -R app:app /app
 USER app
 
 EXPOSE 3000
 
-# 👉 CHẠY MIGRATION RỒI MỚI START APP
-CMD ["sh", "-c", "npm run migration:run && node dist/main.js"]
-
+CMD ["node", "dist/main.js"]
