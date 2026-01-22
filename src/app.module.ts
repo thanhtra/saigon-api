@@ -4,7 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
-import configuration from './config/configuration';
+import configuration from 'src/config/configuration';
 
 // Modules
 import { APP_GUARD } from '@nestjs/core';
@@ -54,9 +54,13 @@ import { UsersModule } from './modules/users/users.module';
           database: config.get<string>('database.name'),
 
           autoLoadEntities: true,
-          synchronize: true,
-          logging: !isProd,
+          synchronize: false,
+          migrationsRun: true,
 
+          migrations: ['dist/migrations/*.js'],
+
+
+          logging: !isProd,
           namingStrategy: new SnakeNamingStrategy(),
 
           extra: {
