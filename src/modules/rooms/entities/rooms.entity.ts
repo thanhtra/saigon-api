@@ -82,4 +82,7 @@ export class Room extends BaseEntity {
 
     @OneToMany(() => Upload, u => u.room)
     uploads: Upload[];
+
+    @Column({ nullable: true })
+    video_url?: string;
 }

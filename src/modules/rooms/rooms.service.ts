@@ -95,6 +95,7 @@ export class RoomsService {
             status: dto.status ?? room.status,
             amenities: dto.amenities ?? room.amenities,
             description: dto.description ?? room.description,
+            video_url: dto.video_url ?? room.video_url,
             active: dto.active !== undefined ? dto.active : room.active,
             cover_index: coverIndex !== undefined ? coverIndex : room.cover_index,
           });
@@ -236,6 +237,8 @@ export class RoomsService {
             description: dto.description,
 
             cover_index: dto.cover_index ?? 0,
+
+            video_url: dto.video_url,
 
             active: rental.active,
           });

@@ -198,5 +198,20 @@ export class CollaboratorsService {
     }
   }
 
+  async getCollaboratorContactByRentalId(
+    rentalId: string,
+  ): Promise<DataRes<any>> {
+    try {
+      const contact = await this.collaboratorsRepository.getCollaboratorContactByRentalId(rentalId);
+
+      if (!contact) {
+        return DataRes.failed('Không tìm thấy thông tin chủ nhà');
+      }
+
+      return DataRes.success(contact);
+    } catch (error) {
+      return DataRes.failed('Không thể lấy thông tin chủ nhà');
+    }
+  }
 
 }

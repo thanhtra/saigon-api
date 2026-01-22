@@ -142,6 +142,39 @@ export class CollaboratorsRepository {
     return qb.getRawMany();
   }
 
+  async getCollaboratorContactByRentalId(rentalId: string) {
+    if (!rentalId) return null;
+
+    const qb = this.repo
+      .createQueryBuilder('c')
+      .innerJoin('c.rentals', 'rental')
+      .innerJoin('c.user', 'user')
+      .select([
+        'c.id AS collaborator_id',
+        'c.type AS type',
+        'c.field_cooperation AS field_cooperation',
+        'c.active AS collaborator_active',
+        'c.is_blacklisted AS collaborator_is_blacklisted',
+        'c.note AS collaborator_note',
+
+        'user.id AS user_id',
+        'user.name AS name',
+        'user.phone AS phone',
+        'user.email AS email',
+        'user.active AS user_active',
+        'user.note AS user_note',
+
+        'rental.id AS rental_id',
+        'rental.address_detail AS address_detail',
+        'rental.address_detail_display AS address_detail_display',
+        'rental.commission AS commission'
+      ])
+      .where('rental.id = :rentalId', { rentalId })
+
+    const result = await qb.getRawOne();
+
+    return result || null;
+  }
 
 
 

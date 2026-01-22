@@ -80,6 +80,10 @@ export class CreateRoomDto {
     @Type(() => Boolean)
     @IsBoolean()
     active?: boolean;
+
+    @IsOptional()
+    @IsString()
+    video_url?: string;
 }
 
 export class CustomerCreateRoomDto {

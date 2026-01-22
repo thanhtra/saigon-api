@@ -79,4 +79,12 @@ export class CollaboratorsController {
     return await this.collaboratorsService.remove(id);
   }
 
+  @Get('contact/:rentalId/admintra')
+  @Auth(PERMISSIONS.collaborators.read_contact)
+  async getCollaboratorContactByRentalId(
+    @Param('rentalId') rentalId: string,
+  ) {
+    return await this.collaboratorsService.getCollaboratorContactByRentalId(rentalId);
+  }
+
 }

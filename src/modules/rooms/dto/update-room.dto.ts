@@ -8,6 +8,10 @@ export class UpdateRoomDto {
     title?: string;
 
     @IsOptional()
+    @IsString()
+    video_url?: string;
+
+    @IsOptional()
     @IsNumber()
     @Min(1, { message: 'Giá thuê phải lớn hơn 0' })
     price?: number;

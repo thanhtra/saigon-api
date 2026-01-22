@@ -54,7 +54,7 @@ import { UsersModule } from './modules/users/users.module';
           database: config.get<string>('database.name'),
 
           autoLoadEntities: true,
-          synchronize: false,
+          synchronize: true,
           migrationsRun: true,
 
           migrations: ['dist/migrations/*.js'],

@@ -18,6 +18,7 @@ export const PERMISSIONS = {
     logout: { key: 'users:logout', roles: ALL_ROLES },
   },
   collaborators: {
+    read_contact: { key: 'collaborators:read_contact', roles: ADMIN },
     read_many: { key: 'collaborators:read_many', roles: ADMIN },
     read_one: { key: 'collaborators:read_one', roles: ADMIN },
     create: { key: 'collaborators:create', roles: ADMIN },
