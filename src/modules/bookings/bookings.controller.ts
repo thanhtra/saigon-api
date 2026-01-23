@@ -76,9 +76,7 @@ export class BookingsController {
   async getBookings(
     @Query() pageOptionsDto: PageOptionsDto,
   ): Promise<DataRes<PageDto<Booking>>> {
-    return this.bookingsService.getBookings(
-      pageOptionsDto,
-    );
+    return this.bookingsService.getBookings(pageOptionsDto);
   }
 
   @Get(':id/admintra')

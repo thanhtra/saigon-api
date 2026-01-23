@@ -44,43 +44,62 @@ export class BookingsRepository {
         /* ===== SEARCH ===== */
         if (pageOptionsDto.key_search) {
             qb.andWhere(
-                `(booking.customer_name ILIKE :q
-              OR booking.customer_phone ILIKE :q
-              OR booking.referrer_phone ILIKE :q)`,
+                `
+                booking.customer_name ILIKE :q
+                OR booking.customer_phone ILIKE :q
+                OR booking.referrer_phone ILIKE :q
+                `,
                 { q: `%${pageOptionsDto.key_search}%` },
             );
         }
 
-        /* ===== 1. STATUS PRIORITY ===== */
+        /* ===== STATUS PRIORITY ===== */
         qb.addSelect(
             `
-          CASE booking.status
-            WHEN '${BookingStatus.Pending}' THEN 1
-            WHEN '${BookingStatus.Confirmed}' THEN 2
-            WHEN '${BookingStatus.Completed}' THEN 3
-            WHEN '${BookingStatus.NoShow}' THEN 4
-            WHEN '${BookingStatus.Cancelled}' THEN 5
-            ELSE 6
-          END
-          `,
+            CASE booking.status
+                WHEN :pending THEN 1
+                WHEN :confirmed THEN 2
+                WHEN :completed THEN 3
+                WHEN :noShow THEN 4
+                WHEN :cancelled THEN 5
+                ELSE 6
+            END
+            `,
             'status_priority',
-        );
+        ).setParameters({
+            pending: BookingStatus.Pending,
+            confirmed: BookingStatus.Confirmed,
+            completed: BookingStatus.Completed,
+            noShow: BookingStatus.NoShow,
+            cancelled: BookingStatus.Cancelled,
+        });
 
-        /* ===== 2. VIEWING TIME DISTANCE ===== */
         qb.addSelect(
             `
-          CASE
-            WHEN booking.status IN ('${BookingStatus.Pending}', '${BookingStatus.Confirmed}')
-            THEN ABS(EXTRACT(EPOCH FROM (booking.viewing_at - NOW())))
-            ELSE NULL
-          END
-          `,
+            CASE
+                WHEN booking.status IN (:...activeStatuses)
+                THEN ABS(
+                    EXTRACT(
+                        EPOCH FROM (
+                            booking.viewing_at::timestamp - NOW()
+                        )
+                    )
+                )
+                ELSE NULL
+            END
+            `,
             'viewing_distance',
-        );
+        ).setParameters({
+            activeStatuses: [
+                BookingStatus.Pending,
+                BookingStatus.Confirmed,
+            ],
+        });
+
 
         /* ===== ORDER ===== */
         qb.orderBy('status_priority', 'ASC')
-            .addOrderBy('viewing_distance', 'ASC')
+            .addOrderBy('viewing_distance', 'ASC', 'NULLS LAST')
             .addOrderBy('booking.updatedAt', 'DESC');
 
         /* ===== PAGINATION ===== */

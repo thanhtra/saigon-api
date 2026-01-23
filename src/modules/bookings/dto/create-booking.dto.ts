@@ -1,4 +1,5 @@
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Matches } from 'class-validator';
+import { DATETIME_LOCAL_REGEX } from 'src/common/helpers/constants';
 import { BookingStatus } from 'src/common/helpers/enum';
 
 export class CreateBookingDto {
@@ -31,7 +32,10 @@ export class CreateBookingDto {
     @IsOptional()
     admin_note?: string;
 
-    @IsDateString()
+    @IsString()
+    @Matches(DATETIME_LOCAL_REGEX, {
+        message: 'viewing_at phải có dạng YYYY-MM-DDTHH:mm',
+    })
     viewing_at: string;
 
     @IsEnum(BookingStatus)
@@ -61,7 +65,10 @@ export class CreateBookingPublicDto {
     @IsPhoneNumber('VN')
     referrer_phone?: string;
 
-    @IsDateString()
+    @IsString()
+    @Matches(DATETIME_LOCAL_REGEX, {
+        message: 'viewing_at phải có dạng YYYY-MM-DDTHH:mm',
+    })
     viewing_at: string;
 
     @IsString()

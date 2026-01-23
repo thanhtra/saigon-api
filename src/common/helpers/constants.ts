@@ -81,3 +81,5 @@ export const ACREAGE_LEVEL_MAP = {
     f: { min: 90, max: 120 },
     g: { min: 120, max: null },
 };
+
+export const DATETIME_LOCAL_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;

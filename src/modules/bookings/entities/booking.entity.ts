@@ -42,8 +42,9 @@ export class Booking extends BaseEntity {
     @Column({ type: 'text', nullable: true })
     admin_note?: string | null;
 
-    @Column({ type: 'timestamp' })
-    viewing_at: Date;
+    @Column({ type: 'varchar', length: 16 })
+    viewing_at: string;
+    // format: "YYYY-MM-DDTHH:mm"
 
     @Column({ length: 20, nullable: true })
     referrer_phone?: string | null;
