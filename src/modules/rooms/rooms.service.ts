@@ -67,7 +67,6 @@ export class RoomsService {
             throw new BadRequestException('cover_index không hợp lệ');
           }
 
-
           const isChangeToAvailable =
             dto.status === RoomStatus.Available &&
             room.status !== RoomStatus.Available;
@@ -95,6 +94,7 @@ export class RoomsService {
             status: dto.status ?? room.status,
             amenities: dto.amenities ?? room.amenities,
             description: dto.description ?? room.description,
+            room_number: dto.room_number ?? room.room_number,
             video_url: dto.video_url ?? room.video_url,
             active: dto.active !== undefined ? dto.active : room.active,
             cover_index: coverIndex !== undefined ? coverIndex : room.cover_index,
@@ -152,7 +152,6 @@ export class RoomsService {
               );
             }
           }
-
 
           /* ===== 6. LOAD RELATIONS FOR RESPONSE ===== */
           room.uploads = await manager.find(Upload, {
