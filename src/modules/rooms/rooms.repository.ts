@@ -242,6 +242,7 @@ export class RoomsRepository {
                 'upload.id',
                 'upload.file_path',
                 'upload.file_type',
+                'upload.is_cover'
             ])
 
             .where('user.id = :userId', { userId })
