@@ -36,6 +36,11 @@ export enum RoomStatus {
     Disabled = 'disabled'          // Vô hiệu
 }
 
+export enum WaterUnit {
+    PerM3 = 'per_m3',
+    PerPerson = 'per_person'
+}
+
 export enum UserRole {
     Admin = 'admin_saigon',
     Sale = 'sale_saigon',

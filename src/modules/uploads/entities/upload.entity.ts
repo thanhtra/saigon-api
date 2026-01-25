@@ -56,4 +56,7 @@ export class Upload extends BaseEntity {
 
     @Column({ nullable: true })
     contract_id?: string;
+
+    @Column({ default: false })
+    is_cover: boolean;
 }

@@ -17,6 +17,12 @@ export class UpdateRoomDto {
     price?: number;
 
     @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    @Min(0, { message: 'Đặt cọc không được âm' })
+    deposit?: number;
+
+    @IsOptional()
     @IsEnum(RoomStatus)
     status?: RoomStatus;
 
@@ -48,14 +54,13 @@ export class UpdateRoomDto {
     description?: string;
 
     @IsOptional()
-    @IsNumber()
-    @Min(0)
-    cover_index?: number;
-
-    @IsOptional()
     active?: boolean;
 
     /* ===== UPLOAD MANAGEMENT ===== */
+
+    @IsOptional()
+    @IsString()
+    cover_upload_id?: string;
 
     @IsOptional()
     @IsArray()
@@ -108,11 +113,6 @@ export class CustomerUpdateRoomDto {
     @IsOptional()
     @IsString()
     description?: string;
-
-    @IsOptional()
-    @IsNumber()
-    @Min(0)
-    cover_index?: number;
 
     /* ===== UPLOAD MANAGEMENT ===== */
 

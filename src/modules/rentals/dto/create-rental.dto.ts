@@ -123,6 +123,10 @@ export class CreateRentalDto {
     @IsString()
     fee_other?: string;
 
+    @IsOptional()
+    @IsString()
+    water_unit?: string;
+
     // ROOM
 
     @RequireDetail
@@ -246,6 +250,10 @@ export class CustomerCreateBoardingHousesDto {
     @IsOptional()
     @IsString()
     fee_other?: string;
+
+    @IsOptional()
+    @IsString()
+    water_unit?: string;
 }
 
 export class CustomerCreateUnitRentalDto {
@@ -319,6 +327,9 @@ export class CustomerCreateUnitRentalDto {
     @IsString()
     fee_other?: string;
 
+    @IsOptional()
+    @IsString()
+    water_unit?: string;
 
     // ROOM
 

@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { IsArray, IsBooleanString, IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { UploadDomain } from 'src/common/helpers/enum';
 
 export class UploadMultipleDto {
@@ -16,4 +16,9 @@ export class UploadMultipleDto {
     @IsOptional()
     @IsUUID()
     contract_id?: string;
+
+    @IsOptional()
+    @IsArray()
+    @IsBooleanString({ each: true })
+    is_cover?: string[];
 }

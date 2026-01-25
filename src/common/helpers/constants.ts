@@ -1,5 +1,5 @@
 import { join } from "path";
-import { CustomerType, ProductStatus, RentalAmenity, RentalType, UserRole } from "./enum";
+import { CustomerType, ProductStatus, RentalAmenity, RentalType, UserRole, WaterUnit } from "./enum";
 
 
 export const UPLOAD_DIR = join(process.cwd(), 'uploads');
@@ -58,6 +58,11 @@ export const isUnitRental = (
     type: RentalType,
 ): type is UnitRentalType => {
     return UNIT_RENTAL_TYPES.includes(type as UnitRentalType);
+};
+
+export const WaterUnitOptions: Record<WaterUnit, string> = {
+    [WaterUnit.PerM3]: 'đ / m³',
+    [WaterUnit.PerPerson]: 'đ / người',
 };
 
 

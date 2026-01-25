@@ -60,7 +60,8 @@ export class RentalsService {
               fee_wifi: dto.fee_wifi,
               fee_service: dto.fee_service,
               fee_parking: dto.fee_parking,
-              fee_other: dto.fee_other
+              fee_other: dto.fee_other,
+              water_unit: dto.water_unit
             }),
           );
 
@@ -152,6 +153,7 @@ export class RentalsService {
 
             fee_electric: dto.fee_electric ?? rental.fee_electric,
             fee_water: dto.fee_water ?? rental.fee_water,
+            water_unit: dto.water_unit ?? rental.water_unit,
             fee_wifi: dto.fee_wifi ?? rental.fee_wifi,
             fee_service: dto.fee_service ?? rental.fee_service,
             fee_parking: dto.fee_parking ?? rental.fee_parking,
@@ -424,13 +426,15 @@ export class RentalsService {
               fee_service: dto.fee_service ?? 0,
               fee_parking: dto.fee_parking ?? 0,
               fee_other: dto.fee_other,
+              water_unit: dto.water_unit,
             }),
           );
 
-          // XXXXX
           return {
-            rental,
+            id: rental.id,
+            address_detail: rental.address_detail
           };
+
         },
       );
 
@@ -488,6 +492,7 @@ export class RentalsService {
               fee_service: dto.fee_service,
               fee_parking: dto.fee_parking,
               fee_other: dto.fee_other,
+              water_unit: dto.water_unit,
 
               active: true,
               status: RentalStatus.New,

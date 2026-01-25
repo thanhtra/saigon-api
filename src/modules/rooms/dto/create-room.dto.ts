@@ -28,6 +28,12 @@ export class CreateRoomDto {
     price: number;
 
     @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    @Min(0, { message: 'Đặt cọc không được âm' })
+    deposit?: number;
+
+    @IsOptional()
     @IsEnum(RoomStatus)
     status?: RoomStatus;
 
@@ -50,12 +56,6 @@ export class CreateRoomDto {
     @Type(() => Number)
     @IsNumber()
     max_people?: number;
-
-    @IsOptional()
-    @Type(() => Number)
-    @IsNumber()
-    @Min(0)
-    cover_index?: number;
 
     @IsOptional()
     @IsArray()
@@ -129,13 +129,6 @@ export class CustomerCreateRoomDto {
     @Type(() => Number)
     @IsNumber()
     max_people?: number;
-
-    /* ===== COVER ===== */
-    @IsOptional()
-    @Type(() => Number)
-    @IsNumber()
-    @Min(0)
-    cover_index?: number;
 
     /* ===== AMENITIES ===== */
     @IsOptional()

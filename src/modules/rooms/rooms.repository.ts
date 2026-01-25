@@ -35,16 +35,17 @@ export class RoomsRepository {
                 'room.area',
                 'room.updatedAt',
                 'room.video_url',
-                'room.cover_index',
                 'room.floor',
                 'room.amenities',
-                'room.description'
+                'room.description',
+                'room.deposit'
             ])
 
             .addSelect([
                 'upload.id',
                 'upload.file_path',
                 'upload.createdAt',
+                'upload.is_cover'
             ])
 
             .addSelect([
@@ -53,6 +54,7 @@ export class RoomsRepository {
                 'rental.address_detail_display',
                 'rental.fee_electric',
                 'rental.fee_water',
+                'rental.water_unit',
                 'rental.fee_wifi',
                 'rental.fee_parking',
                 'rental.fee_other'
@@ -97,7 +99,6 @@ export class RoomsRepository {
                 'room.area',
                 'room.createdAt',
                 'room.amenities',
-                'room.cover_index',
                 'room.deposit',
                 'room.floor',
                 'room.max_people',
@@ -110,6 +111,7 @@ export class RoomsRepository {
                 'upload.id',
                 'upload.file_path',
                 'upload.file_type',
+                'upload.is_cover'
             ])
 
             .addSelect([
@@ -231,7 +233,6 @@ export class RoomsRepository {
                 'room.room_number',
                 'room.room_code',
                 'room.status',
-                'room.cover_index',
                 'room.createdAt',
 
                 'rental.id',
@@ -280,9 +281,6 @@ export class RoomsRepository {
             new PageMetaDto({ itemCount, pageOptionsDto: query }),
         );
     }
-
-
-
 
 
     // ---------------- ADMIN ----------------

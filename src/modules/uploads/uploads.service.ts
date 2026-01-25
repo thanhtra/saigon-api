@@ -14,6 +14,7 @@ import { UploadMultipleDto } from './dto/upload-multiple.dto';
 import { Upload } from './entities/upload.entity';
 import { UploadsRepository } from './uploads.repository';
 import { promises as fs } from 'fs';
+import { Not } from 'typeorm';
 
 const unlinkAsync = promisify(unlink);
 
@@ -52,23 +53,56 @@ export class UploadsService {
         }
     }
 
-    async createMultipleUploads(dto: UploadMultipleDto, files: Express.Multer.File[]): Promise<DataRes<Upload[]>> {
+    async createMultipleUploads(
+        dto: UploadMultipleDto,
+        files: Express.Multer.File[],
+    ): Promise<DataRes<Upload[]>> {
+
         const { entityId } = resolveUploadPath(dto);
 
-        const uploadResults = await Promise.allSettled(files.map(file => {
-            const filePath = `/${dto.domain}/${entityId}/${file.filename}`;
-            return this.createUpload({ ...dto, file_path: filePath, file_type: FileType.Image });
-        }));
+        return this.transactionService.runInTransaction(async manager => {
 
-        const uploads = uploadResults
-            .filter(r => r.status === 'fulfilled' && r.value.success)
-            .map(r => (r as PromiseFulfilledResult<DataRes<Upload>>).value.data);
+            // 1️⃣ tạo uploads mới
+            const uploads: Upload[] = [];
 
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const filePath = `/${dto.domain}/${entityId}/${file.filename}`;
 
-        if (!uploads.length) return DataRes.failed('Không có file nào upload thành công');
-        return DataRes.success(uploads);
+                const upload = manager.create(Upload, {
+                    domain: dto.domain,
+                    room_id: entityId,
+                    file_path: filePath,
+                    file_type: FileType.Image,
+                    is_cover: dto.is_cover?.[i] === 'true',
+                });
+
+                uploads.push(await manager.save(upload));
+            }
+
+            // 2️⃣ đảm bảo có cover
+            let cover = uploads.find(u => u.is_cover);
+
+            if (!cover) {
+                uploads[0].is_cover = true;
+                cover = uploads[0];
+                await manager.save(uploads[0]);
+            }
+
+            // 3️⃣ reset cover cũ (TRỪ cover mới)
+            await manager.update(
+                Upload,
+                {
+                    room_id: entityId,
+                    is_cover: true,
+                    id: Not(cover.id),
+                },
+                { is_cover: false },
+            );
+
+            return DataRes.success(uploads);
+        });
     }
-
 
     async removeFile(filePath: string): Promise<void> {
         try {

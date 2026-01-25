@@ -69,9 +69,6 @@ export class Room extends BaseEntity {
     @OneToMany(() => Contract, c => c.room)
     contracts: Contract[];
 
-    @Column({ default: 0 })
-    cover_index?: number;
-
     @Column({
         type: 'text',
         array: true,

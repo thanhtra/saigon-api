@@ -121,7 +121,6 @@ export class RentalsRepository {
                 'rooms.amenities',
                 'rooms.area',
                 'rooms.description',
-                'rooms.cover_index',
                 'rooms.deposit',
                 'rooms.max_people',
                 'rooms.floor',

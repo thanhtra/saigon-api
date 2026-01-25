@@ -91,6 +91,9 @@ export class Rental extends BaseEntity {
     @Column({ type: 'int', default: 0 })
     fee_water?: number;
 
+    @Column({ nullable: true })
+    water_unit: string;
+
     @Column({ type: 'int', default: 0 })
     fee_wifi?: number;
 

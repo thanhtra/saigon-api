@@ -121,7 +121,6 @@ export class UsersService {
 
       return DataRes.success(toSafeUser(updated));
     } catch (error) {
-      console.log('Error customerUpdateProfile', error?.message);
       return DataRes.failed(ErrorMes.SYSTEM_ERROR);
     }
   }

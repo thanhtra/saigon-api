@@ -294,21 +294,18 @@ export function getSkip(page: number, size: number) {
 }
 
 export function getPermissionsFromRoles(roles) {
-  // console.log('roles', roles);
 
   const flatPermissions = [];
   forOwn(PERMISSIONS, (permissions, subject) => {
     return forOwn(permissions, (perm: any, action) => {
-      // console.log('perm', perm);
+
       const matchingRoles = perm.roles.filter((value) => roles.includes(value));
-      // console.log('matchingRoles', matchingRoles);
+
       if (matchingRoles.length) {
         flatPermissions.push(perm.key);
       }
     });
   });
-
-  // console.log('flatPermissions', flatPermissions);
 
   return flatPermissions;
 }

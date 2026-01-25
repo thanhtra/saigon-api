@@ -63,10 +63,6 @@ export class RoomsService {
             throw new BadRequestException('Giá thuê không hợp lệ');
           }
 
-          if (dto.cover_index !== undefined && dto.cover_index < 0) {
-            throw new BadRequestException('cover_index không hợp lệ');
-          }
-
           const isChangeToAvailable =
             dto.status === RoomStatus.Available &&
             room.status !== RoomStatus.Available;
@@ -78,16 +74,10 @@ export class RoomsService {
             throw new BadRequestException(ErrorResponse(RoomErrorCode.RENTAL_NOT_CONFIRMED));
           }
 
-          const coverIndex = dto.cover_index !== undefined &&
-            dto.upload_ids?.length &&
-            dto.cover_index >= dto.upload_ids.length
-            ? 0
-            : dto.cover_index;
-
-
           manager.merge(Room, room, {
             title: dto.title ?? room.title,
             price: dto.price ?? room.price,
+            deposit: dto.deposit ?? room.deposit,
             floor: dto.floor ? Number(dto.floor) : room.floor,
             area: dto.area ?? room.area,
             max_people: dto.max_people ?? room.max_people,
@@ -97,7 +87,6 @@ export class RoomsService {
             room_number: dto.room_number ?? room.room_number,
             video_url: dto.video_url ?? room.video_url,
             active: dto.active !== undefined ? dto.active : room.active,
-            cover_index: coverIndex !== undefined ? coverIndex : room.cover_index,
           });
 
           await manager.save(room);
@@ -120,7 +109,6 @@ export class RoomsService {
               uploadsToDelete.map(u => u.id),
             );
           }
-
 
           /* ===== ASSIGN UPLOADS (SOURCE OF TRUTH) ===== */
           if (dto.upload_ids !== undefined) {
@@ -151,6 +139,26 @@ export class RoomsService {
                 { room },
               );
             }
+          }
+
+          /* ===== UPDATE COVER ===== */
+          if (dto?.cover_upload_id) {
+            // reset all covers of this room
+            await manager.update(
+              Upload,
+              { room: { id: room.id } },
+              { is_cover: false },
+            );
+
+            // set new cover
+            await manager.update(
+              Upload,
+              {
+                id: dto.cover_upload_id,
+                room: { id: room.id },
+              },
+              { is_cover: true },
+            );
           }
 
           /* ===== 6. LOAD RELATIONS FOR RESPONSE ===== */
@@ -225,6 +233,7 @@ export class RoomsService {
             slug,
 
             price: dto.price,
+            deposit: dto.deposit,
             status: dto.status ?? RoomStatus.Available,
 
             floor: dto.floor,
@@ -234,8 +243,6 @@ export class RoomsService {
 
             amenities: dto.amenities ?? [],
             description: dto.description,
-
-            cover_index: dto.cover_index ?? 0,
 
             video_url: dto.video_url,
 
@@ -327,7 +334,6 @@ export class RoomsService {
             max_people: dto.max_people,
             amenities: dto.amenities ?? [],
             description: dto.description,
-            cover_index: dto.cover_index ?? 0,
             status: RoomStatus.PendingApproval,
             active: rental.active,
           });
@@ -379,10 +385,6 @@ export class RoomsService {
             throw new BadRequestException('Giá thuê không hợp lệ');
           }
 
-          if (dto.cover_index !== undefined && dto.cover_index < 0) {
-            throw new BadRequestException('cover_index không hợp lệ');
-          }
-
           /* ===== 2. VALIDATE STATUS ===== */
           if (dto.status !== undefined) {
 
@@ -401,13 +403,6 @@ export class RoomsService {
             }
           }
 
-          const coverIndex =
-            dto.cover_index !== undefined &&
-              dto.upload_ids?.length &&
-              dto.cover_index >= dto.upload_ids.length
-              ? 0
-              : dto.cover_index;
-
           /* ===== 3. UPDATE ROOM (LIMITED FIELDS) ===== */
           manager.merge(Room, room, {
             title: dto.title ?? room.title,
@@ -417,61 +412,9 @@ export class RoomsService {
             amenities: dto.amenities ?? room.amenities,
             description: dto.description ?? room.description,
             status: dto.status ?? room.status,
-            cover_index:
-              coverIndex !== undefined
-                ? coverIndex
-                : room.cover_index,
           });
 
           await manager.save(room);
-
-          /* ===== 4. DELETE UPLOADS ===== */
-          if (dto.delete_upload_ids?.length) {
-            const uploadsToDelete = await manager.find(Upload, {
-              where: {
-                id: In(dto.delete_upload_ids),
-                room: { id: room.id },
-              },
-            });
-
-            for (const upload of uploadsToDelete) {
-              await this.uploadsService.removeFile(upload.file_path);
-            }
-
-            await manager.delete(
-              Upload,
-              uploadsToDelete.map(u => u.id),
-            );
-          }
-
-          /* ===== 5. ASSIGN UPLOADS (SOURCE OF TRUTH) ===== */
-          if (dto.upload_ids !== undefined) {
-            if (dto.upload_ids.length === 0) {
-              // remove all uploads
-              await manager.update(
-                Upload,
-                { room: { id: room.id } },
-                { room: null },
-              );
-            } else {
-              // detach uploads not in list
-              await manager.update(
-                Upload,
-                {
-                  room: { id: room.id },
-                  id: Not(In(dto.upload_ids)),
-                },
-                { room: null },
-              );
-
-              // attach uploads in list
-              await manager.update(
-                Upload,
-                { id: In(dto.upload_ids) },
-                { room },
-              );
-            }
-          }
 
           /* ===== 6. LOAD UPLOADS FOR RESPONSE ===== */
           room.uploads = await manager.find(Upload, {
@@ -488,7 +431,6 @@ export class RoomsService {
     }
   }
 
-
   async getRooms(
     query: QueryRoomDto,
   ): Promise<DataRes<PageDto<Room>>> {
@@ -502,7 +444,6 @@ export class RoomsService {
       return DataRes.failed('Lấy danh sách phòng thất bại');
     }
   }
-
 
   async getOneAdmin(
     id: string,
