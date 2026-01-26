@@ -285,14 +285,14 @@ export class RoomsRepository {
 
 
     // ---------------- ADMIN ----------------
-    async getRooms(
-        query: QueryRoomDto,
-    ): Promise<PageDto<Room>> {
-
+    async getRooms(query: QueryRoomDto): Promise<PageDto<Room>> {
         const qb = this.repo
             .createQueryBuilder('room')
             .leftJoinAndSelect('room.rental', 'rental')
-            .where('1 = 1')
+            .leftJoinAndSelect('rental.collaborator', 'collaborator')
+            .leftJoinAndSelect('collaborator.user', 'collaborator_user')
+            .leftJoinAndSelect('rental.createdBy', 'created_by_user') // 👈 NGƯỜI ĐĂNG
+            .where('rental.active = true')
             .orderBy('room.createdAt', query.order)
             .skip(getSkip(query.page, query.size))
             .take(Math.min(query.size, 50));
@@ -308,10 +308,7 @@ export class RoomsRepository {
             });
         }
 
-        // rental.active (luôn true)
-        qb.andWhere('rental.active = true');
-
-        // status
+        // room.status
         if (query.status) {
             qb.andWhere('room.status = :status', {
                 status: query.status,
@@ -337,22 +334,24 @@ export class RoomsRepository {
         ================================ */
 
         if (query.key_search) {
-            const q = query.key_search.trim();
+            const q = `%${query.key_search.trim()}%`;
 
             qb.andWhere(
                 `
-                room.room_code ILIKE :q
-                OR room.price::text ILIKE :q
+                (
+                    room.room_code ILIKE :q
+                    OR room.price::text ILIKE :q
+                    OR rental.address_detail ILIKE :q
+                    OR created_by_user.phone ILIKE :q
+                )
                 `,
-                { q: `%${q}%` },
+                { q },
             );
         }
 
-        if (query.room_code) {
-            qb.andWhere('room.room_code ILIKE :room_code', {
-                room_code: `%${query.room_code}%`,
-            });
-        }
+        /* ===============================
+           EXECUTE
+        ================================ */
 
         const [entities, itemCount] = await qb.getManyAndCount();
 
