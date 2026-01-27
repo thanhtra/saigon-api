@@ -486,11 +486,11 @@ export class RentalsService {
               address_detail: dto.address_detail,
               address_detail_display: dto.address_detail_display,
 
-              fee_electric: dto.fee_electric,
-              fee_water: dto.fee_water,
-              fee_wifi: dto.fee_wifi,
-              fee_service: dto.fee_service,
-              fee_parking: dto.fee_parking,
+              fee_electric: dto.fee_electric || undefined,
+              fee_water: dto.fee_water || undefined,
+              fee_wifi: dto.fee_wifi || undefined,
+              fee_service: dto.fee_service || undefined,
+              fee_parking: dto.fee_parking || undefined,
               fee_other: dto.fee_other,
               water_unit: dto.water_unit,
 
