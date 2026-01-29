@@ -57,6 +57,7 @@ export class RoomsRepository {
                 'rental.water_unit',
                 'rental.fee_wifi',
                 'rental.fee_parking',
+                'rental.fee_service',
                 'rental.fee_other'
             ])
 
