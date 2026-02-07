@@ -15,6 +15,7 @@ import {
 @Index(['status'])
 @Index(['viewing_at'])
 @Index(['room_id', 'viewing_at'])
+@Index(['is_paid_commission'])
 export class Booking extends BaseEntity {
 
     @Column()
@@ -55,4 +56,10 @@ export class Booking extends BaseEntity {
         default: BookingStatus.Pending,
     })
     status: BookingStatus;
+
+    @Column({
+        type: 'boolean',
+        default: false,
+    })
+    is_paid_commission: boolean;
 }

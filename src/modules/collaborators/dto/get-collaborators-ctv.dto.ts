@@ -1,7 +1,7 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { CollaboratorType, FieldCooperation } from 'src/common/helpers/enum';
 
-export class GetAvailableCollaboratorsDto {
+export class GetCollaboratorsCtvDto {
     @IsOptional()
     @IsEnum(CollaboratorType)
     type?: CollaboratorType;

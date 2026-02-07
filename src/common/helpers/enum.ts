@@ -61,13 +61,14 @@ export enum CustomerType {
 }
 
 
-
 export enum BookingStatus {
-    Pending = 'pending',       // Đã đặt lịch
-    Confirmed = 'confirmed',   // Xác nhận với chủ trọ
-    Completed = 'completed',   // Đã đi xem
-    Cancelled = 'cancelled',   // Khách huỷ
-    NoShow = 'no_show',        // Khách không đến
+    Pending = 'pending',           // Đã đặt lịch
+    Confirmed = 'confirmed',       // Đã xác nhận với chủ trọ
+    Completed = 'completed',       // Đã đi xem
+    Deposited = 'deposited',       // ✅ Đã cọc giữ phòng
+    MovedIn = 'moved_in',           // ✅ Đã vào ở
+    Cancelled = 'cancelled',       // Khách huỷ
+    NoShow = 'no_show',             // Khách không đến
 }
 
 export enum CommissionStatus {

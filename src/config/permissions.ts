@@ -27,10 +27,12 @@ export const PERMISSIONS = {
     logout: { key: 'collaborators:logout', roles: ADMIN },
   },
   bookings: {
+    ctv_bookings: { key: 'bookings:ctv_bookings', roles: ADMIN_SALE },
     read: { key: 'bookings:read', roles: ADMIN },
     create: { key: 'bookings:create', roles: ADMIN },
     update: { key: 'bookings:update', roles: ADMIN },
     delete: { key: 'bookings:delete', roles: ADMIN },
+    manage_commission: { key: 'bookings:manage_commission', roles: ADMIN },
   },
   rentals: {
     my_boarding_houses: { key: 'rentals:my_boarding_houses', roles: ADMIN_SALE_OWNER_BROKER },

@@ -9,6 +9,10 @@ export class QueryRoomDto extends PageOptionsDto {
     rental_id?: string;
 
     @IsOptional()
+    @IsString()
+    ctv_collaborator_id?: string;
+
+    @IsOptional()
     @IsEnum(RentalType)
     rental_type?: RentalType;
 

@@ -71,6 +71,10 @@ export class UpdateRoomDto {
     @IsArray()
     @IsString({ each: true })
     delete_upload_ids?: string[];
+
+    @IsOptional()
+    @IsString()
+    ctv_collaborator_id?: string;
 }
 
 export class CustomerUpdateRoomDto {

@@ -176,7 +176,35 @@ export class CollaboratorsRepository {
     return result || null;
   }
 
+  async getCollaboratorsCtv(
+    type?: CollaboratorType,
+    field_cooperation?: FieldCooperation,
+  ): Promise<{ id: string; name: string; phone: string }[]> {
+    const qb = this.repo
+      .createQueryBuilder('collaborator')
+      .leftJoin('collaborator.user', 'user')
+      .select([
+        'collaborator.id AS id',
+        'user.name AS name',
+        'user.phone AS phone',
+      ])
+      .where('collaborator.active = :collabActive', { collabActive: true })
+      .andWhere('collaborator.is_blacklisted = false')
+      .andWhere('collaborator.is_confirmed_ctv = true')
+      .andWhere('user.active = true');
 
+    if (type) {
+      qb.andWhere('collaborator.type = :type', { type });
+    }
+
+    if (field_cooperation) {
+      qb.andWhere('collaborator.field_cooperation = :field', { field: field_cooperation });
+    }
+
+    qb.orderBy('user.name', 'ASC');
+
+    return qb.getRawMany();
+  }
 
 
 }

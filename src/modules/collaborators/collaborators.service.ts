@@ -15,6 +15,7 @@ import { User } from '../users/entities/user.entity';
 import { UsersRepository } from '../users/users.repository';
 import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
 import { EntityManager } from 'typeorm';
+import { GetCollaboratorsCtvDto } from './dto/get-collaborators-ctv.dto';
 
 @Injectable()
 export class CollaboratorsService {
@@ -213,5 +214,17 @@ export class CollaboratorsService {
       return DataRes.failed('Không thể lấy thông tin chủ nhà');
     }
   }
+
+
+  async getCollaboratorsCtv(query: GetCollaboratorsCtvDto): Promise<DataRes<{ id: string; name: string; phone: string }[]>> {
+    try {
+      const { type, field_cooperation } = query;
+      const data = await this.collaboratorsRepository.getCollaboratorsCtv(type, field_cooperation);
+      return DataRes.success(data);
+    } catch (error) {
+      return DataRes.failed('Không thể lấy danh sách cộng tác viên');
+    }
+  }
+
 
 }

@@ -74,6 +74,11 @@ export class RoomsService {
             throw new BadRequestException(ErrorResponse(RoomErrorCode.RENTAL_NOT_CONFIRMED));
           }
 
+          const ctvCollaboratorId =
+            dto.ctv_collaborator_id === ''
+              ? null
+              : dto.ctv_collaborator_id;
+
           manager.merge(Room, room, {
             title: dto.title ?? room.title,
             price: dto.price ?? room.price,
@@ -87,6 +92,10 @@ export class RoomsService {
             room_number: dto.room_number ?? room.room_number,
             video_url: dto.video_url ?? room.video_url,
             active: dto.active !== undefined ? dto.active : room.active,
+            ctv_collaborator_id:
+              dto.ctv_collaborator_id !== undefined
+                ? ctvCollaboratorId
+                : room.ctv_collaborator_id,
           });
 
           await manager.save(room);

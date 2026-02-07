@@ -22,6 +22,7 @@ import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.
 import { QueryCollaboratorDto } from './dto/query-collaborator.dto';
 import { UpdateCollaboratorDto } from './dto/update-collaborator.dto';
 import { Collaborator } from './entities/collaborator.entity';
+import { GetCollaboratorsCtvDto } from './dto/get-collaborators-ctv.dto';
 
 @Controller('collaborators')
 export class CollaboratorsController {
@@ -52,6 +53,14 @@ export class CollaboratorsController {
     @Query() query: GetAvailableCollaboratorsDto,
   ) {
     return this.collaboratorsService.getAvailableCollaborators(query);
+  }
+
+  @Get('ctv/admintra')
+  @Auth(PERMISSIONS.collaborators.read_many)
+  async getCollaboratorsCtv(
+    @Query() query: GetCollaboratorsCtvDto,
+  ) {
+    return this.collaboratorsService.getCollaboratorsCtv(query);
   }
 
   @Get(':id/admintra')
