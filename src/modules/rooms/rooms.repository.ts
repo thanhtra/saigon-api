@@ -293,6 +293,10 @@ export class RoomsRepository {
             .leftJoinAndSelect('rental.collaborator', 'collaborator')
             .leftJoinAndSelect('collaborator.user', 'collaborator_user')
             .leftJoinAndSelect('rental.createdBy', 'created_by_user') // 👈 NGƯỜI ĐĂNG
+
+            .leftJoinAndSelect('room.ctv_collaborator', 'room_ctv')
+            .leftJoinAndSelect('room_ctv.user', 'room_ctv_user')
+
             .where('rental.active = true')
             .orderBy('room.createdAt', query.order)
             .skip(getSkip(query.page, query.size))
@@ -327,6 +331,13 @@ export class RoomsRepository {
         if (query.rental_type) {
             qb.andWhere('rental.rental_type = :rental_type', {
                 rental_type: query.rental_type,
+            });
+        }
+
+        // 🔥 Filter room theo CTV tạo
+        if (query.ctv_collaborator_id) {
+            qb.andWhere('room.ctv_collaborator_id = :ctvId', {
+                ctvId: query.ctv_collaborator_id,
             });
         }
 

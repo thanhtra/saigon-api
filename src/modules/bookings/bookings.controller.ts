@@ -31,6 +31,7 @@ import {
 import { QueryMyBookingDto } from './dto/query-my-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Booking } from './entities/booking.entity';
+import { QueryCTVBookingDto } from './dto/query-ctv-booking.dto';
 
 @Controller('bookings')
 export class BookingsController {
@@ -58,6 +59,17 @@ export class BookingsController {
     return this.bookingsService.getMyBookingsByPhone(user.phone, query);
   }
 
+  @Get('customer/ctv')
+  @Auth(PERMISSIONS.bookings.ctv_bookings)
+  getMyCtvBookings(
+    @CurrentUser() user: User,
+    @Query() query: QueryCTVBookingDto,
+  ) {
+    return this.bookingsService.getBookingsByReferrerPhone(
+      user.phone,
+      query,
+    );
+  }
 
   /* ======================================================
    * ADMIN

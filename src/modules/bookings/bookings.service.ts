@@ -8,6 +8,7 @@ import {
   CreateBookingDto,
   CreateBookingPublicDto,
 } from './dto/create-booking.dto';
+import { QueryCTVBookingDto } from './dto/query-ctv-booking.dto';
 import { QueryMyBookingDto } from './dto/query-my-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Booking } from './entities/booking.entity';
@@ -52,6 +53,10 @@ export class BookingsService {
         return DataRes.failed(ErrorMes.BOOKING_UPDATE);
       }
 
+      if (detail.is_paid_commission && !dto.is_paid_commission) {
+        return DataRes.failed("Không thể cập nhật từ đã trả sang chưa trả");
+      }
+
       const booking = await this.bookingsRepository.updateBooking(
         id,
         {
@@ -64,6 +69,7 @@ export class BookingsService {
           admin_note: dto.admin_note ?? detail?.admin_note,
           viewing_at: dto.viewing_at ?? detail?.viewing_at,
           status: dto.status ?? detail?.status,
+          is_paid_commission: dto.is_paid_commission ?? detail?.is_paid_commission
         },
       );
 
@@ -166,5 +172,20 @@ export class BookingsService {
     }
   }
 
+  async getBookingsByReferrerPhone(
+    phone: string,
+    query: QueryCTVBookingDto,
+  ): Promise<DataRes<PageDto<Booking>>> {
+    try {
+      const bookings = await this.bookingsRepository.getBookingsByReferrerPhone(
+        phone,
+        query,
+      );
+
+      return DataRes.success(bookings);
+    } catch (error) {
+      return DataRes.failed(ErrorMes.BOOKING_GET_LIST);
+    }
+  }
 
 }

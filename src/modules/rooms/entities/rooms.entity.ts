@@ -1,5 +1,6 @@
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
 import { RentalAmenity, RoomStatus } from 'src/common/helpers/enum';
+import { Collaborator } from 'src/modules/collaborators/entities/collaborator.entity';
 import { Contract } from 'src/modules/contracts/entities/contract.entity';
 import { Rental } from 'src/modules/rentals/entities/rental.entity';
 import { Upload } from 'src/modules/uploads/entities/upload.entity';
@@ -14,6 +15,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm
 @Index(['price'])
 @Index(['active'])
 @Index('idx_rooms_amenities', { synchronize: false })
+@Index(['ctv_collaborator_id'])
 export class Room extends BaseEntity {
 
     @Column()
@@ -82,4 +84,13 @@ export class Room extends BaseEntity {
 
     @Column({ nullable: true })
     video_url?: string;
+
+
+
+    @ManyToOne(() => Collaborator, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'ctv_collaborator_id' })
+    ctv_collaborator?: Collaborator;
+
+    @Column({ nullable: true })
+    ctv_collaborator_id?: string;
 }
