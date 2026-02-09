@@ -7,7 +7,7 @@ import {
 import { isUnitRental } from 'src/common/helpers/constants';
 import { RentalStatus, RoomStatus } from 'src/common/helpers/enum';
 import { ErrorResponse, RoomErrorCode } from 'src/common/helpers/errorMessage';
-import { generateRoomCode, slugifyVN } from 'src/common/helpers/utils';
+import { generateCode, slugifyVN } from 'src/common/helpers/utils';
 import { EntityManager, In, Not } from 'typeorm';
 import { Collaborator } from '../collaborators/entities/collaborator.entity';
 import { Rental } from '../rentals/entities/rental.entity';
@@ -231,7 +231,7 @@ export class RoomsService {
             }
           }
 
-          const roomCode = generateRoomCode();
+          const roomCode = generateCode();
           const slug = slugifyVN(`${dto.title}-${roomCode}`);
 
           const room = manager.create(Room, {
@@ -328,7 +328,7 @@ export class RoomsService {
           }
 
           /* ================= CREATE ROOM ================= */
-          const roomCode = generateRoomCode();
+          const roomCode = generateCode();
           const slug = slugifyVN(`${dto.title}-${roomCode}`);
 
           const room = manager.create(Room, {

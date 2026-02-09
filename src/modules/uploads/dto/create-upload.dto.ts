@@ -17,7 +17,7 @@ export class CreateUploadDto {
 
     @IsOptional()
     @IsUUID()
-    real_estate_id?: string;
+    land_id?: string;
 
     @IsOptional()
     @IsUUID()

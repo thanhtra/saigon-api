@@ -88,3 +88,26 @@ export const ACREAGE_LEVEL_MAP = {
 };
 
 export const DATETIME_LOCAL_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+
+
+export const PRICE_LAND_LEVEL_MAP = {
+    a: { min: 0, max: 3 },
+    b: { min: 3, max: 6 },
+    c: { min: 6, max: 10 },
+    d: { min: 10, max: 20 },
+    e: { min: 20, max: 50 },
+    f: { min: 50, max: null }
+};
+
+export const ACREAGE_LAND_LEVEL_MAP = {
+    a: { min: 0, max: 30 },
+    b: { min: 30, max: 50 },
+    c: { min: 50, max: 80 },
+    d: { min: 80, max: 100 },
+    e: { min: 100, max: 150 },
+    f: { min: 150, max: 200 },
+    g: { min: 200, max: 250 },
+    h: { min: 250, max: 300 },
+    i: { min: 300, max: 500 },
+    j: { min: 500, max: null },
+};

@@ -1,17 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PageDto, PageMetaDto } from 'src/common/dtos/respones.dto';
+import { CollaboratorType, FieldCooperation } from 'src/common/helpers/enum';
 import { getSkip } from 'src/common/helpers/utils';
 import { Repository } from 'typeorm';
+import { Land } from '../lands/entities/land.entity';
 import { QueryCollaboratorDto } from './dto/query-collaborator.dto';
 import { Collaborator } from './entities/collaborator.entity';
-import { CollaboratorType, FieldCooperation } from 'src/common/helpers/enum';
 
 @Injectable()
 export class CollaboratorsRepository {
   constructor(
     @InjectRepository(Collaborator)
     private readonly repo: Repository<Collaborator>,
+    @InjectRepository(Land)
+    private readonly landRepo: Repository<Land>,
   ) { }
 
 
@@ -170,6 +173,40 @@ export class CollaboratorsRepository {
         'rental.commission AS commission'
       ])
       .where('rental.id = :rentalId', { rentalId })
+
+    const result = await qb.getRawOne();
+
+    return result || null;
+  }
+
+  async getCollaboratorContactByLandId(landId: string) {
+    if (!landId) return null;
+
+    const qb = this.landRepo
+      .createQueryBuilder('land')
+      .innerJoin('land.collaborator', 'c')
+      .innerJoin('c.user', 'user')
+      .select([
+        'c.id AS collaborator_id',
+        'c.type AS type',
+        'c.field_cooperation AS field_cooperation',
+        'c.active AS collaborator_active',
+        'c.is_blacklisted AS collaborator_is_blacklisted',
+        'c.note AS collaborator_note',
+
+        'user.id AS user_id',
+        'user.name AS name',
+        'user.phone AS phone',
+        'user.email AS email',
+        'user.active AS user_active',
+        'user.note AS user_note',
+
+        'land.id AS land_id',
+        'land.address_detail AS address_detail',
+        'land.address_detail_display AS address_detail_display',
+        'land.commission AS commission',
+      ])
+      .where('land.id = :landId', { landId });
 
     const result = await qb.getRawOne();
 

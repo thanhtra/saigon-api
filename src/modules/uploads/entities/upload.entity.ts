@@ -1,6 +1,7 @@
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
 import { UploadDomain, FileType } from 'src/common/helpers/enum';
 import { Contract } from 'src/modules/contracts/entities/contract.entity';
+import { Land } from 'src/modules/lands/entities/land.entity';
 import { Room } from 'src/modules/rooms/entities/rooms.entity';
 import {
     Column,
@@ -32,6 +33,7 @@ export class Upload extends BaseEntity {
     })
     domain: UploadDomain;
 
+
     /* ========== ROOM ========== */
     @ManyToOne(() => Room, {
         nullable: true,
@@ -43,8 +45,17 @@ export class Upload extends BaseEntity {
     @Column({ nullable: true })
     room_id?: string;
 
+
+    /* ========== LAND ========== */
+    @ManyToOne(() => Land, {
+        nullable: true,
+        onDelete: 'CASCADE', // 🔥 xoá land → xoá file
+    })
+    @JoinColumn({ name: 'land_id' })
+    land?: Land;
+
     @Column({ nullable: true })
-    real_estate_id?: string;
+    land_id?: string;
 
     /* ========== CONTRACT ========== */
     @ManyToOne(() => Contract, {
