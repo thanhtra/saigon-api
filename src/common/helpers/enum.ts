@@ -10,7 +10,7 @@ export enum FileType {
 
 export enum UploadDomain {
     Rooms = 'rooms',
-    RealEstates = 'real_estates',
+    Lands = 'lands',
     Contracts = 'contracts',
 }
 
@@ -117,3 +117,20 @@ export enum RentalAmenity {
     Balcony = 'balcony',                        // Ban công
     Elevator = 'elevator',
 }
+
+
+export enum LandType {
+    Apartment = 'apartment',                 // Chung cư
+    Townhouse = 'townhouse',                  // Nhà phố
+    ProjectHouse = 'project_house',           // Nhà dự án
+    Shophouse = 'shophouse',                  // Shophouse, nhà phố thương mại
+    VillaTownhouse = 'villa_townhouse',       // Biệt thự, liền kề
+}
+
+export const LandTypeLabels: Record<LandType, string> = {
+    [LandType.Apartment]: 'Chung cư',
+    [LandType.Townhouse]: 'Nhà phố',
+    [LandType.ProjectHouse]: 'Nhà dự án',
+    [LandType.Shophouse]: 'Shophouse, nhà phố thương mại',
+    [LandType.VillaTownhouse]: 'Biệt thự, liền kề',
+};

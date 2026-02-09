@@ -38,7 +38,6 @@ export class Rental extends BaseEntity {
     @OneToMany(() => Room, room => room.rental)
     rooms: Room[];
 
-
     @Column({ type: 'enum', enum: RentalType })
     rental_type: RentalType;
 

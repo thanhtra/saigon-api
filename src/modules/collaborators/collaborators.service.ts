@@ -215,6 +215,22 @@ export class CollaboratorsService {
     }
   }
 
+  async getCollaboratorContactByLandId(
+    landId: string,
+  ): Promise<DataRes<any>> {
+    try {
+      const contact = await this.collaboratorsRepository.getCollaboratorContactByLandId(landId);
+
+      if (!contact) {
+        return DataRes.failed('Không tìm thấy thông tin chủ nhà');
+      }
+
+      return DataRes.success(contact);
+    } catch (error) {
+      return DataRes.failed('Không thể lấy thông tin chủ nhà');
+    }
+  }
+
 
   async getCollaboratorsCtv(query: GetCollaboratorsCtvDto): Promise<DataRes<{ id: string; name: string; phone: string }[]>> {
     try {

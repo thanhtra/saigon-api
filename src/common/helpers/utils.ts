@@ -342,7 +342,7 @@ export function ensureDir(dirPath: string) {
   }
 }
 
-export function generateRoomCode(length = 5): string {
+export function generateCode(length = 5): string {
   const bytes = randomBytes(length);
   let code = '';
 

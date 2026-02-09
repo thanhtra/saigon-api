@@ -24,6 +24,7 @@ import { RoomsModule } from './modules/rooms/rooms.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { UsersModule } from './modules/users/users.module';
+import { LandsModule } from './modules/lands/lands.module';
 
 
 @Module({
@@ -119,6 +120,7 @@ import { UsersModule } from './modules/users/users.module';
     CommissionsModule,
     CollaboratorsModule,
     BookingsModule,
+    LandsModule
   ],
   controllers: [AppController],
   providers: [

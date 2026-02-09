@@ -95,6 +95,15 @@ export const PERMISSIONS = {
     update: { key: 'uploads:update', roles: ADMIN },
     delete: { key: 'uploads:delete', roles: ADMIN },
   },
+
+  lands: {
+    read_one: { key: 'lands:read_one', roles: ADMIN },
+    read_many: { key: 'lands:read_many', roles: ADMIN },
+    read: { key: 'lands:read', roles: ADMIN },
+    create: { key: 'lands:create', roles: ADMIN },
+    update: { key: 'lands:update', roles: ADMIN },
+    delete: { key: 'lands:delete', roles: ADMIN },
+  },
 };
 
 export const PERMISSIONS_FLAT_LIST = () => {

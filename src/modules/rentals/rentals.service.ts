@@ -7,7 +7,7 @@ import {
 } from 'src/common/dtos/respones.dto';
 import { isUnitRental } from 'src/common/helpers/constants';
 import { RentalStatus, RentalType, RoomStatus } from 'src/common/helpers/enum';
-import { generateRoomCode, slugifyVN } from 'src/common/helpers/utils';
+import { generateCode, slugifyVN } from 'src/common/helpers/utils';
 import { EntityManager, In } from 'typeorm';
 import { Room } from '../rooms/entities/rooms.entity';
 import { Upload } from '../uploads/entities/upload.entity';
@@ -72,7 +72,7 @@ export class RentalsService {
               throw new BadRequestException('Giá thuê là bắt buộc');
             }
 
-            const roomCode = generateRoomCode();
+            const roomCode = generateCode();
 
             room = await manager.save(
               Room,
@@ -503,7 +503,7 @@ export class RentalsService {
             throw new BadRequestException('Giá thuê là bắt buộc');
           }
 
-          const roomCode = generateRoomCode();
+          const roomCode = generateCode();
           const slug = slugifyVN(`${dto.title}-${roomCode}`);
 
           const room = await manager.save(

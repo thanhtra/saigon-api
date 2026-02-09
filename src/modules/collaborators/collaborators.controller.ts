@@ -96,4 +96,12 @@ export class CollaboratorsController {
     return await this.collaboratorsService.getCollaboratorContactByRentalId(rentalId);
   }
 
+  @Get('contact-land/:landId/admintra')
+  @Auth(PERMISSIONS.collaborators.read_contact)
+  async getCollaboratorContactByLandId(
+    @Param('landId') landId: string,
+  ) {
+    return await this.collaboratorsService.getCollaboratorContactByLandId(landId);
+  }
+
 }
