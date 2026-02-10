@@ -1,5 +1,5 @@
 import { BaseEntity } from 'src/common/entities/baseEntity.entity';
-import { LandType } from 'src/common/helpers/enum';
+import { FurnitureStatus, HouseDirection, LandAmenity, LandType, LegalStatus } from 'src/common/helpers/enum';
 import { Collaborator } from 'src/modules/collaborators/entities/collaborator.entity';
 import { Upload } from 'src/modules/uploads/entities/upload.entity';
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
@@ -9,6 +9,9 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm
 @Index(['land_type'])
 @Index(['price'])
 @Index(['area'])
+@Index(['legal_status'])
+@Index(['bedrooms'])
+@Index(['toilets'])
 @Index(['createdAt'])
 @Entity('lands')
 export class Land extends BaseEntity {
@@ -52,11 +55,17 @@ export class Land extends BaseEntity {
 
     // PARAMETER
 
-    @Column({ nullable: true })
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     area?: number;                  // Diện tích
 
     @Column({ nullable: true })
     structure?: string;      // Kết cấu: C4, 2 tầng,...
+
+    @Column({ type: 'int', nullable: true })
+    bedrooms?: number;              // Số phòng ngủ
+
+    @Column({ type: 'int', nullable: true })
+    toilets?: number;               // Số WC
 
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     width_top?: number;         // Ngang trên (m)
@@ -100,5 +109,34 @@ export class Land extends BaseEntity {
 
     @Column({ default: true })
     active: boolean;
+
+    @Column({
+        type: 'text',
+        array: true,
+        nullable: true,
+        default: () => 'ARRAY[]::text[]',
+    })
+    amenities?: LandAmenity[];
+
+    @Column({
+        type: 'enum',
+        enum: HouseDirection,
+        nullable: true,
+    })
+    house_direction?: HouseDirection;
+
+    @Column({
+        type: 'enum',
+        enum: LegalStatus,
+        nullable: true,
+    })
+    legal_status?: LegalStatus;   // Pháp lý
+
+    @Column({
+        type: 'enum',
+        enum: FurnitureStatus,
+        default: FurnitureStatus.Updating,
+    })
+    furniture_status: FurnitureStatus;   // Nội thất
 
 }

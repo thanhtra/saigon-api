@@ -134,3 +134,40 @@ export const LandTypeLabels: Record<LandType, string> = {
     [LandType.Shophouse]: 'Shophouse, nhà phố thương mại',
     [LandType.VillaTownhouse]: 'Biệt thự, liền kề',
 };
+
+export enum LandAmenity {
+    CarAccessible = 'car_accessible',            // Đường ô tô
+    StreetFront = 'street_front',                // Mặt phố
+    BusinessAllowed = 'business_allowed',        // Kinh doanh
+    CashFlow = 'cash_flow',                      // Dòng tiền
+    Elevator = 'elevator',                        // Thang máy
+}
+
+export enum HouseDirection {
+    East = 'east',                 // Đông
+    West = 'west',                 // Tây
+    South = 'south',               // Nam
+    North = 'north',               // Bắc
+    NorthEast = 'north_east',       // Đông Bắc
+    NorthWest = 'north_west',       // Tây Bắc
+    SouthEast = 'south_east',       // Đông Nam
+    SouthWest = 'south_west',       // Tây Nam
+    Updating = 'updating',      // Đang cập nhật
+}
+
+export enum LegalStatus {
+    RedBook = 'red_book',                 // Sổ đỏ / sổ hồng
+    PendingRedBook = 'pending_red_book',  // Đang chờ sổ
+    Handwritten = 'handwritten',          // Giấy tay
+    SaleContract = 'sale_contract',        // Hợp đồng mua bán
+    PlanningPending = 'planning_pending', // Quy hoạch / chờ pháp lý
+    Updating = 'updating',      // Đang cập nhật
+}
+
+export enum FurnitureStatus {
+    Full = 'full',              // Đầy đủ
+    Basic = 'basic',            // Cơ bản
+    None = 'none',              // Không nội thất
+    Updating = 'updating',      // Đang cập nhật
+}
+

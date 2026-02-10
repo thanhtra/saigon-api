@@ -9,7 +9,7 @@ import {
     IsString,
     Min
 } from 'class-validator';
-import { LandType } from 'src/common/helpers/enum';
+import { FurnitureStatus, HouseDirection, LandAmenity, LandType, LegalStatus } from 'src/common/helpers/enum';
 
 export class CreateLandDto {
 
@@ -69,6 +69,18 @@ export class CreateLandDto {
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
+    @Min(0)
+    bedrooms?: number;        // Số phòng ngủ
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
+    @Min(0)
+    toilets?: number;         // Số WC
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber()
     width_top?: number;
 
     @IsOptional()
@@ -118,6 +130,26 @@ export class CreateLandDto {
     @IsOptional()
     @IsString()
     video_url?: string;
+
+    /* ===== AMENITY ===== */
+
+    @IsOptional()
+    @IsEnum(LandAmenity, { each: true })
+    amenities?: LandAmenity[];
+
+    /* ===== EXTRA INFO ===== */
+
+    @IsOptional()
+    @IsEnum(HouseDirection)
+    house_direction?: HouseDirection;
+
+    @IsOptional()
+    @IsEnum(LegalStatus)
+    legal_status?: LegalStatus;
+
+    @IsOptional()
+    @IsEnum(FurnitureStatus)
+    furniture_status?: FurnitureStatus;
 
     /* ===== STATUS ===== */
 

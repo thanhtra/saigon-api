@@ -44,9 +44,10 @@ export class LandsService {
             land_type: dto.land_type,
             title: dto.title,
             slug,
-            daitheky_link: dto?.daitheky_link || "",
+            daitheky_link: dto?.daitheky_link || null,
             collaborator_id: dto.collaborator_id,
 
+            /* ===== ADDRESS ===== */
             province: dto.province,
             district: dto.district,
             ward: dto.ward,
@@ -55,20 +56,31 @@ export class LandsService {
             address_detail: dto.address_detail,
             address_detail_display: dto.address_detail_display,
 
+            /* ===== PARAMETER ===== */
             area: dto.area,
             structure: dto.structure,
+            bedrooms: dto.bedrooms,
+            toilets: dto.toilets,
             width_top: dto.width_top,
             width_bottom: dto.width_bottom,
             length_left: dto.length_left,
             length_right: dto.length_right,
 
+            /* ===== EXTRA INFO ===== */
+            amenities: dto.amenities,
+            house_direction: dto.house_direction,
+            legal_status: dto.legal_status,
+            furniture_status: dto.furniture_status,
+
+            /* ===== PRICE & CONTENT ===== */
             price: dto.price,
             commission: dto.commission,
             description: dto.description,
             private_note: dto.private_note,
             video_url: dto.video_url,
 
-            active: dto.active
+            /* ===== STATUS ===== */
+            active: dto.active ?? true
           });
 
           return await manager.save(Land, land);
@@ -120,10 +132,18 @@ export class LandsService {
 
             area: dto.area ?? land.area,
             structure: dto.structure ?? land.structure,
+            bedrooms: dto.bedrooms ?? land.bedrooms,
+            toilets: dto.toilets ?? land.toilets,
             width_top: dto.width_top ?? land.width_top,
             width_bottom: dto.width_bottom ?? land.width_bottom,
             length_left: dto.length_left ?? land.length_left,
             length_right: dto.length_right ?? land.length_right,
+
+            /* ===== EXTRA INFO ===== */
+            amenities: dto.amenities ?? land.amenities,
+            house_direction: dto.house_direction ?? land.house_direction,
+            legal_status: dto.legal_status ?? land.legal_status,
+            furniture_status: dto.furniture_status ?? land.furniture_status,
 
             price: dto.price ?? land.price,
             commission: dto.commission ?? land.commission,

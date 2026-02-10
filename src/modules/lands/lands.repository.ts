@@ -43,6 +43,14 @@ export class LandsRepository {
                 'land.structure',
                 'land.description',
                 'land.updatedAt',
+
+                'land.bedrooms',
+                'land.toilets',
+
+                'land.amenities',
+                'land.legal_status',
+                'land.furniture_status',
+                'land.house_direction'
             ])
 
             .addSelect([
@@ -89,6 +97,14 @@ export class LandsRepository {
                 'land.width_bottom',
                 'land.length_left',
                 'land.length_right',
+
+                'land.bedrooms',
+                'land.toilets',
+
+                'land.amenities',
+                'land.legal_status',
+                'land.furniture_status',
+                'land.house_direction'
             ])
 
             .addSelect([
@@ -174,6 +190,41 @@ export class LandsRepository {
                     maxArea: range.max,
                 });
             }
+        }
+
+        if (query.bedrooms) {
+            qb.andWhere('land.bedrooms >= :bedrooms', { bedrooms: query.bedrooms });
+        }
+
+        if (query.toilets) {
+            qb.andWhere('land.toilets >= :toilets', { toilets: query.toilets });
+        }
+
+        if (query.amenities?.length) {
+            qb.andWhere(
+                'land.amenities @> ARRAY[:...amenities]::text[]',
+                {
+                    amenities: query.amenities,
+                },
+            );
+        }
+
+        if (query.legal_status?.length) {
+            qb.andWhere('land.legal_status IN (:...legal_status)', {
+                legal_status: query.legal_status,
+            });
+        }
+
+        if (query.furniture_status?.length) {
+            qb.andWhere('land.furniture_status IN (:...furniture_status)', {
+                furniture_status: query.furniture_status,
+            });
+        }
+
+        if (query.house_direction?.length) {
+            qb.andWhere('land.house_direction IN (:...house_direction)', {
+                house_direction: query.house_direction,
+            });
         }
 
         const [entities, itemCount] = await qb.getManyAndCount();

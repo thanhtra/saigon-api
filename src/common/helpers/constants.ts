@@ -1,5 +1,5 @@
 import { join } from "path";
-import { CustomerType, ProductStatus, RentalAmenity, RentalType, UserRole, WaterUnit } from "./enum";
+import { CustomerType, FurnitureStatus, HouseDirection, LandAmenity, LegalStatus, ProductStatus, RentalAmenity, RentalType, UserRole, WaterUnit } from "./enum";
 
 
 export const UPLOAD_DIR = join(process.cwd(), 'uploads');
@@ -111,3 +111,41 @@ export const ACREAGE_LAND_LEVEL_MAP = {
     i: { min: 300, max: 500 },
     j: { min: 500, max: null },
 };
+
+export const LandAmenityOptions: Record<LandAmenity, string> = {
+    [LandAmenity.CarAccessible]: 'Đường ô tô',
+    [LandAmenity.StreetFront]: 'Mặt phố',
+    [LandAmenity.BusinessAllowed]: 'Kinh doanh',
+    [LandAmenity.CashFlow]: 'Dòng tiền',
+    [LandAmenity.Elevator]: 'Thang máy'
+};
+
+export const HouseDirectionOptions: Record<HouseDirection, string> = {
+    [HouseDirection.East]: 'Đông',
+    [HouseDirection.West]: 'Tây',
+    [HouseDirection.South]: 'Nam',
+    [HouseDirection.North]: 'Bắc',
+    [HouseDirection.NorthEast]: 'Đông Bắc',
+    [HouseDirection.NorthWest]: 'Tây Bắc',
+    [HouseDirection.SouthEast]: 'Đông Nam',
+    [HouseDirection.SouthWest]: 'Tây Nam',
+    [HouseDirection.Updating]: 'Đang cập nhật',
+};
+
+export const LegalStatusOptions: Record<LegalStatus, string> = {
+    [LegalStatus.RedBook]: 'Sổ đỏ / Sổ hồng',
+    [LegalStatus.PendingRedBook]: 'Đang chờ sổ',
+    [LegalStatus.Handwritten]: 'Giấy tay',
+    [LegalStatus.SaleContract]: 'Hợp đồng mua bán',
+    [LegalStatus.PlanningPending]: 'Đang chờ pháp lý / Quy hoạch',
+    [LegalStatus.Updating]: 'Đang cập nhật',
+};
+
+export const FurnitureStatusOptions: Record<FurnitureStatus, string> = {
+    [FurnitureStatus.Full]: 'Nội thất đầy đủ',
+    [FurnitureStatus.Basic]: 'Nội thất cơ bản',
+    [FurnitureStatus.None]: 'Không nội thất',
+    [FurnitureStatus.Updating]: 'Đang cập nhật',
+};
+
+
