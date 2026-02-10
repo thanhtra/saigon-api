@@ -201,8 +201,6 @@ export class LandsRepository {
         // ===== active =====
         if (query.active !== undefined) {
             qb.where('land.active = :active', { active: query.active });
-        } else {
-            qb.where('land.active = true');
         }
 
         // ===== land_type =====
