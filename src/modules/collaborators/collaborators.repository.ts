@@ -205,6 +205,8 @@ export class CollaboratorsRepository {
         'land.address_detail AS address_detail',
         'land.address_detail_display AS address_detail_display',
         'land.commission AS commission',
+        'land.private_note',
+        'land.daitheky_link',
       ])
       .where('land.id = :landId', { landId });
 

@@ -37,11 +37,6 @@ export class LandsRepository {
                 'land.length_left',
                 'land.length_right',
 
-                'land.province',
-                'land.district',
-                'land.ward',
-                'land.street',
-                'land.house_number',
                 'land.address_detail_display',
 
                 'land.video_url',
