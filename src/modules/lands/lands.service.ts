@@ -14,6 +14,7 @@ import { QueryLandDto } from './dto/query-land.dto';
 import { UpdateLandDto } from './dto/update-land.dto';
 import { Land } from './entities/land.entity';
 import { LandsRepository } from './lands.repository';
+import { CheckLinkDaithekyDto } from './dto/check-link-daitheky.dto';
 
 @Injectable()
 export class LandsService {
@@ -373,4 +374,16 @@ export class LandsService {
     }
   }
 
+  async checkLinkDaitheky(
+    dto: CheckLinkDaithekyDto,
+  ): Promise<DataRes<boolean>> {
+    try {
+
+      const exist = await this.landsRepository.existsByLink(dto.link);
+
+      return DataRes.success(exist);
+    } catch (error) {
+      return DataRes.failed(error?.message || 'Check link thất bại');
+    }
+  }
 }

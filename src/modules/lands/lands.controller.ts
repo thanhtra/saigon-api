@@ -21,6 +21,7 @@ import { QueryLandDto } from './dto/query-land.dto';
 import { UpdateLandDto } from './dto/update-land.dto';
 import { Land } from './entities/land.entity';
 import { LandsService } from './lands.service';
+import { CheckLinkDaithekyDto } from './dto/check-link-daitheky.dto';
 
 @Controller('lands')
 export class LandsController {
@@ -37,6 +38,13 @@ export class LandsController {
     return await this.landsService.create(dto);
   }
 
+  @Post('check-link-daitheky/admintra')
+  @Auth(PERMISSIONS.lands.check_link)
+  async checkLinkDaitheky(
+    @Body() dto: CheckLinkDaithekyDto
+  ): Promise<DataRes<boolean>> {
+    return await this.landsService.checkLinkDaitheky(dto);
+  }
 
   @Get('customer')
   @Public()

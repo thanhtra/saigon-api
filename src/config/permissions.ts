@@ -97,6 +97,7 @@ export const PERMISSIONS = {
   },
 
   lands: {
+    check_link: { key: 'lands:check_link', roles: ADMIN },
     read_one: { key: 'lands:read_one', roles: ADMIN },
     read_many: { key: 'lands:read_many', roles: ADMIN },
     read: { key: 'lands:read', roles: ADMIN },

@@ -309,4 +309,13 @@ export class LandsRepository {
             .getOne();
     }
 
+    async existsByLink(link: string): Promise<boolean> {
+        const count = await this.repo.count({
+            where: { daitheky_link: link.trim() },
+            take: 1
+        });
+        return count > 0;
+    }
+
+
 }
