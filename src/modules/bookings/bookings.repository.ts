@@ -43,7 +43,14 @@ export class BookingsRepository {
             .leftJoinAndSelect('room.uploads', 'uploads')
 
             .leftJoinAndSelect('room.ctv_collaborator', 'ctv')
-            .leftJoinAndSelect('ctv.user', 'ctv_user');
+            .leftJoinAndSelect('ctv.user', 'ctv_user')
+
+            // ✅ RENTAL (nhà)
+            .leftJoinAndSelect('room.rental', 'rental')
+
+            // ✅ CHỦ NHÀ
+            .leftJoinAndSelect('rental.collaborator', 'owner')
+            .leftJoinAndSelect('owner.user', 'owner_user');
 
         if (pageOptionsDto.key_search) {
             qb.andWhere(
