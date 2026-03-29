@@ -67,15 +67,39 @@ export const WaterUnitOptions: Record<WaterUnit, string> = {
 
 
 export const PRICE_LEVEL_MAP = {
-    a: { min: 0, max: 2000000 },
-    b: { min: 2000000, max: 3000000 },
-    c: { min: 3000000, max: 5000000 },
-    d: { min: 5000000, max: 7000000 },
-    e: { min: 7000000, max: 10000000 },
-    f: { min: 10000000, max: 15000000 },
-    g: { min: 15000000, max: 25000000 },
-    h: { min: 25000000, max: null },
+    a: { min: 0, max: 3000000 },
+    b: { min: 3000000, max: 4000000 },
+    c: { min: 4000000, max: 5000000 },
+    d: { min: 5000000, max: 6000000 },
+    e: { min: 6000000, max: 7000000 },
+    f: { min: 7000000, max: 8000000 },
+    g: { min: 8000000, max: 9000000 },
+    h: { min: 9000000, max: 10000000 },
+    i: { min: 10000000, max: 15000000 },
+    j: { min: 15000000, max: 20000000 },
+    k: { min: 20000000, max: 25000000 },
+    l: { min: 25000000, max: 35000000 },
+    m: { min: 35000000, max: 50000000 },
+    n: { min: 50000000, max: null },
 };
+
+export const PriceLevelLabels = {
+    a: '< 3',
+    b: '3 - 4',
+    c: '4 - 5',
+    d: '5 - 6',
+    e: '6 - 7',
+    f: '7 - 8',
+    g: '8 - 9',
+    h: '9 - 10',
+    i: '10 - 15',
+    j: '15 - 20',
+    k: '20 - 25',
+    l: '25 - 35',
+    m: '35 - 50',
+    n: '> 50',
+};
+
 
 export const ACREAGE_LEVEL_MAP = {
     a: { min: 0, max: 20 },
