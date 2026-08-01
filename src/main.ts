@@ -13,70 +13,91 @@ import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
-    {
-      logger:
-        process.env.NODE_ENV === 'production'
-          ? ['error', 'warn', 'log']
-          : ['debug', 'log', 'warn', 'error'],
-    },
-  );
+  try {
 
-  const configService = app.get(ConfigService);
+    console.log('========== A ==========');
 
-  // ✅ BẮT BUỘC khi chạy sau Nginx / HTTPS
-  app.set('trust proxy', 1);
+    const app = await NestFactory.create<NestExpressApplication>(
+      AppModule,
+      {
+        logger:
+          process.env.NODE_ENV === 'production'
+            ? ['error', 'warn', 'log']
+            : ['debug', 'log', 'warn', 'error'],
+      },
+    );
 
-  app.use(
-    Helmet({
-      crossOriginResourcePolicy: false,
-    }),
-  );
+    console.log('========== B ==========');
 
-  app.use(cookieParser());
+    const configService = app.get(ConfigService);
 
-  app.enableCors({
-    origin: [
-      configService.get<string>('frontend.adminUrl'),
-      configService.get<string>('frontend.customerUrl'),
-    ].filter(Boolean),
-    credentials: true,
-  });
+    console.log('========== C ==========');
 
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ limit: '50mb', extended: true }));
+    // ✅ BẮT BUỘC khi chạy sau Nginx / HTTPS
+    app.set('trust proxy', 1);
 
-  app.setGlobalPrefix('api');
+    app.use(
+      Helmet({
+        crossOriginResourcePolicy: false,
+      }),
+    );
 
-  app.useGlobalInterceptors(
-    new TransformInterceptor(),
-    new ClassSerializerInterceptor(app.get(Reflector)),
-  );
+    app.use(cookieParser());
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
+    app.enableCors({
+      origin: [
+        configService.get<string>('frontend.adminUrl'),
+        configService.get<string>('frontend.customerUrl'),
+      ].filter(Boolean),
+      credentials: true,
+    });
 
-  if (configService.get('nodeEnv') !== 'production') {
-    const swaggerConfig = new DocumentBuilder()
-      .setTitle(configService.get('projectName'))
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
+    app.use(express.json({ limit: '50mb' }));
+    app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-    const document = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup('docs', app, document);
+    app.setGlobalPrefix('api');
+
+    app.useGlobalInterceptors(
+      new TransformInterceptor(),
+      new ClassSerializerInterceptor(app.get(Reflector)),
+    );
+
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
+
+    console.log('========== D ==========');
+
+    if (configService.get('nodeEnv') !== 'production') {
+      const swaggerConfig = new DocumentBuilder()
+        .setTitle(configService.get('projectName'))
+        .setVersion('1.0')
+        .addBearerAuth()
+        .build();
+
+      const document = SwaggerModule.createDocument(app, swaggerConfig);
+      SwaggerModule.setup('docs', app, document);
+    }
+
+    console.log('========== E ==========');
+
+    const port = configService.get<number>('port');
+
+    console.log('PORT =', port);
+
+    await app.listen(port, '0.0.0.0');
+
+    console.log('========== G ==========');
+
+    console.log(`🚀 API running on port ${port}`);
+  } catch (e) {
+    console.error('BOOTSTRAP ERROR');
+    console.error(e);
   }
-
-  const port = configService.get<number>('port');
-  await app.listen(port, '0.0.0.0');
-
-  console.log(`🚀 API running on port ${port}`);
 }
 
 bootstrap();
