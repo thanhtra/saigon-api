@@ -116,11 +116,19 @@ export const DATETIME_LOCAL_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
 export const PRICE_LAND_LEVEL_MAP = {
     a: { min: 0, max: 3 },
-    b: { min: 3, max: 6 },
-    c: { min: 6, max: 10 },
-    d: { min: 10, max: 20 },
-    e: { min: 20, max: 50 },
-    f: { min: 50, max: null }
+    b: { min: 3, max: 4 },
+    c: { min: 4, max: 5 },
+    d: { min: 5, max: 6 },
+    e: { min: 6, max: 7 },
+    f: { min: 7, max: 8 },
+    g: { min: 8, max: 9 },
+    h: { min: 9, max: 10 },
+    i: { min: 10, max: 15 },
+    j: { min: 15, max: 20 },
+    k: { min: 20, max: 25 },
+    l: { min: 25, max: 35 },
+    m: { min: 35, max: 50 },
+    n: { min: 50, max: null },
 };
 
 export const ACREAGE_LAND_LEVEL_MAP = {
