@@ -37,6 +37,23 @@ export class LandsService {
             throw new BadRequestException('Giá thuê phải lớn hơn 0');
           }
 
+          /* ===== CHECK TRÙNG ĐỊA CHỈ ===== */
+          const existingLand = await manager.findOne(Land, {
+            where: {
+              province: dto.province,
+              district: dto.district,
+              ward: dto.ward,
+              street: dto.street,
+              house_number: dto.house_number,
+            },
+          });
+
+          if (existingLand) {
+            throw new BadRequestException(
+              `Địa chỉ nhà đã tồn tại: ${existingLand.address_detail_display || existingLand.address_detail || dto.title}`,
+            );
+          }
+
           const landCode = generateCode();
           const slug = slugifyVN(`${dto.title}-${landCode}`);
 
