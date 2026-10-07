@@ -15,8 +15,6 @@ import * as express from 'express';
 async function bootstrap() {
   try {
 
-    console.log('========== A ==========');
-
     const app = await NestFactory.create<NestExpressApplication>(
       AppModule,
       {
@@ -27,11 +25,7 @@ async function bootstrap() {
       },
     );
 
-    console.log('========== B ==========');
-
     const configService = app.get(ConfigService);
-
-    console.log('========== C ==========');
 
     // ✅ BẮT BUỘC khi chạy sau Nginx / HTTPS
     app.set('trust proxy', 1);
@@ -70,8 +64,6 @@ async function bootstrap() {
       }),
     );
 
-    console.log('========== D ==========');
-
     if (configService.get('nodeEnv') !== 'production') {
       const swaggerConfig = new DocumentBuilder()
         .setTitle(configService.get('projectName'))
@@ -83,15 +75,9 @@ async function bootstrap() {
       SwaggerModule.setup('docs', app, document);
     }
 
-    console.log('========== E ==========');
-
     const port = configService.get<number>('port');
 
-    console.log('PORT =', port);
-
     await app.listen(port, '0.0.0.0');
-
-    console.log('========== G ==========');
 
     console.log(`🚀 API running on port ${port}`);
   } catch (e) {
