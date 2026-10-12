@@ -7,7 +7,6 @@ import {
 import {
   PageDto,
   PageMetaDto,
-  PageOptionsDto,
 } from 'src/common/dtos/respones.dto';
 import { getSkip } from 'src/common/helpers/utils';
 
@@ -19,6 +18,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { GetAvailableCollaboratorsDto } from './dto/get-available-collaborators.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetAvailableTenantsDto } from './dto/get-available-tenants.dto';
+import { FilterUsersDto } from './dto/filter-users.dto';
 
 @Injectable()
 export class UsersRepository {
@@ -80,29 +80,44 @@ export class UsersRepository {
   }
 
   async getUsers(
-    pageOptionsDto: PageOptionsDto,
+    filter: FilterUsersDto,
   ): Promise<PageDto<User>> {
     const qb = this.repo.createQueryBuilder('user');
 
-    const skip = getSkip(pageOptionsDto.page, pageOptionsDto.size);
-    const take = Math.min(pageOptionsDto.size, 50);
+    const skip = getSkip(filter.page, filter.size);
+    const take = Math.min(filter.size, 50);
 
-    qb.orderBy('user.createdAt', pageOptionsDto.order)
+    qb.orderBy('user.createdAt', filter.order)
       .skip(skip)
       .take(take);
 
-    if (pageOptionsDto.key_search) {
+    if (filter.key_search) {
       qb.andWhere(
         '(user.name ILIKE :q OR user.phone ILIKE :q)',
-        { q: `%${pageOptionsDto.key_search}%` },
+        { q: `%${filter.key_search}%` },
       );
+    }
+
+    if (filter.role) {
+      qb.andWhere('user.role = :role', {
+        role: filter.role,
+      });
+    }
+
+    if (filter.active !== undefined) {
+      qb.andWhere('user.active = :active', {
+        active: filter.active,
+      });
     }
 
     const [entities, itemCount] = await qb.getManyAndCount();
 
     return new PageDto(
       entities,
-      new PageMetaDto({ itemCount, pageOptionsDto }),
+      new PageMetaDto({
+        itemCount,
+        pageOptionsDto: filter,
+      }),
     );
   }
 

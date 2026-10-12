@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
-import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
+import { DataRes, PageDto } from 'src/common/dtos/respones.dto';
 import { CollaboratorType, CustomerType, FieldCooperation, UserRole } from 'src/common/helpers/enum';
 import { ErrorMes } from 'src/common/helpers/errorMessage';
 
@@ -18,6 +18,7 @@ import { Tenant } from '../tenants/entities/tenant.entity';
 import { Collaborator } from '../collaborators/entities/collaborator.entity';
 import { PasswordUtil } from 'src/common/helpers/password';
 import { EntityManager } from 'typeorm';
+import { FilterUsersDto } from './dto/filter-users.dto';
 
 
 @Injectable()
@@ -236,10 +237,10 @@ export class UsersService {
   }
 
   async getUsers(
-    pageOptionsDto: PageOptionsDto,
+    filterUsersDto: FilterUsersDto,
   ): Promise<DataRes<PageDto<User>>> {
     try {
-      const users = await this.usersRepository.getUsers(pageOptionsDto);
+      const users = await this.usersRepository.getUsers(filterUsersDto);
       return DataRes.success(users);
     } catch (error) {
       return DataRes.failed(

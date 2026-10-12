@@ -7,12 +7,11 @@ import {
   Post,
   Put,
   Query,
-  Req,
   UseGuards
 } from '@nestjs/common';
 
 import { Public } from 'src/common/decorators/public.decorator';
-import { DataRes, PageDto, PageOptionsDto } from 'src/common/dtos/respones.dto';
+import { DataRes, PageDto } from 'src/common/dtos/respones.dto';
 import { PERMISSIONS } from 'src/config/permissions';
 
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
@@ -26,6 +25,7 @@ import { RegisterAfterBookingDto } from './dto/register-after-booking.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 import { GetAvailableTenantsDto } from './dto/get-available-tenants.dto';
+import { FilterUsersDto } from './dto/filter-users.dto';
 
 @Controller('users')
 export class UsersController {
@@ -101,9 +101,9 @@ export class UsersController {
   @Get('admintra')
   @Auth(PERMISSIONS.users.read_many)
   async getUsers(
-    @Query() pageOptionsDto: PageOptionsDto,
+    @Query() filterUsersDto: FilterUsersDto,
   ): Promise<DataRes<PageDto<User>>> {
-    return await this.usersService.getUsers(pageOptionsDto);
+    return await this.usersService.getUsers(filterUsersDto);
   }
 
   @Get(':id/admintra')

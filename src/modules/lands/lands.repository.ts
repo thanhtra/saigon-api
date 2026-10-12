@@ -245,8 +245,10 @@ export class LandsRepository {
             .leftJoinAndSelect('collaborator.user', 'collaborator_user');
 
         // ===== active =====
-        if (query.active !== undefined) {
-            qb.where('land.active = :active', { active: query.active });
+        if (query.active !== undefined && query.active !== null) {
+            qb.andWhere('land.active = :active', {
+                active: query.active,
+            });
         }
 
         // ===== land_type =====
