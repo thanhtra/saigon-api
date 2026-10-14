@@ -91,10 +91,10 @@ export class UsersRepository {
       .skip(skip)
       .take(take);
 
-    if (filter.key_search) {
+    if (filter.key_search?.trim()) {
       qb.andWhere(
-        '(user.name ILIKE :q OR user.phone ILIKE :q)',
-        { q: `%${filter.key_search}%` },
+        '(user.name ILIKE :q OR user.phone ILIKE :q OR user.note ILIKE :q)',
+        { q: `%${filter.key_search.trim()}%` },
       );
     }
 
